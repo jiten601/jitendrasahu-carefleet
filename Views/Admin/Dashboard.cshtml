@@ -1,0 +1,173 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareFleet - Admin Dashboard</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">CareFleet</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user-md"></i>
+                    <span>Doctors</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Appointments</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>System Settings</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <h2 class="welcome-text">Welcome, @ViewBag.UserName!</h2>
+                <div class="header-actions">
+                    <button class="icon-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="user-profile" onclick="toggleDropdown()">
+                        @{
+                            var userName = ViewBag.UserName?.ToString() ?? "Admin";
+                            var initials = userName.Length >= 2 ? userName.Substring(0, 2).ToUpper() : userName.Substring(0, 1).ToUpper();
+                        }
+                        <div class="avatar">@initials</div>
+                        <i class="fas fa-chevron-down"></i>
+                        <div class="dropdown-menu" id="userDropdown">
+                            <a href="@Url.Action("Logout", "Account")">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3 class="card-title">Total Users</h3>
+                    <div class="card-value">@ViewBag.TotalUsers.ToString("N0")</div>
+                    <p class="card-description">Across all roles</p>
+                    <button class="card-btn primary">Manage Users</button>
+                </div>
+                <div class="summary-card">
+                    <h3 class="card-title">Active Doctors</h3>
+                    <div class="card-value">@ViewBag.ActiveDoctors</div>
+                    <p class="card-description">Currently registered and active</p>
+                    <button class="card-btn secondary">View Doctors</button>
+                </div>
+                <div class="summary-card">
+                    <h3 class="card-title">Pending Appointments</h3>
+                    <div class="card-value">@ViewBag.PendingAppointments</div>
+                    <p class="card-description">Awaiting approval or scheduling</p>
+                    <button class="card-btn primary">Review Appointments</button>
+                </div>
+            </div>
+
+            <!-- Recent System Activity -->
+            <section class="activity-section">
+                <h3 class="section-title">Recent System Activity</h3>
+                <div class="table-container">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Oct 26, 2023 10:30 AM</td>
+                                <td>Admin A</td>
+                                <td>User Created</td>
+                                <td>New patient 'Sarah Connor' registered.</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 26, 2023 09:15 AM</td>
+                                <td>Dr. Smith</td>
+                                <td>Appointment Updated</td>
+                                <td>Appointment #123 for 'John Doe'.</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 25, 2023 04:00 PM</td>
+                                <td>Admin B</td>
+                                <td>Doctor Approved</td>
+                                <td>Dr. Alex Johnson's profile activated.</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 25, 2023 02:00 PM</td>
+                                <td>Patient X</td>
+                                <td>Medical Record Accessed</td>
+                                <td>Patient 'Jane Doe' viewed her records.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <a href="#" class="section-link">View All Activity</a>
+            </section>
+
+            <!-- System Health & Alerts -->
+            <section class="health-section">
+                <h3 class="section-title">System Health & Alerts</h3>
+                <ul class="health-list">
+                    <li>Database backup completed successfully on Oct 26, 2023.</li>
+                    <li>High server load detected: 85% CPU usage. Investigate.</li>
+                    <li>New software update available for deployment.</li>
+                </ul>
+                <a href="#" class="section-link">Manage System Health</a>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userProfile = document.querySelector('.user-profile');
+            const dropdown = document.getElementById('userDropdown');
+            if (!userProfile.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+
