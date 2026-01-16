@@ -1,0 +1,130 @@
+@{
+    var userEmail = Context.Session.GetString("UserEmail");
+    var firstName = ViewBag.FirstName?.ToString() ?? "";
+    var lastName = ViewBag.LastName?.ToString() ?? "";
+    var userName = ViewBag.UserName?.ToString() ?? "Admin";
+    
+    var initials = "";
+    if (!string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+    {
+        initials = (firstName.Substring(0, 1) + lastName.Substring(0, 1)).ToUpper();
+    }
+    else if (!string.IsNullOrEmpty(firstName))
+    {
+        initials = firstName.Substring(0, Math.Min(2, firstName.Length)).ToUpper();
+    }
+    else
+    {
+        initials = "AD";
+    }
+
+    var activePage = ViewBag.ActivePage?.ToString() ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CareFleet</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" />
+    <link rel="stylesheet" href="~/css/doctors-page.css" />
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">CareFleet</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="@Url.Action("Dashboard", "Admin")" class="nav-item @(activePage == "Dashboard" ? "active" : "")">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item @(activePage == "Users" ? "active" : "")">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="@Url.Action("Index", "Doctor")" class="nav-item @(activePage == "Doctors" ? "active" : "")">
+                    <i class="fas fa-user-md"></i>
+                    <span>Doctors</span>
+                </a>
+                <a href="@Url.Action("Index", "Patient")" class="nav-item @(activePage == "Patients" ? "active" : "")">
+                    <i class="fas fa-user"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="@Url.Action("Index", "Appointment")" class="nav-item @(activePage == "Appointments" ? "active" : "")">
+                    <i class="fas fa-calendar"></i>
+                    <span>Appointments</span>
+                </a>
+
+                <a href="#" class="nav-item @(activePage == "Settings" ? "active" : "")">
+                    <i class="fas fa-cog"></i>
+                    <span>System Settings</span>
+                </a>
+                <a href="#" class="nav-item @(activePage == "Reports" ? "active" : "")">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <h2 class="welcome-text">@ViewBag.HeaderTitle</h2>
+                <div class="header-actions">
+                    <button class="icon-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="user-profile" onclick="toggleDropdown()">
+                        <div class="avatar">@initials</div>
+                        <i class="fas fa-chevron-down"></i>
+                        <div class="dropdown-menu" id="userDropdown">
+                            <a href="@Url.Action("Logout", "Account")">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                </div>
+            }
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-error">
+                    @ViewBag.Error
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userProfile = document.querySelector('.user-profile');
+            const dropdown = document.getElementById('userDropdown');
+            if (!userProfile.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

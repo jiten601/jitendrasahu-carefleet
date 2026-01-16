@@ -1,0 +1,91 @@
+@model CareFleet.Models.Patient
+@{
+    ViewData["Title"] = "Add New Patient";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Patients";
+    ViewBag.HeaderTitle = "Add New Patient";
+}
+
+<div class="form-container">
+    <form asp-action="Create" method="post">
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="FirstName">First Name <span class="required">*</span></label>
+                <input asp-for="FirstName" class="form-control" required />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName">Last Name <span class="required">*</span></label>
+                <input asp-for="LastName" class="form-control" required />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" type="email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber">Phone Number</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="DateOfBirth">Date of Birth <span class="required">*</span></label>
+                <input asp-for="DateOfBirth" type="date" class="form-control" required />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Gender">Gender</label>
+                <select asp-for="Gender" class="form-control">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="BloodGroup">Blood Group</label>
+                <select asp-for="BloodGroup" class="form-control">
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+                <span asp-validation-for="BloodGroup" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Address">Address</label>
+            <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MedicalHistory">Medical History</label>
+            <textarea asp-for="MedicalHistory" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="MedicalHistory" class="text-danger"></span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Create Patient</button>
+            <a href="@Url.Action("Index", "Patient")" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
