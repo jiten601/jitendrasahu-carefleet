@@ -1,7 +1,12 @@
+wwwroot\css\admin-dashboard.css
 wwwroot\css\admin.css
 wwwroot\css\auth.css
+wwwroot\css\doctors-page.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\images\Carefleet-logo.png
+wwwroot\images\Carefleet1.png
+wwwroot\images\FinalLogo.png
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -64,7 +69,6 @@ wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
 E:\.net Project\CareFleet\CareFleet\wwwroot\css\auth.css
-E:\.net Project\CareFleet\CareFleet\wwwroot\css\site.css
 E:\.net Project\CareFleet\CareFleet\wwwroot\favicon.ico
 E:\.net Project\CareFleet\CareFleet\wwwroot\js\site.js
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
@@ -126,4 +130,7 @@ E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\dist\jquery.slim.js
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\dist\jquery.slim.min.js
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\dist\jquery.slim.min.map
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\LICENSE.txt
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\doctors-page.css
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\site.css
 E:\.net Project\CareFleet\CareFleet\wwwroot\css\admin.css
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\admin-dashboard.css

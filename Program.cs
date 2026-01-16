@@ -31,14 +31,55 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// Ensure database is created
+// Ensure database is created and up to date
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.EnsureCreated();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        
+        // Check if database can connect
+        if (context.Database.CanConnect())
+        {
+            // Try to check if Doctors table exists
+            try
+            {
+                // Try to query the Doctors table - if it fails, table doesn't exist
+                var testQuery = context.Doctors.Count();
+                logger.LogInformation("Database tables are up to date.");
+            }
+            catch
+            {
+                // Tables are missing, recreate database (development only)
+                // WARNING: This will delete all existing data in development mode
+                if (app.Environment.IsDevelopment())
+                {
+                    logger.LogWarning("Missing tables detected. Recreating database (this will delete all existing data)...");
+                    try
+                    {
+                        context.Database.EnsureDeleted();
+                        context.Database.EnsureCreated();
+                        logger.LogInformation("Database recreated successfully with all tables.");
+                    }
+                    catch (Exception deleteEx)
+                    {
+                        logger.LogError(deleteEx, "Failed to recreate database. Please ensure no connections are active and try again.");
+                    }
+                }
+                else
+                {
+                    logger.LogError("Database tables are missing. Please run migrations in production.");
+                }
+            }
+        }
+        else
+        {
+            // Database doesn't exist, create it
+            context.Database.EnsureCreated();
+            logger.LogInformation("Database created successfully.");
+        }
     }
     catch (Exception ex)
     {

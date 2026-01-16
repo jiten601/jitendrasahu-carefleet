@@ -1,0 +1,65 @@
+@model CareFleet.Models.Doctor
+@{
+    ViewData["Title"] = "Edit Doctor";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Doctors";
+    ViewBag.HeaderTitle = "Edit Doctor";
+}
+
+<div class="form-container">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedAt" />
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="FirstName">First Name <span class="required">*</span></label>
+                <input asp-for="FirstName" class="form-control" required />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName">Last Name <span class="required">*</span></label>
+                <input asp-for="LastName" class="form-control" required />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="Email">Email <span class="required">*</span></label>
+                <input asp-for="Email" type="email" class="form-control" required />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber">Phone Number</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label asp-for="Specialization">Specialization <span class="required">*</span></label>
+                <input asp-for="Specialization" class="form-control" required />
+                <span asp-validation-for="Specialization" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenseNumber">License Number <span class="required">*</span></label>
+                <input asp-for="LicenseNumber" class="form-control" required />
+                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input asp-for="IsActive" type="checkbox" /> Active
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Update Doctor</button>
+            <a href="@Url.Action("Index", "Doctor")" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
