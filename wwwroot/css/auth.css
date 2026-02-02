@@ -93,6 +93,66 @@ body {
     color: #94B4C1;
 }
 
+.password-input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    padding-right: 45px !important;
+    /* Space for the icon */
+}
+
+/* Hide MS Edge default password toggle */
+.password-input-wrapper input::-ms-reveal,
+.password-input-wrapper input::-ms-clear {
+    display: none;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #94B4C1;
+    z-index: 10;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+}
+
+.password-toggle:hover {
+    color: #547792;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.remember-me-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    cursor: pointer;
+}
+
+.remember-me-container input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.remember-me-container label {
+    font-size: 14px;
+    color: #213448;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
 .forgot-password-link {
     text-align: right;
     margin-bottom: 32px;
@@ -270,4 +330,3 @@ body {
         font-size: 22px;
     }
 }
-

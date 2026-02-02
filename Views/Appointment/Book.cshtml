@@ -1,0 +1,115 @@
+@model CareFleet.Models.Appointment
+@{
+    ViewData["Title"] = "Book Appointment";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var doctors = ViewBag.Doctors as List<CareFleet.Models.Doctor> ?? new List<CareFleet.Models.Doctor>();
+    var specialties = ViewBag.Specialties as List<string> ?? new List<string>();
+}
+
+<link rel="stylesheet" href="~/css/appointment.css" />
+
+<div class="appointment-container">
+    <div class="appointment-card">
+        <h2 class="form-title">Schedule Your Appointment</h2>
+        
+        <form asp-action="Book" method="post" id="appointmentForm">
+            <div class="form-group">
+                <label for="Specialty">Specialty</label>
+                <select id="Specialty" class="form-control">
+                    <option value="">All Specialties</option>
+                    @foreach (var spec in specialties)
+                    {
+                        <option value="@spec">@spec</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DoctorId">Doctor Name</label>
+                <select asp-for="DoctorId" class="form-control" id="DoctorId" required>
+                    <option value="">Search for a doctor...</option>
+                    @foreach (var doctor in doctors)
+                    {
+                        <option value="@doctor.Id" data-specialty="@doctor.Specialization">Dr. @doctor.FirstName @doctor.LastName</option>
+                    }
+                </select>
+                <span asp-validation-for="DoctorId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="AppointmentDate">Preferred Date</label>
+                <input asp-for="AppointmentDate" type="date" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TimeSlot">Available Time Slot</label>
+                <select asp-for="TimeSlot" class="form-control" required>
+                    <option value="">Select a time slot</option>
+                    <option value="9:00 AM - 9:30 AM">9:00 AM - 9:30 AM</option>
+                    <option value="9:30 AM - 10:00 AM">9:30 AM - 10:00 AM</option>
+                    <option value="10:00 AM - 10:30 AM">10:00 AM - 10:30 AM</option>
+                    <option value="10:30 AM - 11:00 AM">10:30 AM - 11:00 AM</option>
+                    <option value="11:00 AM - 11:30 AM">11:00 AM - 11:30 AM</option>
+                    <option value="1:00 PM - 1:30 PM">1:00 PM - 1:30 PM</option>
+                    <option value="1:30 PM - 2:00 PM">1:30 PM - 2:00 PM</option>
+                    <option value="2:00 PM - 2:30 PM">2:00 PM - 2:30 PM</option>
+                </select>
+                <span asp-validation-for="TimeSlot" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Reason">Reason for Appointment</label>
+                <textarea asp-for="Reason" class="form-control" placeholder="Briefly describe your reason for the visit..." rows="4" required></textarea>
+                <span asp-validation-for="Reason" class="text-danger"></span>
+            </div>
+
+            <div class="form-check">
+                <input asp-for="IsForSomeoneElse" class="form-check-input" type="checkbox" id="IsForSomeoneElse">
+                <label class="form-check-label" for="IsForSomeoneElse">
+                    Booking for someone else?
+                </label>
+            </div>
+
+            <div id="someoneElseFields" style="display: none;">
+                <div class="form-group">
+                    <label asp-for="OtherPatientName">Patient Name</label>
+                    <input asp-for="OtherPatientName" class="form-control" placeholder="Enter patient's full name" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="OtherPatientDOB">Patient Date of Birth</label>
+                    <input asp-for="OtherPatientDOB" type="date" class="form-control" />
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-confirm">Confirm Appointment</button>
+                <a href="@Url.Action("Index", "Appointment")" class="btn btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('IsForSomeoneElse').addEventListener('change', function() {
+            document.getElementById('someoneElseFields').style.display = this.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('Specialty').addEventListener('change', function() {
+            var selectedSpecialty = this.value;
+            var doctorSelect = document.getElementById('DoctorId');
+            var options = doctorSelect.options;
+
+            for (var i = 1; i < options.length; i++) {
+                var option = options[i];
+                if (selectedSpecialty === "" || option.getAttribute('data-specialty') === selectedSpecialty) {
+                    option.style.display = "";
+                } else {
+                    option.style.display = "none";
+                }
+            }
+            doctorSelect.value = "";
+        });
+    </script>
+}

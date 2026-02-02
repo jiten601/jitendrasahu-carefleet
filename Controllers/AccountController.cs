@@ -51,10 +51,17 @@ namespace CareFleet.Controllers
 
 
         // LOGIN
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            if (Request.Cookies.ContainsKey("CareFleetAuth") || !string.IsNullOrEmpty(HttpContext.Session.GetString("UserEmail")))
+            {
+                return RedirectToAction("Dashboard", "Admin");
+            }
+            return View();
+        }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public IActionResult Login(string email, string password, bool rememberMe)
         {
             var hash = HashPassword(password);
             var user = _context.Users.FirstOrDefault(u => u.Email == email && u.PasswordHash == hash);
@@ -71,8 +78,24 @@ namespace CareFleet.Controllers
                 return View();
             }
 
+            // Set session
             HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetString("UserName", user.FirstName + " " + user.LastName);
+
+            // Handle Remember Me
+            if (rememberMe)
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddDays(30),
+                    HttpOnly = true,
+                    IsEssential = true,
+                    Secure = Request.IsHttps, 
+                    SameSite = SameSiteMode.Lax
+                };
+                Response.Cookies.Append("CareFleetAuth", user.Email, cookieOptions);
+            }
+
             return RedirectToAction("Dashboard", "Admin");
         }
 
@@ -124,6 +147,7 @@ namespace CareFleet.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+            Response.Cookies.Delete("CareFleetAuth");
             return RedirectToAction("Login");
         }
 

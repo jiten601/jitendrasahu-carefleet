@@ -1,4 +1,5 @@
 wwwroot\css\admin.css
+wwwroot\css\appointment.css
 wwwroot\css\auth.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
@@ -126,4 +127,12 @@ E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\dist\jquery.slim.js
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\dist\jquery.slim.min.js
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\dist\jquery.slim.min.map
 E:\.net Project\CareFleet\CareFleet\wwwroot\lib\jquery\LICENSE.txt
+<<<<<<< Updated upstream
 E:\.net Project\CareFleet\CareFleet\wwwroot\css\admin.css
+=======
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\doctors-page.css
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\site.css
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\admin-dashboard.css
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\admin.css
+E:\.net Project\CareFleet\CareFleet\wwwroot\css\appointment.css
+>>>>>>> Stashed changes

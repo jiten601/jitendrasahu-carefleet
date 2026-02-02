@@ -1,0 +1,87 @@
+@model List<CareFleet.Models.Appointment>
+@{
+    ViewData["Title"] = "Appointments";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="activity-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 class="section-title" style="margin-bottom: 0;">Appointments</h3>
+        <a href="@Url.Action("Book", "Appointment")" class="section-link" style="margin-top: 0; text-decoration: none;">Book New Appointment</a>
+    </div>
+
+    <div class="table-container">
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Doctor</th>
+                    <th>Patient</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var appt in Model)
+                    {
+                        <tr>
+                            <td>@appt.AppointmentDate.ToShortDateString() @appt.TimeSlot</td>
+                            <td>Dr. @(appt.Doctor?.FirstName + " " + appt.Doctor?.LastName)</td>
+                            <td>@(appt.IsForSomeoneElse ? appt.OtherPatientName : (appt.Patient != null ? (appt.Patient.FirstName + " " + appt.Patient.LastName) : "N/A"))</td>
+                            <td>@appt.Reason</td>
+                            <td>
+                                <span class="badge @(appt.Status == "Confirmed" ? "bg-success" : (appt.Status == "Cancelled" ? "bg-danger" : "bg-warning"))">
+                                    @appt.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">
+                            <i class="fas fa-calendar-times" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
+                            No appointments found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+    }
+    .bg-success { background-color: #10b981; }
+    .bg-danger { background-color: #ef4444; }
+    .bg-warning { background-color: #f59e0b; }
+    
+    .section-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #3b82f6;
+        color: #ffffff;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .section-link:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+</style>

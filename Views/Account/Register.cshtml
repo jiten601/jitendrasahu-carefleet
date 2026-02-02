@@ -10,6 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareFleet - Register</title>
     <link rel="stylesheet" href="~/css/auth.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
     <div class="auth-container">
@@ -35,12 +36,18 @@
 
                 <div class="form-group">
                     <label for="PasswordHash">Password</label>
-                    <input type="password" id="PasswordHash" name="PasswordHash" placeholder="Enter your password" required autocomplete="new-password" />
+                    <div class="password-input-wrapper">
+                        <input type="password" id="PasswordHash" name="PasswordHash" placeholder="Enter your password" required autocomplete="new-password" />
+                        <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required autocomplete="new-password" />
+                    <div class="password-input-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required autocomplete="new-password" />
+                        <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
+                    </div>
                 </div>
 
                 @if (ViewBag.Error != null)
@@ -60,6 +67,30 @@
     </div>
 
     <script>
+        // Password visibility toggles
+        function setupPasswordToggle(toggleId, inputId) {
+            const toggle = document.querySelector(toggleId);
+            const input = document.querySelector(inputId);
+
+            if (toggle && input) {
+                toggle.addEventListener('click', function (e) {
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+                    
+                    if (type === 'text') {
+                        this.classList.remove('fa-eye');
+                        this.classList.add('fa-eye-slash');
+                    } else {
+                        this.classList.remove('fa-eye-slash');
+                        this.classList.add('fa-eye');
+                    }
+                });
+            }
+        }
+
+        setupPasswordToggle('#togglePassword', '#PasswordHash');
+        setupPasswordToggle('#toggleConfirmPassword', '#confirmPassword');
+
         // Password match validation
         document.getElementById('confirmPassword').addEventListener('input', function() {
             const password = document.getElementById('PasswordHash').value;

@@ -25,7 +25,7 @@ namespace CareFleet.Controllers
 
             // Get dashboard statistics
             var totalUsers = _context.Users.Count();
-            var activeDoctors = 120; // Placeholder - can be updated when Doctors table is added
+            var activeDoctors = _context.Doctors.Count(d => d.IsActive);
             var pendingAppointments = 45; // Placeholder - can be updated when Appointments table is added
 
             ViewBag.UserName = userName;

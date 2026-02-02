@@ -92,7 +92,7 @@
                     <h3 class="card-title">Pending Appointments</h3>
                     <div class="card-value">@ViewBag.PendingAppointments</div>
                     <p class="card-description">Awaiting approval or scheduling</p>
-                    <button class="card-btn primary">Review Appointments</button>
+                    <a href="@Url.Action("Index", "Appointment")" class="card-btn primary" style="text-decoration: none; display: block; text-align: center;">Review Appointments</a>
                 </div>
             </div>
 

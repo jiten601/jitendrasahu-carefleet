@@ -144,8 +144,12 @@ E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\scopedcss\bundle\CareFleet.styles.css
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\scopedcss\projectbundle\CareFleet.bundle.scp.css
+<<<<<<< Updated upstream
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\dduwm4ruwt-n32iswmhnf.gz
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\kn269f75q5-tetumamrup.gz
+=======
+E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\fdqe9i2eax-l8z9cqg42e.gz
+>>>>>>> Stashed changes
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\bwh1r6woz0-b9sayid5wm.gz
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\8aub0iclu7-61n19gt1b8.gz
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\qmy1fd9zof-xtxxf3hu2r.gz
@@ -221,3 +225,7 @@ E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\refint\CareFleet.dll
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\CareFleet.pdb
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\CareFleet.genruntimeconfig.cache
 E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\ref\CareFleet.dll
+E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\4ex6x82i2d-u52wkaxqmy.gz
+E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\kn269f75q5-4n5cn3mf56.gz
+E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\e80tc8quou-hbhuhl75sp.gz
+E:\.net Project\CareFleet\CareFleet\obj\Debug\net9.0\compressed\dduwm4ruwt-4xmrkf8hyj.gz

@@ -38,7 +38,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.EnsureCreated();
     }
     catch (Exception ex)
     {
@@ -60,6 +59,29 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
+
+// Auto-login middleware for Remember Me
+app.Use(async (context, next) =>
+{
+    if (string.IsNullOrEmpty(context.Session.GetString("UserEmail")))
+    {
+        var authCookie = context.Request.Cookies["CareFleetAuth"];
+        if (!string.IsNullOrEmpty(authCookie))
+        {
+            using (var scope = context.RequestServices.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == authCookie);
+                if (user != null)
+                {
+                    context.Session.SetString("UserEmail", user.Email);
+                    context.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
+                }
+            }
+        }
+    }
+    await next();
+});
 
 app.UseAuthorization();
 
