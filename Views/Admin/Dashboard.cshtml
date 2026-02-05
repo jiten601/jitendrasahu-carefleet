@@ -1,65 +1,104 @@
 @{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Dashboard";
+    ViewBag.HeaderTitle = "System Overview";
+    ViewBag.HideHeader = true;
 }
 
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <h3 class="card-title">Total Users</h3>
-                    <div class="card-value">@ViewBag.TotalUsers.ToString("N0")</div>
-                    <p class="card-description">Across all roles</p>
-                    <button class="card-btn primary">Manage Users</button>
-                </div>
-                <div class="summary-card">
-                    <h3 class="card-title">Active Doctors</h3>
-                    <div class="card-value">@ViewBag.ActiveDoctors</div>
-                    <p class="card-description">Currently registered and active</p>
-                    <a href="@Url.Action("Index", "Doctor")" class="card-btn secondary" style="text-decoration: none; display: block; text-align: center;">View Doctors</a>
-                </div>
-                <div class="summary-card">
-                    <h3 class="card-title">Pending Appointments</h3>
-                    <div class="card-value">@ViewBag.PendingAppointments</div>
-                    <p class="card-description">Awaiting approval or scheduling</p>
-                    <button class="card-btn primary">Review Appointments</button>
-                </div>
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">Admin Dashboard</h3>
+                <p class="text-white-50 mb-0">System Overview & Statistics</p>
             </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Reports", "Admin")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-chart-line me-2"></i>View Reports
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
 
-            <!-- Recent System Activity -->
-            <section class="activity-section">
-                <h3 class="section-title">Recent System Activity</h3>
-                <div class="table-container">
-                    <table class="activity-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Oct 26, 2023 10:30 AM</td>
-                                <td>Admin A</td>
-                                <td>User Created</td>
-                                <td>New patient 'Sarah Connor' registered.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <a href="#" class="section-link">View All Activity</a>
-            </section>
+<div class="summary-cards">
+    <div class="summary-card">
+        <h3 class="card-title">Total Users</h3>
+        <div class="card-value">@ViewBag.TotalUsers.ToString("N0")</div>
+        <p class="card-description">Across all roles</p>
+        <a href="@Url.Action("Users", "Admin")" class="card-btn primary" style="text-decoration: none; display: block; text-align: center;">Manage Users</a>
+    </div>
+    <div class="summary-card">
+        <h3 class="card-title">Active Doctors</h3>
+        <div class="card-value">@ViewBag.ActiveDoctors</div>
+        <p class="card-description">Currently registered and active</p>
+        <a href="@Url.Action("Index", "Doctor")" class="card-btn secondary" style="text-decoration: none; display: block; text-align: center;">View Doctors</a>
+    </div>
+    <div class="summary-card">
+        <h3 class="card-title">Pending Appointments</h3>
+        <div class="card-value">@ViewBag.PendingAppointments</div>
+        <p class="card-description">Awaiting approval or scheduling</p>
+        <a href="@Url.Action("Index", "Appointment")" class="card-btn primary" style="text-decoration: none; display: block; text-align: center;">Review Appointments</a>
+    </div>
+</div>
 
-            <!-- System Health & Alerts -->
-            <section class="health-section">
-                <h3 class="section-title">System Health & Alerts</h3>
-                <ul class="health-list">
-                    <li>Database backup completed successfully on dec 26, 2025.</li>
-                    <li>High server load detected: 85% CPU usage. Investigate.</li>
-                    <li>New software update available for deployment.</li>
-                </ul>
-                <a href="#" class="section-link">Manage System Health</a>
-            </section>
-        </main>
+<!-- Recent System Activity -->
+<section class="activity-section">
+    <h3 class="section-title">Recent System Activity</h3>
+    <div class="table-container">
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Oct 26, 2023 10:30 AM</td>
+                    <td>Admin A</td>
+                    <td>User Created</td>
+                    <td>New patient 'Sarah Connor' registered.</td>
+                </tr>
+                <tr>
+                    <td>Oct 26, 2023 09:15 AM</td>
+                    <td>Dr. Smith</td>
+                    <td>Appointment Updated</td>
+                    <td>Appointment #123 for 'John Doe'.</td>
+                </tr>
+                <tr>
+                    <td>Oct 25, 2023 04:00 PM</td>
+                    <td>Admin B</td>
+                    <td>Doctor Approved</td>
+                    <td>Dr. Alex Johnson's profile activated.</td>
+                </tr>
+                <tr>
+                    <td>Oct 25, 2023 02:00 PM</td>
+                    <td>Patient X</td>
+                    <td>Medical Record Accessed</td>
+                    <td>Patient 'Jane Doe' viewed her records.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <a href="#" class="section-link">View All Activity</a>
+</section>
+
+<!-- System Health & Alerts -->
+<section class="health-section">
+    <h3 class="section-title">System Health & Alerts</h3>
+    <ul class="health-list">
+        <li>Database backup completed successfully on Oct 26, 2023.</li>
+        <li>High server load detected: 85% CPU usage. Investigate.</li>
+        <li>New software update available for deployment.</li>
+    </ul>
+    <a href="#" class="section-link">Manage System Health</a>
+</section>
+</div>
+
+
 

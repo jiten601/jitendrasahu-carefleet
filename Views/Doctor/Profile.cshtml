@@ -1,0 +1,291 @@
+@model CareFleet.Models.Doctor
+@{
+    ViewData["Title"] = "Doctor Profile";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    
+    var doctor = Model ?? new CareFleet.Models.Doctor { 
+        Id = 0,
+        FirstName = ViewBag.FirstName?.ToString() ?? "Doctor", 
+        LastName = ViewBag.LastName?.ToString() ?? "", 
+        Email = ViewBag.UserEmail?.ToString() ?? "doctor@carefleet.com",
+        Specialization = "General Practice",
+        LicenseNumber = "MD-000000",
+        PhoneNumber = "+1 (555) 000-0000",
+        CreatedAt = DateTime.Now.AddYears(-5)
+    };
+    
+    var initials = ((doctor.FirstName?.Length > 0 ? doctor.FirstName.Substring(0, 1) : "D") + 
+                   (doctor.LastName?.Length > 0 ? doctor.LastName.Substring(0, 1) : "R")).ToUpper();
+    
+    var yearsOfExperience = (int)(DateTime.Now - doctor.CreatedAt).TotalDays / 365;
+    var profileCompletion = 75; // Calculate based on filled fields
+    ViewBag.ActivePage = "Settings"; // Profile is under Settings/User context
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-profile-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <div class="header-breadcrumb mb-2">
+                    <a href="@Url.Action("Dashboard", "Doctor")" class="text-white text-decoration-none opacity-75 hvr-opacity">Dashboard</a>
+                    <i class="fas fa-chevron-right mx-2 small opacity-50 text-white"></i>
+                    <span class="text-white fw-bold">My Profile</span>
+                </div>
+                <h3 class="fw-bold text-white mb-2">Dr. @doctor.FirstName @doctor.LastName</h3>
+                <p class="text-white opacity-75 mb-0">
+                    <i class="fas fa-stethoscope me-2"></i>@doctor.Specialization | <i class="fas fa-id-card ms-2 me-2"></i>MD #@doctor.LicenseNumber
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Settings", "Doctor")" class="btn-premium-light">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+        <!-- Sidebar Column -->
+        <div class="col-lg-4 order-lg-2">
+            <!-- Profile Overview Card -->
+            <div class="premium-card mb-4">
+                <div class="card-body-premium text-center">
+                    <div class="profile-avatar-wrapper mb-4">
+                        <div class="avatar-large-circle mx-auto">@initials</div>
+                        <div class="verified-badge-premium">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-1">Dr. @doctor.FirstName @doctor.LastName</h4>
+                    <p class="text-secondary small mb-4">Member since @doctor.CreatedAt.ToString("MMMM yyyy")</p>
+                    
+                    <div class="stats-mini-grid mb-4">
+                        <div class="stat-mini-item">
+                            <div class="stat-val">@yearsOfExperience+</div>
+                            <div class="stat-lab">Experience</div>
+                        </div>
+                        <div class="stat-mini-item border-start border-end">
+                            <div class="stat-val">150+</div>
+                            <div class="stat-lab">Patients</div>
+                        </div>
+                        <div class="stat-mini-item">
+                            <div class="stat-val">4.9</div>
+                            <div class="stat-lab">Rating</div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="mailto:@doctor.Email" class="btn btn-primary">
+                            <i class="fas fa-envelope me-2"></i>Contact Doctor
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Availability -->
+            <div class="premium-card mb-4">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0">Professional Info</h5>
+                </div>
+                <div class="card-body-premium">
+                    <div class="info-list-item mb-4">
+                        <label class="text-muted x-small text-uppercase fw-bold d-block mb-1">Email Address</label>
+                        <p class="mb-0 fw-medium">@doctor.Email</p>
+                    </div>
+                    <div class="info-list-item mb-4">
+                        <label class="text-muted x-small text-uppercase fw-bold d-block mb-1">Phone Number</label>
+                        <p class="mb-0 fw-medium">@doctor.PhoneNumber</p>
+                    </div>
+                    <div class="info-list-item">
+                        <label class="text-muted x-small text-uppercase fw-bold d-block mb-1">Working Hours</label>
+                        <p class="mb-1 fw-medium">Mon - Fri: 9 AM - 5 PM</p>
+                        <p class="mb-0 fw-medium">Sat: 10 AM - 2 PM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Column -->
+        <div class="col-lg-8 order-lg-1">
+            <!-- Biography Card -->
+            <div class="premium-card mb-4">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-user-md text-primary me-2"></i>Professional Biography</h5>
+                </div>
+                <div class="card-body-premium">
+                    <p class="text-secondary lh-lg mb-4">
+                        Dr. @doctor.FirstName @doctor.LastName is a dedicated **@doctor.Specialization specialist** with over **@yearsOfExperience years** of experience in providing exceptional patient care. 
+                        Committed to staying at the forefront of medical advancements and delivering personalized treatment plans tailored to each patient's unique needs.
+                    </p>
+                    <p class="text-secondary lh-lg mb-0">
+                        Known for a compassionate approach and excellent communication skills, Dr. @doctor.LastName believes in building strong doctor-patient relationships 
+                        based on trust, transparency, and mutual respect.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Expertise & Education -->
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="premium-card h-100">
+                        <div class="card-header-premium">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-star text-warning me-2"></i>Expertise</h5>
+                        </div>
+                        <div class="card-body-premium">
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-light text-dark border p-2 px-3">Preventive Care</span>
+                                <span class="badge bg-light text-dark border p-2 px-3">Chronic Disease</span>
+                                <span class="badge bg-light text-dark border p-2 px-3">Diagnostics</span>
+                                <span class="badge bg-light text-dark border p-2 px-3">Patient Education</span>
+                                <span class="badge bg-light text-dark border p-2 px-3">Screenings</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="premium-card h-100">
+                        <div class="card-header-premium">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-graduation-cap text-info me-2"></i>Education</h5>
+                        </div>
+                        <div class="card-body-premium">
+                            <div class="education-item mb-3">
+                                <h6 class="fw-bold mb-1">Medical Doctor (MD)</h6>
+                                <p class="text-secondary small mb-0">Harvard Medical School | 2014</p>
+                            </div>
+                            <div class="education-item">
+                                <h6 class="fw-bold mb-1">Residency</h6>
+                                <p class="text-secondary small mb-0">Johns Hopkins Hospital | 2017</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Achievements / Timeline -->
+            <div class="premium-card mt-4">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-history text-success me-2"></i>Career Timeline</h5>
+                </div>
+                <div class="card-body-premium p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item p-4 border-0">
+                            <div class="d-flex gap-3">
+                                <div class="timeline-dot-premium mt-1"></div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Senior Physician</h6>
+                                    <p class="text-muted small mb-0">CareFleet Medical Center | 2017 - Present</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item p-4 border-top">
+                            <div class="d-flex gap-3">
+                                <div class="timeline-dot-premium mt-1 bg-secondary opacity-50"></div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Chief Resident</h6>
+                                    <p class="text-muted small mb-0">Johns Hopkins Hospital | 2016 - 2017</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-profile-page {
+        margin: -20px -40px;
+        padding: 40px;
+    }
+
+    /* Profile Avatar Large */
+    .avatar-large-circle {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: 800;
+        box-shadow: 0 10px 25px rgba(33, 52, 72, 0.2);
+        border: 4px solid white;
+    }
+
+    .profile-avatar-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .verified-badge-premium {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 32px;
+        height: 32px;
+        background: var(--success);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Stats Mini Grid */
+    .stats-mini-grid {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 15px 5px;
+    }
+
+    .stat-mini-item {
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    .stat-val {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--primary-dark);
+        margin-bottom: 2px;
+    }
+
+    .stat-lab {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Timeline Dot */
+    .timeline-dot-premium {
+        width: 12px;
+        height: 12px;
+        background: var(--primary-blue);
+        border-radius: 50%;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.1);
+    }
+
+    /* Utility */
+    .x-small {
+        font-size: 11px;
+    }
+
+    .lh-lg {
+        line-height: 1.8;
+    }
+</style>

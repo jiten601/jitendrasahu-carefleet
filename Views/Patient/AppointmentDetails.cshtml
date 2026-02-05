@@ -1,0 +1,140 @@
+@model CareFleet.Models.Appointment
+
+@{
+    ViewData["Title"] = "Appointment Details";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ActivePage = "Appointments";
+    ViewBag.HeaderTitle = "Appointment Details";
+}
+
+<div class="appointment-details-page fade-in">
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">Appointment Details</h3>
+                <p class="text-white-50 mb-0">Review the specifics of your scheduled visit.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Appointments", "Patient")" class="btn-premium-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to My Appointments
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="dashboard-card p-4">
+                <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                    <div class="doctor-avatar-circle me-3">
+                        <i class="fas fa-user-md fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName</h4>
+                        <span class="badge-modern bg-light">@Model.Doctor?.Specialization</span>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label class="text-muted x-small text-uppercase fw-bold">Date & Time</label>
+                            <p class="mb-0 fw-bold">
+                                <i class="far fa-calendar-alt text-primary-blue me-2"></i>
+                                @Model.AppointmentDate.ToString("MMMM dd, yyyy") at @Model.TimeSlot
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label class="text-muted x-small text-uppercase fw-bold">Status</label>
+                            <div>
+                                @{
+                                    var statusClass = Model.Status switch {
+                                        "Confirmed" => "status-confirmed",
+                                        "Pending" => "status-pending",
+                                        "Cancelled" => "status-cancelled",
+                                        _ => "status-pending"
+                                    };
+                                }
+                                <span class="badge-status @statusClass">
+                                    <i class="fas fa-circle x-small me-1"></i>@Model.Status
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label class="text-muted x-small text-uppercase fw-bold">Reason for Visit</label>
+                            <p class="mb-0 fs-5">@Model.Reason</p>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Status == "Confirmed")
+                {
+                    <div class="alert alert-info-soft mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please arrive 15 minutes early for your appointment. Bring any relevant medical reports.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="dashboard-card p-4">
+                <h5 class="fw-bold mb-3">Quick Actions</h5>
+                <div class="d-grid gap-2">
+                    @if (Model.Status != "Cancelled")
+                    {
+                        <a href="@Url.Action("Book", "Appointment", new { rescheduleId = Model.Id })" class="btn btn-outline-primary py-2">
+                            <i class="fas fa-calendar-alt me-2"></i>Reschedule
+                        </a>
+                        <form method="post" action="@Url.Action("CancelAppointment", "Patient")" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger py-2 w-100">
+                                <i class="fas fa-trash-alt me-2"></i>Cancel Appointment
+                            </button>
+                        </form>
+                    }
+                    <button class="btn btn-light py-2" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-avatar-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #f0f4f8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-blue);
+    }
+    .detail-item label { letter-spacing: 0.5px; margin-bottom: 5px; display: block; }
+    .badge-status {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+    }
+    .status-confirmed { background: #ecfdf5; color: #10b981; }
+    .status-pending { background: #fffbeb; color: #f59e0b; }
+    .status-cancelled { background: #fef2f2; color: #ef4444; }
+    .alert-info-soft {
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        color: #1e40af;
+        border-radius: 12px;
+        padding: 15px;
+    }
+</style>

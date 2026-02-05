@@ -4,7 +4,26 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Doctors";
     ViewBag.HeaderTitle = "Edit Doctor";
+    ViewBag.HideHeader = true;
 }
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">Modify Doctor Profile</h3>
+                <p class="text-white-50 mb-0">Update credentials and account details.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Index", "Doctor")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
 
 <div class="form-container">
     <form asp-action="Edit" method="post">
@@ -62,4 +81,6 @@
         </div>
     </form>
 </div>
+</div>
+
 

@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     background-color: #EAE0CF;
     min-height: 100vh;
     display: flex;
@@ -27,6 +27,23 @@ body {
     border-radius: 12px;
     width: 100%;
     box-shadow: 0 4px 20px rgba(33, 52, 72, 0.1);
+    text-align: center;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.auth-logo {
+    width: 200px !important;
+    max-width: 100%;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
 }
 
 .app-title {
@@ -34,7 +51,7 @@ body {
     font-weight: 700;
     color: #213448;
     margin-bottom: 8px;
-    text-align: left;
+    text-align: center;
     letter-spacing: -0.5px;
 }
 
@@ -43,7 +60,7 @@ body {
     font-weight: 700;
     color: #213448;
     margin-bottom: 40px;
-    text-align: left;
+    text-align: center;
 }
 
 .register-title {
@@ -51,7 +68,7 @@ body {
     font-weight: 700;
     color: #213448;
     margin-bottom: 40px;
-    text-align: left;
+    text-align: center;
     line-height: 1.2;
 }
 
@@ -72,7 +89,8 @@ body {
     text-align: left;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 14px 16px;
     border: 1px solid #94B4C1;
@@ -84,19 +102,77 @@ body {
     transition: border-color 0.2s ease;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #547792;
+}
+
+/* Password Toggle Styles */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 45px !important;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #547792;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.toggle-password:hover {
+    color: #213448;
 }
 
 .form-group input::placeholder {
     color: #94B4C1;
 }
 
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    margin-top: -16px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #213448;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container input {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .forgot-password-link {
     text-align: right;
-    margin-bottom: 32px;
-    margin-top: -8px;
+    margin-bottom: 0px !important;
+    margin-top: 0px !important;
 }
 
 .forgot-password-link a {
@@ -270,4 +346,3 @@ body {
         font-size: 22px;
     }
 }
-

@@ -1,0 +1,660 @@
+@model CareFleet.Models.Patient
+@{
+    ViewData["Title"] = "Profile Settings";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    
+    var patient = Model ?? new CareFleet.Models.Patient { 
+        Id = 0,
+        FirstName = ViewBag.FirstName?.ToString() ?? "Patient", 
+        LastName = ViewBag.LastName?.ToString() ?? "User", 
+        Email = ViewBag.UserEmail?.ToString() ?? "patient@carefleet.com",
+        CreatedAt = DateTime.Now.AddYears(-1)
+    };
+    
+    var initials = ((patient.FirstName?.Length > 0 ? patient.FirstName.Substring(0, 1) : "P") + 
+                   (patient.LastName?.Length > 0 ? patient.LastName.Substring(0, 1) : "A")).ToUpper();
+    
+    // Calculate profile completion
+    int completedFields = 0;
+    int totalFields = 6;
+    if (!string.IsNullOrEmpty(patient.FirstName)) { completedFields++; }
+    if (!string.IsNullOrEmpty(patient.LastName)) { completedFields++; }
+    if (!string.IsNullOrEmpty(patient.Email)) { completedFields++; }
+    if (!string.IsNullOrEmpty(patient.PhoneNumber)) { completedFields++; }
+    if (!string.IsNullOrEmpty(patient.Address)) { completedFields++; }
+    if (!string.IsNullOrEmpty(patient.BloodGroup)) { completedFields++; }
+    int profileCompletion = (int)((completedFields / (double)totalFields) * 100);
+}
+
+
+<div class="settings-page fade-in">
+    <!-- Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">Profile Settings</h3>
+                <p class="text-white-50 mb-0">Manage your account preferences and security.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Profile", "Patient")" class="btn-premium-light text-decoration-none d-inline-block">
+                    <i class="fas fa-user-circle me-2"></i>View My Profile
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Sidebar: Profile Summary -->
+        <div class="col-lg-4">
+            <div class="profile-summary-card sticky-sidebar">
+                <!-- Avatar Section -->
+                <div class="avatar-section">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-large-circle">@initials</div>
+                        <div class="avatar-upload-overlay">
+                            <label for="avatarUpload" class="upload-trigger" title="Change Photo">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <h4 class="profile-name">@patient.FirstName @patient.LastName</h4>
+                    <p class="profile-email">@patient.Email</p>
+                    <span class="verified-badge-inline">
+                        <i class="fas fa-check-circle me-1"></i>Verified Patient
+                    </span>
+                </div>
+
+                <!-- Profile Completion -->
+                <div class="completion-section">
+                    <div class="completion-header">
+                        <span class="completion-label">Profile Completion</span>
+                        <span class="completion-percentage">@profileCompletion%</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: @(profileCompletion)%"></div>
+                    </div>
+                    <p class="completion-hint">
+                        @if (profileCompletion < 100)
+                        {
+                            <text><i class="fas fa-info-circle me-1"></i>Complete your profile for better care</text>
+                        }
+                        else
+                        {
+                            <text><i class="fas fa-check-circle me-1"></i>Your profile is complete!</text>
+                        }
+                    </p>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-section">
+                    <a href="@Url.Action("Profile", "Patient")" class="quick-action-link">
+                        <i class="fas fa-eye"></i>
+                        <span>View My Profile</span>
+                        <i class="fas fa-chevron-right ms-auto"></i>
+                    </a>
+                    <a href="#" class="quick-action-link" onclick="document.getElementById('securityTab').click(); return false;">
+                        <i class="fas fa-key"></i>
+                        <span> Change Password</span>
+                        <i class="fas fa-chevron-right ms-auto"></i>
+                    </a>
+                </div>
+
+                <!-- Account Info -->
+                <div class="account-info-section">
+                    <div class="info-row">
+                        <span class="info-label">Member Since</span>
+                        <span class="info-value">@patient.CreatedAt.ToString("MMM yyyy")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Account Status</span>
+                        <span class="status-badge-active">Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content: Tabbed Settings -->
+        <div class="col-lg-8">
+            <!-- Tab Navigation -->
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="personal" id="personalTab">
+                    <i class="fas fa-user me-2"></i>Personal Info
+                </button>
+                <button class="tab-btn" data-tab="medical" id="medicalTab">
+                    <i class="fas fa-file-medical me-2"></i>Medical Info
+                </button>
+                <button class="tab-btn" data-tab="security" id="securityTab">
+                    <i class="fas fa-shield-alt me-2"></i>Security
+                </button>
+            </div>
+
+            <form method="post" action="@Url.Action("Edit", "Patient")" id="settingsForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@patient.Id" />
+                <input type="hidden" name="CreatedAt" value="@patient.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")" />
+                <input type="hidden" name="Email" value="@patient.Email" />
+
+                <!-- Tab Content Container -->
+                <div class="tab-content-wrapper">
+                    <!-- Personal Info Tab -->
+                    <div class="tab-content active" data-content="personal">
+                        <div class="settings-card">
+                            <div class="card-header-settings">
+                                <h3 class="card-title-settings">
+                                    <i class="fas fa-user-circle me-2"></i>Personal Information
+                                </h3>
+                                <p class="card-subtitle">Update your personal details and contact information</p>
+                            </div>
+                            <div class="card-body-settings">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">First Name</label>
+                                            <input type="text" class="form-control-modern" name="FirstName" value="@patient.FirstName" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Last Name</label>
+                                            <input type="text" class="form-control-modern" name="LastName" value="@patient.LastName" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Email Address</label>
+                                            <input type="email" class="form-control-modern" value="@patient.Email" readonly disabled style="background: #e9ecef;">
+                                            <small class="form-hint">Email cannot be changed for security reasons</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Phone Number</label>
+                                            <input type="tel" class="form-control-modern" name="PhoneNumber" value="@patient.PhoneNumber" placeholder="+1 (555) 000-0000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Date of Birth</label>
+                                            <input type="date" class="form-control-modern" name="DateOfBirth" value="@(patient.DateOfBirth == default ? "" : patient.DateOfBirth.ToString("yyyy-MM-dd"))">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Gender</label>
+                                            <select class="form-control-modern" name="Gender">
+                                                <option value="Male" selected="@(patient.Gender == "Male")">Male</option>
+                                                <option value="Female" selected="@(patient.Gender == "Female")">Female</option>
+                                                <option value="Other" selected="@(patient.Gender == "Other")">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Residential Address</label>
+                                            <textarea class="form-control-modern" name="Address" rows="2">@patient.Address</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Info Tab -->
+                    <div class="tab-content" data-content="medical">
+                        <div class="settings-card">
+                            <div class="card-header-settings">
+                                <h3 class="card-title-settings">
+                                    <i class="fas fa-file-medical me-2"></i>Medical Profile
+                                </h3>
+                                <p class="card-subtitle">Manage your medical history and clinical information</p>
+                            </div>
+                            <div class="card-body-settings">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Blood Group</label>
+                                            <input type="text" class="form-control-modern" name="BloodGroup" value="@patient.BloodGroup" placeholder="e.g. O+">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group-modern">
+                                            <label class="form-label-modern">Medical History</label>
+                                            <textarea class="form-control-modern" name="MedicalHistory" rows="5" placeholder="List any allergies, chronic conditions, or past surgeries...">@patient.MedicalHistory</textarea>
+                                            <small class="form-hint"><i class="fas fa-lock me-1"></i> This information is strictly confidential and only shared with your doctors.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Tab -->
+                    <div class="tab-content" data-content="security">
+                        <div class="settings-card">
+                            <div class="card-header-settings">
+                                <h3 class="card-title-settings">
+                                    <i class="fas fa-lock me-2"></i>Security Settings
+                                </h3>
+                                <p class="card-subtitle">Manage your password and account security</p>
+                            </div>
+                            <div class="card-body-settings">
+                                <div class="security-notice">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <strong>Password Management</strong>
+                                        <p>To change your password, please use the secure change password flow. For security, old passwords are never displayed.</p>
+                                    </div>
+                                </div>
+                                <div class="row g-4 mt-3">
+                                    <div class="col-12">
+                                        <div class="security-item">
+                                            <div class="security-item-icon">
+                                                <i class="fas fa-key"></i>
+                                            </div>
+                                            <div class="security-item-content">
+                                                <h5>Current Password</h5>
+                                                <p>••••••••••••</p>
+                                            </div>
+                                            <button type="button" class="btn-security-action">
+                                                Update Password
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="security-item">
+                                            <div class="security-item-icon">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </div>
+                                            <div class="security-item-content">
+                                                <h5>Two-Factor Authentication</h5>
+                                                <p>Enhance your account security</p>
+                                            </div>
+                                            <button type="button" class="btn-security-action" disabled>
+                                                Coming Soon
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="settings-actions">
+                    <button type="button" class="btn-cancel" onclick="window.location.href='@Url.Action("Dashboard", "Patient")'">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Tab Logic */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Styles adapted from doctor-settings */
+    .profile-summary-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--border-main);
+        overflow: hidden;
+    }
+
+    .sticky-sidebar {
+        position: sticky;
+        top: 20px;
+    }
+
+    .avatar-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 40px 30px 30px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .avatar-large-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+        font-weight: 800;
+        box-shadow: 0 8px 24px rgba(33, 52, 72, 0.2);
+        border: 5px solid white;
+    }
+
+    .avatar-upload-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 36px;
+        height: 36px;
+        background: var(--primary-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+    }
+
+    .avatar-upload-overlay:hover {
+        background: var(--primary-dark);
+        transform: scale(1.1);
+    }
+
+    .upload-trigger {
+        cursor: pointer;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .profile-email {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+    }
+
+    .verified-badge-inline {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .completion-section {
+        padding: 25px 30px;
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .completion-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .completion-percentage {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--primary-blue);
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        border-radius: 10px;
+    }
+
+    .quick-actions-section {
+        padding: 20px 30px;
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .quick-action-link {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        background: #f8f9fa;
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .quick-action-link:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .account-info-section {
+        padding: 25px 30px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .status-badge-active {
+        padding: 4px 12px;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .settings-tabs {
+        display: flex;
+        gap: 8px;
+        background: white;
+        padding: 8px;
+        border-radius: var(--radius-md);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-main);
+        margin-bottom: 24px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 14px 20px;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        color: white;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--border-main);
+        margin-bottom: 24px;
+    }
+
+    .card-header-settings {
+        padding: 28px 32px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .card-title-settings {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .card-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .card-body-settings {
+        padding: 32px;
+    }
+
+    .form-label-modern {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid var(--border-main);
+        border-radius: var(--radius-sm);
+        font-size: 15px;
+        background: #fcfcfc;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background: white;
+    }
+
+    .security-notice {
+        display: flex;
+        gap: 16px;
+        padding: 20px;
+        background: rgba(84, 119, 146, 0.05);
+        border-left: 4px solid var(--primary-blue);
+        border-radius: var(--radius-sm);
+        margin-bottom: 20px;
+    }
+
+    .security-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 24px;
+        background: #f8f9fa;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-main);
+    }
+
+    .security-item-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
+
+    .security-item-content { flex: 1; }
+    .security-item-content h5 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .security-item-content p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+    .btn-security-action {
+        padding: 10px 24px;
+        background: white;
+        border: 2px solid var(--border-main);
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .settings-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        padding: 24px 0;
+    }
+
+    .btn-cancel, .btn-save {
+        padding: 14px 32px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-cancel { background: white; border: 2px solid var(--border-main); }
+    .btn-save { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%); color: white; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-tab');
+
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                contents.forEach(content => {
+                    if (content.getAttribute('data-content') === target) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+</script>

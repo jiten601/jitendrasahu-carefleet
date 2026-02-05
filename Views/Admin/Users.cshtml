@@ -1,0 +1,66 @@
+@model IEnumerable<CareFleet.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Users Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Users";
+    ViewBag.HideHeader = true;
+}
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">User Management</h3>
+                <p class="text-white-50 mb-0">View and manage all system users.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Register", "Account")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-user-plus me-2"></i>Add New User
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Email Confirmed</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.FirstName @user.LastName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <span class="status-badge active" style="background-color: @(user.Role == "Admin" ? "#ffd700" : (user.Role == "Doctor" ? "#add8e6" : "#f0f0f0")); color: #333;">
+                            @user.Role
+                        </span>
+                    </td>
+                    <td>
+                        <i class="fas @(user.IsEmailConfirmed ? "fa-check-circle text-success" : "fa-times-circle text-danger")"></i>
+                        @(user.IsEmailConfirmed ? "Yes" : "No")
+                    </td>
+                    <td class="action-buttons">
+                        <a href="#" class="btn-edit" title="Edit"><i class="fas fa-edit"></i></a>
+                        @if (user.Email != Context.Session.GetString("UserEmail"))
+                        {
+                            <a href="#" class="btn-delete" title="Delete"><i class="fas fa-trash"></i></a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+</div>
+

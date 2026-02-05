@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "My Patients";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Patients";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-patients-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-800 text-white mb-0">Patient Directory</h3>
+            </div>
+            <div class="header-actions">
+                <div class="premium-search-container bg-white rounded-pill px-4 py-2 border-0 shadow-sm d-flex align-items-center">
+                    <i class="fas fa-search text-muted me-2"></i>
+                    <input type="text" class="border-0 bg-transparent flex-grow-1" placeholder="Search patients..." style="outline: none; font-size: 14px;">
+                </div>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Main Grid -->
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var initials = ((item.FirstName?.Length > 0 ? item.FirstName.Substring(0, 1) : "P") + 
+                               (item.LastName?.Length > 0 ? item.LastName.Substring(0, 1) : "A")).ToUpper();
+                
+                <div class="col-xl-4 col-md-6">
+                    <div class="premium-card h-100 border-0 shadow-sm overflow-hidden hvr-lift">
+                        <div class="card-body-premium p-4">
+                            <div class="text-center mb-4">
+                                <div class="patient-avatar-large mx-auto mb-3 shadow-sm bg-primary bg-opacity-10 text-primary fw-800" style="width: 80px; height: 80px; border-radius: 20px; font-size: 24px; display: flex; align-items: center; justify-content: center;">
+                                    @initials
+                                </div>
+                                <h5 class="fw-800 mb-1">@item.FirstName @item.LastName</h5>
+                                <div class="d-flex justify-content-center gap-2 mb-3">
+                                    <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill x-small">ID: #@item.Id.ToString("D5")</span>
+                                    <span class="badge @(item.Gender == "Male" ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger") px-2 py-1 rounded-pill x-small">@item.Gender</span>
+                                </div>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border-0 rounded-pill px-3 py-2 small fw-bold">Regular Patient</span>
+                            </div>
+                            
+                            <div class="patient-info-list border-top pt-4 mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary small fw-bold">Gender</span>
+                                    <span class="small fw-bold">@item.Gender</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary small fw-bold">Contact</span>
+                                    <span class="small fw-bold">@item.PhoneNumber</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("MedicalRecords", "Doctor", new { patientId = item.Id })" class="btn btn-outline-primary fw-bold py-2 rounded-3 border-2">
+                                    <i class="fas fa-file-medical-alt me-2"></i>History
+                                </a>
+                                <button class="btn btn-light py-2 fw-bold rounded-3 border">
+                                    <i class="fas fa-comment-alt me-2"></i>Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="premium-card p-5 text-center">
+                    <i class="fas fa-user-slash mb-3 d-block opacity-25" style="font-size: 64px;"></i>
+                    <h5 class="fw-bold mb-2">No Patients Found</h5>
+                    <p class="text-secondary mb-0">You don't have any patients registered under your profile yet.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .doctor-patients-page {
+        margin: -20px -40px;
+        padding: 40px;
+    }
+
+    .avatar-lg-circle {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .patient-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .premium-search-container {
+        width: 320px;
+    }
+
+    .x-small { font-size: 10px; }
+
+    .hvr-lift {
+        transition: transform 0.2s;
+    }
+
+    .hvr-lift:hover {
+        transform: translateY(-5px);
+    }
+</style>

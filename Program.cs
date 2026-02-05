@@ -4,92 +4,56 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddTransient<EmailService>();
 
+// -------------------- SERVICES --------------------
 
-// Add MVC
+// MVC
 builder.Services.AddControllersWithViews();
 
-// Add DbContext
+// Email service
+builder.Services.AddTransient<EmailService>();
+
+// Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)
     )
 );
 
-// Add Session
+// Session (note: 30 minutes)
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // session expires after 30 mins
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
+// -------------------- APP --------------------
+
 var app = builder.Build();
 
-// Ensure database is created and up to date
+// Ensure database connection
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
     try
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        
-        // Check if database can connect
-        if (context.Database.CanConnect())
-        {
-            // Try to check if Doctors table exists
-            try
-            {
-                // Try to query the Doctors table - if it fails, table doesn't exist
-                var testQuery = context.Doctors.Count();
-                logger.LogInformation("Database tables are up to date.");
-            }
-            catch
-            {
-                // Tables are missing, recreate database (development only)
-                // WARNING: This will delete all existing data in development mode
-                if (app.Environment.IsDevelopment())
-                {
-                    logger.LogWarning("Missing tables detected. Recreating database (this will delete all existing data)...");
-                    try
-                    {
-                        context.Database.EnsureDeleted();
-                        context.Database.EnsureCreated();
-                        logger.LogInformation("Database recreated successfully with all tables.");
-                    }
-                    catch (Exception deleteEx)
-                    {
-                        logger.LogError(deleteEx, "Failed to recreate database. Please ensure no connections are active and try again.");
-                    }
-                }
-                else
-                {
-                    logger.LogError("Database tables are missing. Please run migrations in production.");
-                }
-            }
-        }
-        else
-        {
-            // Database doesn't exist, create it
-            context.Database.EnsureCreated();
-            logger.LogInformation("Database created successfully.");
-        }
+        services.GetRequiredService<ApplicationDbContext>();
     }
     catch (Exception ex)
     {
-        // Log error if database creation fails
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred creating the database.");
+        logger.LogError(ex, "Database connection failed.");
     }
 }
 
-// Middleware pipeline
+// -------------------- MIDDLEWARE --------------------
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -100,13 +64,90 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Enable session
 app.UseSession();
 
+// -------------------- SESSION TIMEOUT ENFORCEMENT --------------------
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value?.ToLower() ?? "";
+    
+    // Skip session timeout check for login/register pages and static files
+    if (!path.StartsWith("/account/login") && 
+        !path.StartsWith("/account/register") && 
+        !path.StartsWith("/css") && 
+        !path.StartsWith("/js") && 
+        !path.StartsWith("/images"))
+    {
+        var userEmail = context.Session.GetString("UserEmail");
+        var sessionCreatedAt = context.Session.GetString("SessionCreatedAt");
+
+        // If user is logged in, check session age
+        if (!string.IsNullOrEmpty(userEmail) && !string.IsNullOrEmpty(sessionCreatedAt))
+        {
+            if (DateTime.TryParse(sessionCreatedAt, out DateTime createdTime))
+            {
+                var sessionAge = DateTime.Now - createdTime;
+
+                // If session is older than 30 minutes, clear it and redirect
+                if (sessionAge.TotalMinutes > 30)
+                {
+                    context.Session.Clear();
+                    context.Response.Cookies.Delete("CareFleetAuth"); // Prevent auto-login from restoring session
+                    context.Response.Redirect("/Account/Login");
+                    return;
+                }
+            }
+        }
+    }
+
+    await next();
+});
+
+// -------------------- AUTO LOGIN (REMEMBER ME) --------------------
+app.Use(async (context, next) =>
+{
+    // If session is empty
+    if (string.IsNullOrEmpty(context.Session.GetString("UserEmail")))
+    {
+        var authCookie = context.Request.Cookies["CareFleetAuth"];
+
+        if (!string.IsNullOrEmpty(authCookie))
+        {
+            using var scope = context.RequestServices.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var user = await dbContext.Users
+                .FirstOrDefaultAsync(u => u.Email == authCookie);
+
+            if (user != null)
+            {
+                // Restore session with timestamp
+                context.Session.SetString("UserEmail", user.Email);
+                context.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
+                context.Session.SetString("UserRole", user.Role);
+                context.Session.SetString("SessionCreatedAt", DateTime.Now.ToString("o"));
+            }
+            else
+            {
+                // Invalid cookie
+                context.Response.Cookies.Delete("CareFleetAuth");
+            }
+        }
+    }
+
+    await next();
+});
+
+// Authorization
 app.UseAuthorization();
 
-// Default Route
+// -------------------- ROUTES --------------------
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}"
+);
 
 app.Run();

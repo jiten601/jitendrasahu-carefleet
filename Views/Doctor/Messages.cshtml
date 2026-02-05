@@ -1,0 +1,394 @@
+@{
+    ViewData["Title"] = "Messages";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Messages";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-messages-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-800 text-white mb-0">Secure Messaging</h3>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                    <i class="fas fa-plus me-2"></i>New Broadcast
+                </button>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Chat Container -->
+    <div class="premium-card chat-wrapper-card">
+        <div class="messages-main-container">
+            <!-- Conversations Sidebar -->
+            <aside class="sidebar-conv">
+                <div class="sidebar-conv-header p-4">
+                    <div class="search-box-premium">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" placeholder="Search conversations...">
+                    </div>
+                </div>
+
+                <div class="conv-scroll custom-scrollbar">
+                    <div class="conv-tile active">
+                        <div class="avatar-box">
+                            <div class="avatar-sq bg-primary-subtle text-primary">JD</div>
+                            <span class="status-indicator online"></span>
+                        </div>
+                        <div class="conv-tile-content">
+                            <div class="conv-tile-header">
+                                <span class="tile-name">Jane Doe</span>
+                                <span class="tile-time">10:45 AM</span>
+                            </div>
+                            <p class="tile-preview">Hello Doctor, I've reviewed your results... </p>
+                        </div>
+                    </div>
+
+                    <div class="conv-tile unread">
+                        <div class="avatar-box">
+                            <div class="avatar-sq bg-info-subtle text-info">RS</div>
+                            <span class="status-indicator offline"></span>
+                        </div>
+                        <div class="conv-tile-content">
+                            <div class="conv-tile-header">
+                                <span class="tile-name">Robert Smith</span>
+                                <span class="tile-time">Yesterday</span>
+                            </div>
+                            <p class="tile-preview fw-bold text-dark">Thank you for the prescription today.</p>
+                        </div>
+                        <div class="unread-dot"></div>
+                    </div>
+
+                    <div class="conv-tile">
+                        <div class="avatar-box">
+                            <div class="avatar-sq bg-warning-subtle text-warning">AM</div>
+                            <span class="status-indicator online"></span>
+                        </div>
+                        <div class="conv-tile-content">
+                            <div class="conv-tile-header">
+                                <span class="tile-name">Alice Miller</span>
+                                <span class="tile-time">Oct 20</span>
+                            </div>
+                            <p class="tile-preview">Can we talk about the reports?</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Main Area -->
+            <section class="chat-main">
+                <header class="chat-main-header px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sq-sm bg-primary-subtle text-primary me-3">JD</div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Jane Doe</h6>
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="status-dot-sm online"></span>
+                                <small class="text-success fw-medium">Online</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-action-group">
+                        <button class="icon-btn-action" title="Call"><i class="fas fa-phone-alt"></i></button>
+                        <button class="icon-btn-action" title="Video Call"><i class="fas fa-video"></i></button>
+                        <button class="icon-btn-action" title="Patient Info"><i class="fas fa-info-circle"></i></button>
+                    </div>
+                </header>
+
+                <div class="chat-content-scroll custom-scrollbar p-4" id="chatHistory">
+                    <div class="chat-date-separator"><span>Today, Oct 24</span></div>
+
+                    <div class="msg-row incoming">
+                        <div class="msg-bubble shadow-sm">
+                            Hello Doctor, my blood pressure reading this morning was 145/95. Should I be concerned?
+                            <div class="msg-time">10:30 AM</div>
+                        </div>
+                    </div>
+
+                    <div class="msg-row outgoing">
+                        <div class="msg-bubble shadow-sm">
+                            Hello Jane. That's slightly elevated. Are you feeling any headache or dizziness? Make sure you've taken your morning medication.
+                            <div class="msg-time">10:42 AM <i class="fas fa-check-double ms-1"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="msg-row incoming">
+                        <div class="msg-bubble shadow-sm">
+                            Yes, I've taken the meds. Feeling much better now, thank you for checking in.
+                            <div class="msg-time">10:45 AM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="chat-footer-area p-4 border-top">
+                    <div class="chat-input-container bg-light rounded-pill px-3 py-2 d-flex align-items-center shadow-inner">
+                        <button class="btn btn-link text-muted"><i class="far fa-smile fa-lg"></i></button>
+                        <button class="btn btn-link text-muted border-end pe-3 me-2"><i class="fas fa-paperclip"></i></button>
+                        <input type="text" class="form-control border-0 bg-transparent flex-grow-1 py-2 shadow-none" placeholder="Write your message here..." id="chatInput">
+                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </footer>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-messages-page {
+        margin: -20px -40px;
+        padding: 40px;
+    }
+
+    .chat-wrapper-card {
+        height: calc(100vh - 280px);
+        min-height: 600px;
+        overflow: hidden;
+        border: none;
+        background: white;
+    }
+
+    .messages-main-container {
+        display: flex;
+        height: 100%;
+    }
+
+    /* Sidebar */
+    .sidebar-conv {
+        width: 360px;
+        border-right: 1px solid #f1f5f9;
+        display: flex;
+        flex-direction: column;
+        background: #fcfcfd;
+    }
+
+    .search-box-premium {
+        position: relative;
+    }
+
+    .search-box-premium i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    .search-box-premium .form-control {
+        padding: 10px 15px 10px 40px;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+    .conv-scroll {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .conv-tile {
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-bottom: 1px solid #f8fafc;
+        position: relative;
+    }
+
+    .conv-tile:hover {
+        background: #f8fafc;
+    }
+
+    .conv-tile.active {
+        background: white;
+        border-right: 3px solid var(--primary-main);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+    }
+
+    .avatar-box {
+        position: relative;
+    }
+
+    .avatar-sq {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .avatar-sq-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    .status-indicator {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        border: 2px solid white;
+        border-radius: 50%;
+    }
+
+    .status-indicator.online { background: #10b981; }
+    .status-indicator.offline { background: #94a3b8; }
+
+    .tile-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 15px;
+    }
+
+    .tile-time {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    .tile-preview {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .unread-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--primary-main);
+        border-radius: 50%;
+        margin-left: 10px;
+    }
+
+    /* Chat Area */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .status-dot-sm {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .status-dot-sm.online { background: #10b981; }
+
+    .icon-btn-action {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid #f1f5f9;
+        background: white;
+        color: #64748b;
+        transition: all 0.2s;
+    }
+
+    .icon-btn-action:hover {
+        background: #f8fafc;
+        color: var(--primary-main);
+    }
+
+    .chat-content-scroll {
+        flex: 1;
+        overflow-y: auto;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .chat-date-separator {
+        text-align: center;
+        position: relative;
+        margin: 10px 0;
+    }
+    .chat-date-separator span {
+        background: #f1f5f9;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .msg-row {
+        display: flex;
+        width: 100%;
+    }
+    .msg-row.incoming { justify-content: flex-start; }
+    .msg-row.outgoing { justify-content: flex-end; }
+
+    .msg-bubble {
+        max-width: 60%;
+        padding: 12px 20px;
+        font-size: 14px;
+        line-height: 1.5;
+        position: relative;
+    }
+
+    .incoming .msg-bubble {
+        background: white;
+        color: #1e293b;
+        border-radius: 2px 20px 20px 20px;
+    }
+
+    .outgoing .msg-bubble {
+        background: var(--primary-dark);
+        color: white;
+        border-radius: 20px 20px 2px 20px;
+    }
+
+    .msg-time {
+        font-size: 10px;
+        margin-top: 5px;
+        opacity: 0.7;
+    }
+    .outgoing .msg-time { text-align: right; }
+
+    .shadow-inner {
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    /* Scrollbars */
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatHistory = document.getElementById('chatHistory');
+        if(chatHistory) chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        const tiles = document.querySelectorAll('.conv-tile');
+        tiles.forEach(tile => {
+            tile.addEventListener('click', () => {
+                tiles.forEach(t => t.classList.remove('active'));
+                tile.classList.add('active');
+            });
+        });
+    });
+</script>

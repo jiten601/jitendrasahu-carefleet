@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace CareFleet.Models
 {
@@ -9,12 +9,11 @@ namespace CareFleet.Models
         {
         }
 
+        //DbSets 
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Patient> Patients { get; set; }
- 
-
-
+        public DbSet<Appointment> Appointments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +27,7 @@ namespace CareFleet.Models
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.Role).IsRequired().HasMaxLength(50);
                 entity.HasIndex(e => e.Email).IsUnique();
             });
 
@@ -42,7 +42,6 @@ namespace CareFleet.Models
                 entity.Property(e => e.Specialization).HasMaxLength(200);
                 entity.Property(e => e.LicenseNumber).HasMaxLength(100);
                 entity.HasIndex(e => e.Email).IsUnique();
-                entity.HasIndex(e => e.LicenseNumber).IsUnique();
             });
 
             modelBuilder.Entity<Patient>(entity =>
@@ -58,7 +57,12 @@ namespace CareFleet.Models
                 entity.Property(e => e.BloodGroup).HasMaxLength(10);
                 entity.Property(e => e.MedicalHistory).HasColumnType("nvarchar(max)");
             });
+
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.ToTable("Appointments");
+                entity.HasKey(e => e.Id);
+            });
         }
     }
 }
-

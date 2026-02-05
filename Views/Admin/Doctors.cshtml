@@ -1,0 +1,104 @@
+@model IEnumerable<CareFleet.Models.Doctor>
+@{
+    ViewData["Title"] = "Doctors Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Doctors";
+    ViewBag.HeaderTitle = "Doctors Management";
+    ViewBag.HideHeader = true;
+}
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" />
+}
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">Doctors Management</h3>
+                <p class="text-white-50 mb-0">Manage medical staff and their approval status.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("AddDoctor", "Admin")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-user-md me-2"></i>Add New Doctor
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Doctor Name</th>
+                <th>Specialization</th>
+                <th>Contact info</th>
+                <th>License No.</th>
+                <th>Status</th>
+                <th>Registered</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var doctor in Model)
+                {
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: #1B3C53;">Dr. @doctor.FirstName @doctor.LastName</div>
+                            <div style="font-size: 12px; color: #718096;">@doctor.Email</div>
+                        </td>
+                        <td>@doctor.Specialization</td>
+                        <td>@doctor.PhoneNumber</td>
+                        <td><code>@doctor.LicenseNumber</code></td>
+                        <td>
+                            @if (doctor.IsActive)
+                            {
+                                <span class="status-badge active">Active</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge inactive">Inactive</span>
+                            }
+                        </td>
+                        <td>@doctor.CreatedAt.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="@Url.Action("Edit", "Doctor", new { id = doctor.Id })" class="btn-icon edit" title="Edit Profile">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form asp-action="ToggleStatus" asp-controller="Doctor" method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="@doctor.Id" />
+                                    <button type="submit" class="btn-icon" title="@(doctor.IsActive ? "Deactivate" : "Activate")">
+                                        <i class="fas fa-@(doctor.IsActive ? "toggle-on" : "toggle-off")" style="color: @(doctor.IsActive ? "#48bb78" : "#718096");"></i>
+                                    </button>
+                                </form>
+                                <form asp-action="Delete" asp-controller="Doctor" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this doctor?');">
+                                    <input type="hidden" name="id" value="@doctor.Id" />
+                                    <button type="submit" class="btn-icon delete" title="Remove Doctor">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #718096;">
+                        <i class="fas fa-user-md" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+                        No doctors found in the system.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+</div>
+
