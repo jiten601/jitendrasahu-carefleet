@@ -1,0 +1,128 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+}
+
+<div class="dashboard-wrapper">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card text-white p-5 border-0 shadow-lg" style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%) !important; border-radius: 20px;">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="fw-800 mb-2 text-white" style="color: white !important;"><i class="fas fa-home me-2"></i>Welcome Back, @ViewBag.FirstName!</h2>
+                        <p class="opacity-75 mb-0">Your recovery progress is looking great. You have an appointment tomorrow at 10:00 AM.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-card p-4 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Upcoming Appointment</p>
+                        @if (ViewBag.UpcomingAppointment != null)
+                        {
+                            <h5 class="fw-bold mb-0">Dr. @ViewBag.UpcomingAppointment.Doctor?.FirstName @ViewBag.UpcomingAppointment.Doctor?.LastName</h5>
+                            <small class="text-primary fw-bold">@ViewBag.UpcomingAppointment.AppointmentDate.ToString("MMM dd, yyyy")</small>
+                        }
+                        else
+                        {
+                            <h5 class="fw-bold mb-0 text-muted">No appointments</h5>
+                        }
+                    </div>
+                    <div class="stat-icon bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card p-4 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">New Messages</p>
+                        <h5 class="fw-bold mb-0">3 Inquiries</h5>
+                        <small class="text-success fw-bold">Check inbox</small>
+                    </div>
+                    <div class="stat-icon bg-info-soft text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card p-4 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Medical Records</p>
+                        <h5 class="fw-bold mb-0">12 Documents</h5>
+                        <small class="text-secondary fw-bold">Recent update: Oct 20</small>
+                    </div>
+                    <div class="stat-icon bg-success-soft text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="dashboard-card p-4 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Recent Activity</h5>
+                    <a href="#" class="text-primary small fw-bold">View History</a>
+                </div>
+                <div class="activity-timeline">
+                    <div class="activity-item d-flex gap-3 mb-4">
+                        <div class="activity-icon bg-light rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="min-width: 40px; height: 40px;">
+                            <i class="fas fa-vial text-info small"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 fw-bold small">Blood Test Results Uploaded</p>
+                            <p class="text-secondary x-small mb-0">Oct 24, 2023 • Lab Dept</p>
+                        </div>
+                    </div>
+                    <div class="activity-item d-flex gap-3">
+                        <div class="activity-icon bg-light rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="min-width: 40px; height: 40px;">
+                            <i class="fas fa-prescription text-danger small"></i>
+                        </div>
+                        <div>
+                            <p class="mb-1 fw-bold small">New Prescription Issued</p>
+                            <p class="text-secondary x-small mb-0">Oct 20, 2023 • Dr. Jitendra Shah</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="dashboard-card p-4 shadow-sm h-100">
+                <h5 class="fw-bold mb-4">Health Tips</h5>
+                <div class="tip-card p-3 rounded-3 mb-3" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                    <i class="fas fa-tint text-primary mb-2"></i>
+                    <p class="small fw-medium mb-1">Stay Hydrated</p>
+                    <p class="x-small text-secondary mb-0">Drinking 8 glasses of water daily boosts immunity.</p>
+                </div>
+                <div class="tip-card p-3 rounded-3" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                    <i class="fas fa-walking text-success mb-2"></i>
+                    <p class="small fw-medium mb-1">Daily Exercise</p>
+                    <p class="x-small text-secondary mb-0">A 30-minute walk significantly improves heart health.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background: #eef2ff; }
+    .bg-info-soft { background: #f0f9ff; }
+    .bg-success-soft { background: #f0fdf4; }
+    .x-small { font-size: 11px; }
+    .fw-800 { font-weight: 800; }
+</style>

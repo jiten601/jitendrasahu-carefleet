@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Appointments";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Appointments";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-appointments-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-800 text-white mb-0">Appointment Schedule</h3>
+            </div>
+            <div class="header-actions">
+                <div class="btn-group shadow-sm bg-white rounded-3 p-1">
+                    <button class="btn btn-sm px-4 fw-bold active-toggle">All</button>
+                    <button class="btn btn-sm px-4 fw-bold text-secondary">Today</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="premium-card">
+        <div class="card-header-premium d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Scheduled Consultations</h5>
+            <div class="search-box">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control bg-light border-0 px-3" placeholder="Search patient name...">
+                </div>
+            </div>
+        </div>
+        <div class="card-body-premium p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="px-4 py-3 border-0 small text-uppercase fw-bold text-secondary">Patient Name</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Date & Time</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Reason</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Status</th>
+                            <th class="px-4 py-3 border-0"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="d-flex align-items-center gap-3">
+                                            @{
+                                                var firstName = item.Patient?.FirstName ?? "P";
+                                                var lastName = item.Patient?.LastName ?? "A";
+                                                var initials = (firstName.Length > 0 ? firstName.Substring(0, 1) : "P") + 
+                                                               (lastName.Length > 0 ? lastName.Substring(0, 1) : "A");
+                                            }
+                                            <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold">
+                                                @initials.ToUpper()
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">@item.Patient?.FirstName @item.Patient?.LastName</h6>
+                                                <small class="text-muted">ID: #@(item.PatientId)</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@item.AppointmentDate.ToString("MMM dd, yyyy")</div>
+                                        <div class="small text-secondary">@item.AppointmentDate.ToString("hh:mm tt")</div>
+                                    </td>
+                                    <td class="small text-secondary fw-medium">@item.Reason</td>
+                                    <td>
+                                        @{
+                                            var statusClass = item.Status switch {
+                                                "Confirmed" => "bg-success-subtle text-success border-success",
+                                                "Pending" => "bg-warning-subtle text-warning border-warning",
+                                                "Cancelled" => "bg-danger-subtle text-danger border-danger",
+                                                _ => "bg-info-subtle text-info border-info"
+                                            };
+                                        }
+                                        <span class="badge @statusClass border border-opacity-10 px-3 py-2">@item.Status</span>
+                                    </td>
+                                    <td class="px-4 text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn-action-light" title="View Details"><i class="fas fa-eye"></i></button>
+                                            <button class="btn-action-light text-primary" title="Message"><i class="fas fa-comment"></i></button>
+                                            <button class="btn-action-light text-danger" title="Cancel"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-secondary">
+                                    <div class="p-5 d-flex flex-column align-items-center">
+                                        <i class="fas fa-calendar-times mb-3 d-block opacity-25" style="font-size: 64px;"></i>
+                                        <h6 class="fw-bold mb-1">No Appointments Found</h6>
+                                        <p class="small mb-0">Your schedule for this period is currently empty.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-appointments-page {
+        margin: -20px -40px;
+        padding: 40px;
+    }
+
+    .avatar-sm-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+
+    .active-toggle {
+        background: var(--primary-dark);
+        color: white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn-action-light {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: var(--text-secondary);
+    }
+
+    .btn-action-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .search-box {
+        width: 280px;
+    }
+
+    .bg-light-subtle { background-color: #f1f5f9; }
+</style>

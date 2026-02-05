@@ -1,5 +1,6 @@
 using CareFleet.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CareFleet.Controllers
 {
@@ -168,14 +169,19 @@ namespace CareFleet.Controllers
                 doctor.UpdatedAt = DateTime.Now;
                 _context.Update(doctor);
                 _context.SaveChanges();
-                TempData["Success"] = "Doctor updated successfully!";
+                TempData["Success"] = "Profile updated successfully!";
+                
+                if (HttpContext.Session.GetString("UserRole") == "Doctor")
+                {
+                    return RedirectToAction(nameof(Settings));
+                }
                 return RedirectToAction(nameof(Index));
             }
 
             SetUserInfo();
-            ViewBag.HeaderTitle = "Edit Doctor";
-            ViewBag.ActivePage = "Doctors";
-            return View(doctor);
+            ViewBag.HeaderTitle = "Edit Profile";
+            ViewBag.ActivePage = "Settings";
+            return View(HttpContext.Session.GetString("UserRole") == "Doctor" ? "Settings" : "Edit", doctor);
         }
 
         // POST: Doctor/Delete/5
@@ -197,6 +203,132 @@ namespace CareFleet.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Doctor/Dashboard
+        public IActionResult Dashboard()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            SetUserInfo();
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            // Get upcoming appointments
+            var upcomingAppointments = _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.DoctorId == doctor.Id && a.AppointmentDate >= DateTime.Now)
+                .OrderBy(a => a.AppointmentDate)
+                .Take(5)
+                .ToList();
+
+            ViewBag.UpcomingAppointments = upcomingAppointments;
+            
+            // Statistics
+            ViewBag.TotalPatients = _context.Patients.Count();
+            ViewBag.ActivePatients = _context.Patients.Count();
+            ViewBag.NewPatientsThisMonth = _context.Patients.Count(p => p.CreatedAt.Month == DateTime.Now.Month && p.CreatedAt.Year == DateTime.Now.Year);
+
+            ViewBag.HeaderTitle = $"Welcome, Dr. {doctor.FirstName} {doctor.LastName}";
+            ViewBag.ActivePage = "Dashboard";
+
+            return View();
+        }
+
+        public IActionResult Appointments()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+            var doctor = GetLoggedInDoctor();
+            
+            var appointments = _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.DoctorId == doctor.Id)
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToList();
+
+            ViewBag.HeaderTitle = "My Appointments";
+            ViewBag.ActivePage = "Appointments";
+            return View(appointments);
+        }
+
+        public IActionResult Patients()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+            var doctor = GetLoggedInDoctor();
+
+            // Filter patients who have had appointments with this doctor
+            var patients = _context.Appointments
+                .Where(a => a.DoctorId == doctor.Id)
+                .Select(a => a.Patient)
+                .Where(p => p != null)
+                .Distinct()
+                .OrderByDescending(p => p.Id)
+                .ToList();
+
+            ViewBag.HeaderTitle = "My Patients";
+            ViewBag.ActivePage = "Patients";
+            return View(patients);
+        }
+
+        public IActionResult Messages()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+            ViewBag.HeaderTitle = "Messages";
+            ViewBag.ActivePage = "Messages";
+            return View();
+        }
+
+        public IActionResult MedicalRecords()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+            ViewBag.HeaderTitle = "Medical Records Access";
+            ViewBag.ActivePage = "MedicalRecords";
+            return View();
+        }
+
+        public IActionResult Settings()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+            
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            ViewBag.HeaderTitle = "Profile Settings";
+            ViewBag.ActivePage = "Settings";
+            ViewBag.UserEmail = doctor.Email;
+            return View(doctor);
+        }
+
+        public IActionResult Profile()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+            
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            ViewBag.HeaderTitle = "My Profile";
+            ViewBag.ActivePage = "Profile";
+            ViewBag.UserEmail = doctor.Email;
+            return View(doctor);
+        }
+
+
+        private bool IsDoctor()
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            return userRole == "Doctor";
+        }
+
+        private Doctor? GetLoggedInDoctor()
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            return _context.Doctors.FirstOrDefault(d => d.Email == userEmail);
         }
 
         // POST: Doctor/ToggleStatus/5

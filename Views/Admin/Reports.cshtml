@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Reports & Analytics";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Reports";
+    ViewBag.HideHeader = true;
+}
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-bold text-white mb-2">Reports & Analytics</h3>
+                <p class="text-white-50 mb-0">Advanced system reporting and data insights.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-premium-light">
+                    <i class="fas fa-download me-2"></i>Export Report
+                </button>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h3 class="card-title">Registration Growth</h3>
+            <div class="card-value">+15%</div>
+            <p class="card-description">Increase in new patients this month.</p>
+        </div>
+        <div class="summary-card">
+            <h3 class="card-title">Appointment Density</h3>
+            <div class="card-value">82%</div>
+            <p class="card-description">Completion rate of scheduled appointments.</p>
+        </div>
+        <div class="summary-card">
+            <h3 class="card-title">User Satisfaction</h3>
+            <div class="card-value">4.8/5</div>
+            <p class="card-description">Based on recent patient feedback.</p>
+        </div>
+    </div>
+
+    <div class="activity-section">
+        <h3 class="section-title">Monthly Detailed Report</h3>
+        <p>Reports will be displayed here in graphical format using Chart.js in the future.</p>
+        <div style="height: 300px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; border-radius: 8px; margin-top: 20px;">
+            [Analytics Visualization Placeholder]
+        </div>
+    </div>
+</div>
+

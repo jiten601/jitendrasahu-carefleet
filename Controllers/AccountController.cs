@@ -11,6 +11,8 @@ namespace CareFleet.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly EmailService _emailService;
+
+
         public AccountController(ApplicationDbContext context, EmailService emailService)
         {
             _context = context;
@@ -51,10 +53,37 @@ namespace CareFleet.Controllers
 
 
         // LOGIN
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            if (HttpContext.Session.GetString("UserEmail") != null)
+            {
+                return GetRoleBasedRedirect();
+            }
+            return View();
+        }
+
+        private IActionResult GetRoleBasedRedirect()
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            var lastPath = Request.Cookies["LastVisitedPath"];
+
+            // If we have a last path and it's not a generic one, try to use it
+            if (!string.IsNullOrEmpty(lastPath) && !lastPath.Contains("/Account/"))
+            {
+                return Redirect(lastPath);
+            }
+
+            return role switch
+            {
+                "Admin" => RedirectToAction("Dashboard", "Admin"),
+                "Doctor" => RedirectToAction("Dashboard", "Doctor"),
+                "Patient" => RedirectToAction("Dashboard", "Patient"),
+                _ => RedirectToAction("Index", "Home")
+            };
+        }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public IActionResult Login(string email, string password, bool rememberMe)
         {
             var hash = HashPassword(password);
             var user = _context.Users.FirstOrDefault(u => u.Email == email && u.PasswordHash == hash);
@@ -73,50 +102,94 @@ namespace CareFleet.Controllers
 
             HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetString("UserName", user.FirstName + " " + user.LastName);
-            return RedirectToAction("Dashboard", "Admin");
+            HttpContext.Session.SetString("UserRole", user.Role);
+            HttpContext.Session.SetString("SessionCreatedAt", DateTime.Now.ToString("o"));
+
+            // Handle Remember Me
+            if (rememberMe)
+            {
+                var cookieOptions = new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddDays(30),
+                    HttpOnly = true,
+                    IsEssential = true,
+                    Secure = Request.IsHttps,
+                    SameSite = SameSiteMode.Lax
+                };
+                Response.Cookies.Append("CareFleetAuth", user.Email, cookieOptions);
+            }
+
+            // Role-based redirection
+            return GetRoleBasedRedirect();
         }
 
         // REGISTER
         public IActionResult Register() => View();
 
         [HttpPost]
-        public IActionResult Register(string FirstName, string LastName, string Email, string PasswordHash, string confirmPassword)
+        public IActionResult Register(RegisterViewModel model)
         {
-            if (PasswordHash != confirmPassword)
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Passwords do not match";
-                return View();
+                return View(model);
             }
 
-            if (_context.Users.Any(u => u.Email == Email))
+            if (_context.Users.Any(u => u.Email == model.Email))
             {
                 ViewBag.Error = "Email already exists";
-                return View();
+                return View(model);
             }
 
             var otp = GenerateOtp();
 
             var user = new ApplicationUser
             {
-                FirstName = FirstName,
-                LastName = LastName,
-                Email = Email,
-                PasswordHash = HashPassword(PasswordHash),
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                PasswordHash = HashPassword(model.Password),
+                Role = model.Role,
                 EmailOtp = otp,
                 OtpExpiryTime = DateTime.Now.AddMinutes(10),
                 IsEmailConfirmed = false
             };
 
             _context.Users.Add(user);
+
+            // Register as entity
+            if (model.Role == "Doctor")
+            {
+                var doctor = new Doctor
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                };
+                _context.Doctors.Add(doctor);
+            }
+            else if (model.Role == "Patient")
+            {
+                var patient = new Patient
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    CreatedAt = DateTime.Now
+                };
+                _context.Patients.Add(patient);
+            }
+
             _context.SaveChanges();
 
             _emailService.Send(
-                Email,
+                model.Email,
                 "CareFleet Email Verification OTP",
                 $"Your OTP code is <b>{otp}</b>. It is valid for 10 minutes."
             );
 
-            TempData["Email"] = Email;
+            TempData["Email"] = model.Email;
             return RedirectToAction("VerifyOtp");
         }
 
@@ -124,6 +197,8 @@ namespace CareFleet.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+            Response.Cookies.Delete("CareFleetAuth");
+            Response.Cookies.Delete("LastVisitedPath");
             return RedirectToAction("Login");
         }
 
