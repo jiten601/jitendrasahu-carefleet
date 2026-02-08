@@ -10,7 +10,7 @@
             <div class="dashboard-card text-white p-5 border-0 shadow-lg" style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%) !important; border-radius: 20px;">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h2 class="fw-800 mb-2 text-white" style="color: white !important;"><i class="fas fa-home me-2"></i>Welcome Back, @ViewBag.FirstName!</h2>
+                        <h1 class="fw-800 mb-2 text-white" style="color: white !important;"><i class="fas fa-home me-2"></i>Welcome Back, @ViewBag.FirstName!</h1>
                         <p class="opacity-75 mb-0">Your recovery progress is looking great. You have an appointment tomorrow at 10:00 AM.</p>
                     </div>
                 </div>
@@ -21,13 +21,13 @@
     <!-- Quick Stats -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="dashboard-card p-4 shadow-sm h-100">
+            <div class="dashboard-card p-4 shadow-sm h-100 clickable-card" onclick="location.href='@Url.Action("Appointments", "Patient")'">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">Upcoming Appointment</p>
                         @if (ViewBag.UpcomingAppointment != null)
                         {
-                            <h5 class="fw-bold mb-0">Dr. @ViewBag.UpcomingAppointment.Doctor?.FirstName @ViewBag.UpcomingAppointment.Doctor?.LastName</h5>
+                            <h5 class="fw-bold mb-0">@ViewBag.UpcomingAppointment.DoctorName</h5>
                             <small class="text-primary fw-bold">@ViewBag.UpcomingAppointment.AppointmentDate.ToString("MMM dd, yyyy")</small>
                         }
                         else
@@ -42,7 +42,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="dashboard-card p-4 shadow-sm h-100">
+            <div class="dashboard-card p-4 shadow-sm h-100 clickable-card" onclick="location.href='@Url.Action("Messages", "Patient")'">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">New Messages</p>
@@ -56,7 +56,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="dashboard-card p-4 shadow-sm h-100">
+            <div class="dashboard-card p-4 shadow-sm h-100 clickable-card" onclick="location.href='@Url.Action("MedicalRecords", "Patient")'">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">Medical Records</p>
@@ -125,4 +125,13 @@
     .bg-success-soft { background: #f0fdf4; }
     .x-small { font-size: 11px; }
     .fw-800 { font-weight: 800; }
+    
+    .clickable-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
 </style>

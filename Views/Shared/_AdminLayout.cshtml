@@ -78,7 +78,14 @@
             {
                 <!-- Header -->
                 <header class="content-header">
-                    <h2 class="welcome-text">@ViewBag.HeaderTitle</h2>
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, @userName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
                     <div class="header-actions">
                         <button class="icon-btn">
                             <i class="fas fa-bell"></i>
@@ -96,7 +103,15 @@
             else
             {
                 <!-- Minimal Header when using Premium Card -->
-                <header class="content-header" style="justify-content: flex-end; padding-bottom: 0; background: transparent; border-bottom: none; box-shadow: none;">
+                <header class="content-header" style="justify-content: space-between; padding-bottom: 0; background: transparent; border-bottom: none; box-shadow: none;">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, @userName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
                     <div class="header-actions">
                         <button class="icon-btn">
                             <i class="fas fa-bell"></i>
@@ -104,7 +119,7 @@
                         <div class="user-profile" onclick="toggleDropdown()">
                             <div class="avatar">@initials</div>
                             <i class="fas fa-chevron-down"></i>
-                            <div class="dropdown-menu" id="userDropdown">
+                            <div class="dropdown-menu" id="userDropdownMinimal">
                                 <a href="@Url.Action("Logout", "Account")">Logout</a>
                             </div>
                         </div>
@@ -134,15 +149,22 @@
     <script>
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            const dropdownMinimal = document.getElementById('userDropdownMinimal');
+            
+            if (dropdown) dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (dropdownMinimal) dropdownMinimal.style.display = dropdownMinimal.style.display === 'block' ? 'none' : 'block';
         }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
-            const userProfile = document.querySelector('.user-profile');
-            const dropdown = document.getElementById('userDropdown');
-            if (!userProfile.contains(event.target)) {
-                dropdown.style.display = 'none';
+            const profiles = document.querySelectorAll('.user-profile');
+            const dropdowns = [document.getElementById('userDropdown'), document.getElementById('userDropdownMinimal')];
+            
+            let clickedInside = false;
+            profiles.forEach(p => { if (p.contains(event.target)) clickedInside = true; });
+            
+            if (!clickedInside) {
+                dropdowns.forEach(d => { if (d) d.style.display = 'none'; });
             }
         });
     </script>

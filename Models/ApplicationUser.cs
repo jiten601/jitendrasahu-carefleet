@@ -18,8 +18,5 @@ namespace CareFleet.Models
         public DateTime? OtpExpiryTime { get; set; }
         public string Role { get; set; }
     }
-
-
-
 }
 

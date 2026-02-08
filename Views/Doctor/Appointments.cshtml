@@ -1,3 +1,4 @@
+@model IEnumerable<CareFleet.Models.Appointment>
 @{
     ViewData["Title"] = "Appointments";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
@@ -10,7 +11,7 @@
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-800 text-white mb-0">Appointment Schedule</h3>
+                <h1 class="fw-800 text-white mb-0">Appointment Schedule</h1>
             </div>
             <div class="header-actions">
                 <div class="btn-group shadow-sm bg-white rounded-3 p-1">
@@ -28,10 +29,12 @@
         <div class="card-header-premium d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0">Scheduled Consultations</h5>
             <div class="search-box">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" class="form-control bg-light border-0 px-3" placeholder="Search patient name...">
-                </div>
+                <form asp-action="Appointments" method="get">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control bg-light border-1 px-3" placeholder="Search patient name..." onblur="this.form.submit()" onkeypress="if(event.keyCode == 13) { this.form.submit(); return false; }">
+                    </div>
+                </form>
             </div>
         </div>
         <div class="card-body-premium p-0">
@@ -43,7 +46,7 @@
                             <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Date & Time</th>
                             <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Reason</th>
                             <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Status</th>
-                            <th class="px-4 py-3 border-0"></th>
+                            <th class="py-3 px-4 border-0 small text-uppercase fw-bold text-secondary text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,17 +58,23 @@
                                     <td class="px-4">
                                         <div class="d-flex align-items-center gap-3">
                                             @{
-                                                var firstName = item.Patient?.FirstName ?? "P";
-                                                var lastName = item.Patient?.LastName ?? "A";
-                                                var initials = (firstName.Length > 0 ? firstName.Substring(0, 1) : "P") + 
-                                                               (lastName.Length > 0 ? lastName.Substring(0, 1) : "A");
+                                                var nameParts = item.PatientName?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                                var initials = "";
+                                                if (nameParts != null && nameParts.Length > 0)
+                                                {
+                                                    initials = string.Join("", nameParts.Select(p => p[0]));
+                                                }
+                                                else
+                                                {
+                                                    initials = "PA"; // Default if name is empty
+                                                }
                                             }
                                             <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold">
                                                 @initials.ToUpper()
                                             </div>
                                             <div>
-                                                <h6 class="mb-0 fw-bold">@item.Patient?.FirstName @item.Patient?.LastName</h6>
-                                                <small class="text-muted">ID: #@(item.PatientId)</small>
+                                                <div class="patient-name">@item.PatientName</div>
+                                                <small class="text-muted">Appointment Details</small>
                                             </div>
                                         </div>
                                     </td>
@@ -86,10 +95,46 @@
                                         <span class="badge @statusClass border border-opacity-10 px-3 py-2">@item.Status</span>
                                     </td>
                                     <td class="px-4 text-end">
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <button class="btn-action-light" title="View Details"><i class="fas fa-eye"></i></button>
-                                            <button class="btn-action-light text-primary" title="Message"><i class="fas fa-comment"></i></button>
-                                            <button class="btn-action-light text-danger" title="Cancel"><i class="fas fa-times"></i></button>
+                                        <div class="d-flex border-2 flex-column fw-bolder align-items-end gap-2">
+                                            <a href="@Url.Action("AppointmentDetails", "Doctor", new { id = item.Id })" class="btn-action-light w-100" title="View Details">
+                                                <i class="fas fa-eye me-2"></i> View Details
+                                            </a>
+                                            <div class="dropdown w-100">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle fw-bold w-100" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport">
+                                                    Update Status
+                                                </button>
+                                                <ul class="dropdown-menu shadow border-0">
+                                                    <li>
+                                                        <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
+                                                            <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                            <input type="hidden" name="status" value="Confirmed" />
+                                                            <button type="submit" class="dropdown-item text-success"><i class="fas fa-check-circle me-2"></i>Approve</button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
+                                                            <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                            <input type="hidden" name="status" value="Completed" />
+                                                            <button type="submit" class="dropdown-item text-primary"><i class="fas fa-flag-checkered me-2"></i>Complete</button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
+                                                            <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                            <input type="hidden" name="status" value="Pending" />
+                                                            <button type="submit" class="dropdown-item text-warning"><i class="fas fa-clock me-2"></i>Set Pending</button>
+                                                        </form>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
+                                                            <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                            <input type="hidden" name="status" value="Cancelled" />
+                                                            <button type="submit" class="dropdown-item text-danger"><i class="fas fa-times-circle me-2"></i>Cancel</button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -160,4 +205,51 @@
     }
 
     .bg-light-subtle { background-color: #f1f5f9; }
+
+    /* Fix dropdown visibility in responsive tables */
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    .btn-action-light.w-100 {
+        justify-content: center;
+        padding: 5px 15px;
+        height: auto;
+    }
 </style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.header-actions .btn');
+            const tableRows = document.querySelectorAll('tbody tr:not(.text-center)');
+            
+            // Filter Buttons (All / Today)
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => b.classList.remove('active-toggle', 'text-white'));
+                    filterButtons.forEach(b => b.classList.add('text-secondary'));
+                    
+                    this.classList.add('active-toggle');
+                    this.classList.remove('text-secondary');
+                    
+                    const filter = this.textContent.trim();
+                    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+
+                    tableRows.forEach(row => {
+                        if (filter === 'All') {
+                            row.style.display = '';
+                        } else if (filter === 'Today') {
+                            const rowDate = row.querySelector('td:nth-child(2) .fw-bold').textContent.trim();
+                            if (rowDate === today) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+}

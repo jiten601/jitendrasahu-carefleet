@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CareFleet.Models
 {
@@ -9,15 +7,11 @@ namespace CareFleet.Models
         public int Id { get; set; }
 
         [Required]
-        public int DoctorId { get; set; }
+        [Display(Name = "Doctor Name")]
+        public string DoctorName { get; set; }
 
-        [ForeignKey("DoctorId")]
-        public virtual Doctor? Doctor { get; set; }
-
-        public int? PatientId { get; set; }
-
-        [ForeignKey("PatientId")]
-        public virtual Patient? Patient { get; set; }
+        [Display(Name = "Patient Name")]
+        public string? PatientName { get; set; }
 
         [Required]
         public DateTime AppointmentDate { get; set; }

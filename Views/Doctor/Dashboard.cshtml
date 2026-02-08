@@ -28,20 +28,20 @@
     <!-- Quick Stats Summary -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="premium-card p-4 border-0 shadow-sm" style="background: white; border-left: 5px solid var(--primary-blue) !important;">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'" style="background: white; border-left: 5px solid var(--primary-blue) !important;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">Total Patients</p>
                         <h4 class="fw-800 mb-0">@ViewBag.TotalPatients</h4>
                     </div>
                     <div class="stat-icon bg-primary bg-opacity-10 text-primary" style="width: 45px; height: 45px; border-radius: 12px;">
-                        <i class="fas fa-users-medical fs-5"></i>
+                        <i class="fas fa-users fs-5"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-card p-4 border-0 shadow-sm" style="background: white; border-left: 5px solid var(--success) !important;">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'" style="background: white; border-left: 5px solid var(--success) !important;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">Active Patients</p>
@@ -54,7 +54,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-card p-4 border-0 shadow-sm" style="background: white; border-left: 5px solid var(--warning) !important;">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'" style="background: white; border-left: 5px solid var(--warning) !important;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">New This Month</p>
@@ -67,7 +67,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-card p-4 border-0 shadow-sm" style="background: white; border-left: 5px solid var(--primary-dark) !important;">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Appointments", "Doctor")'" style="background: white; border-left: 5px solid var(--primary-dark) !important;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-secondary small fw-bold text-uppercase mb-1">Upcoming</p>
@@ -113,13 +113,21 @@
                                             <td class="px-4">
                                                 <div class="d-flex align-items-center gap-3">
                                                     @{
-                                                        var initials = (appt.Patient?.FirstName?.Substring(0, 1) ?? "P").ToUpper() + 
-                                                                       (appt.Patient?.LastName?.Substring(0, 1) ?? "T").ToUpper();
+                                                        var nameParts = appt.PatientName?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                                        var initials = "";
+                                                        if (nameParts != null && nameParts.Length > 0)
+                                                        {
+                                                            initials = string.Join("", nameParts.Select(p => p[0].ToString()));
+                                                        }
+                                                        else
+                                                        {
+                                                            initials = "PA";
+                                                        }
                                                     }
-                                                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold">@initials</div>
+                                                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold">@initials.ToUpper()</div>
                                                     <div>
-                                                        <h6 class="mb-0 fw-bold">@appt.Patient?.FirstName @appt.Patient?.LastName</h6>
-                                                        <small class="text-muted">ID: #@appt.PatientId</small>
+                                                        <h6 class="mb-0 fw-bold">@appt.PatientName</h6>
+                                                        <small class="text-muted">Appointment Details</small>
                                                     </div>
                                                 </div>
                                             </td>
@@ -176,7 +184,7 @@
                                     <span class="small fw-bold text-uppercase">@appt.AppointmentDate.ToString("MMM")</span>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold mb-1">@appt.Patient?.FirstName @appt.Patient?.LastName</h6>
+                                    <h6 class="fw-bold mb-1">@appt.PatientName</h6>
                                     <p class="text-muted small mb-0"><i class="far fa-clock me-1"></i>@appt.TimeSlot</p>
                                 </div>
                             </div>
@@ -254,5 +262,14 @@
 
     .time-block {
         min-width: 55px;
+    }
+    
+    .clickable-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
 </style>

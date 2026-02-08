@@ -5,8 +5,6 @@ using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// -------------------- SERVICES --------------------
-
 // MVC
 builder.Services.AddControllersWithViews();
 

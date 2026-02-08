@@ -15,6 +15,28 @@ namespace CareFleet.Controllers
             _context = context;
         }
 
+        private void SetUserInfo()
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+                if (user != null)
+                {
+                    ViewBag.UserName = $"{user.FirstName} {user.LastName}".Trim();
+                    ViewBag.FirstName = user.FirstName;
+                    ViewBag.LastName = user.LastName;
+
+                    // Fetch unread notifications if patient
+                    var patient = _context.Patients.FirstOrDefault(p => p.Email == userEmail);
+                    if (patient != null)
+                    {
+                        ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.PatientId == patient.Id && !n.IsRead);
+                    }
+                }
+            }
+        }
+
         public IActionResult Index()
         {
             var userEmail = HttpContext.Session.GetString("UserEmail");
@@ -23,8 +45,9 @@ namespace CareFleet.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            SetUserInfo();
             var appointments = _context.Set<Appointment>()
-                .Include(a => a.Doctor).Include(a => a.Patient).OrderByDescending(a => a.AppointmentDate).ToList();
+                .OrderByDescending(a => a.AppointmentDate).ToList();
 
             ViewBag.ActivePage = "Appointments";
             ViewBag.HeaderTitle = "Appointments";
@@ -39,6 +62,7 @@ namespace CareFleet.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            SetUserInfo();
             var doctors = _context.Doctors.Where(d => d.IsActive).ToList();
             var specialties = doctors.Select(d => d.Specialization).Distinct().ToList();
 
@@ -55,6 +79,16 @@ namespace CareFleet.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (string.IsNullOrEmpty(appointment.PatientName))
+                {
+                    var userEmail = HttpContext.Session.GetString("UserEmail");
+                    var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+                    if (user != null)
+                    {
+                        appointment.PatientName = $"{user.FirstName} {user.LastName}".Trim();
+                    }
+                }
+
                 appointment.CreatedAt = DateTime.Now;
                 appointment.Status = "Pending";
                 
@@ -62,10 +96,21 @@ namespace CareFleet.Controllers
                 _context.SaveChanges();
 
                 TempData["Success"] = "Appointment booked successfully!";
+                
+                var userRole = HttpContext.Session.GetString("UserRole");
+                if (userRole == "Patient")
+                {
+                    return RedirectToAction("Appointments", "Patient");
+                }
+                if (userRole == "Admin")
+                {
+                    return RedirectToAction("Appointments", "Admin");
+                }
                 return RedirectToAction("Index");
             }
 
             // If we're here, something failed, redisplay form
+            SetUserInfo();
             var doctors = _context.Doctors.Where(d => d.IsActive).ToList();
             var specialties = doctors.Select(d => d.Specialization).Distinct().ToList();
 
