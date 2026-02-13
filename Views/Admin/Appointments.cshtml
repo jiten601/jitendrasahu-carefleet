@@ -16,10 +16,15 @@
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Appointments Management</h3>
-                <p class="text-white-50 mb-0">View and coordinate system-wide appointments.</p>
+                <h1 class="fw-bold text-white mb-2">Appointments Management</h1>
+                <div class="d-flex gap-4 mt-2">
+                    <div class="stats-badge bg-white bg-opacity-10 px-3 py-1 rounded-pill">
+                        <span class="text-white-50 small mr-2">Total Appointment:</span>
+                        <span class="text-white fw-bold">@ViewBag.TotalAppointments</span>
+                    </div>
+                </div>
             </div>
-            <div class="header-actions">
+            <div class="header-actions d-flex gap-3 align-items-center">
                 <select id="statusFilter" class="form-control" style="width: auto; background: white; border-radius: 8px;">
                     <option value="">All Statuses</option>
                     <option value="Pending">Pending</option>
@@ -27,6 +32,9 @@
                     <option value="Completed">Completed</option>
                     <option value="Cancelled">Cancelled</option>
                 </select>
+                <a href="@Url.Action("Book", "Appointment")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-plus-circle me-2 fw-semibold"></i> Book Appointment
+                </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
@@ -55,12 +63,12 @@
                                 <div style="font-size: 13px; color: #456882;">@appointment.TimeSlot</div>
                             </td>
                             <td>
-                                <div style="font-weight: 500;">@(appointment.Patient != null ? $"{appointment.Patient.FirstName} {appointment.Patient.LastName}" : "Unknown Patient")</div>
+                                <div style="font-weight: 500;">@appointment.PatientName</div>
                             </td>
                             <td>
                                 <div style="color: #456882; font-weight: 500;">
                                     <i class="fas fa-user-md" style="font-size: 12px; opacity: 0.7;"></i> 
-                                    @(appointment.Doctor != null ? $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}" : "Unassigned")
+                                    @appointment.DoctorName
                                 </div>
                             </td>
                             <td>
@@ -72,13 +80,37 @@
                                 <span class="status-badge @appointment.Status.ToLower()">@appointment.Status</span>
                             </td>
                             <td>
-                                <div class="action-buttons" style="justify-content: flex-end;">
-                                    <button class="btn-icon view" title="View Details">
+                                <div class="action-buttons" style="justify-content: flex-end; align-items: center;">
+                                    @if (appointment.Status == "Pending")
+                                    {
+                                        <form asp-action="ConfirmAppointment" asp-controller="Admin" method="post" style="display: inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@appointment.Id" />
+                                            <button type="submit" class="btn-icon view" title="Confirm Appointment" style="color: #48bb78; border-color: rgba(72, 187, 120, 0.2);">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    <a href="@Url.Action("AppointmentDetails", "Admin", new { id = appointment.Id })" class="btn-icon view" title="View Details" style="text-decoration: none;">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn-icon delete" title="Cancel Appointment">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                    </a>
+                                    @if (appointment.Status != "Cancelled")
+                                    {
+                                        <form asp-action="CancelAppointment" asp-controller="Admin" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@appointment.Id" />
+                                            <button type="submit" class="btn-icon delete" title="Cancel Appointment">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    <form asp-action="DeleteAppointment" asp-controller="Admin" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this appointment record?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@appointment.Id" />
+                                        <button type="submit" class="btn-icon delete" title="Permanently Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

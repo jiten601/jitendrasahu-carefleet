@@ -16,8 +16,7 @@
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Add New Medical Professional</h3>
-                <p class="text-white-50 mb-0">Register a new doctor to the CareFleet platform.</p>
+                <h1 class="fw-bold text-white mb-2">Add New Doctor</h1>
             </div>
             <div class="header-actions">
                 <a href="@Url.Action("Doctors", "Admin")" class="btn-premium-light text-decoration-none">
@@ -36,12 +35,12 @@
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label" asp-for="FirstName">First Name</label>
-                <input asp-for="FirstName" class="form-control" placeholder="e.g. John" required />
+                <input asp-for="FirstName" class="form-control" required />
                 <span asp-validation-for="FirstName" class="text-danger" style="font-size: 12px;"></span>
             </div>
             <div class="form-group">
                 <label class="form-label" asp-for="LastName">Last Name</label>
-                <input asp-for="LastName" class="form-control" placeholder="e.g. Doe" required />
+                <input asp-for="LastName" class="form-control" required />
                 <span asp-validation-for="LastName" class="text-danger" style="font-size: 12px;"></span>
             </div>
         </div>
@@ -49,12 +48,12 @@
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label" asp-for="Email">Email Address</label>
-                <input asp-for="Email" type="email" class="form-control" placeholder="doctor@carefleet.com" required />
+                <input asp-for="Email" type="email" class="form-control" required />
                 <span asp-validation-for="Email" class="text-danger" style="font-size: 12px;"></span>
             </div>
             <div class="form-group">
                 <label class="form-label" asp-for="PhoneNumber">Phone Number</label>
-                <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 000-0000" required />
+                <input asp-for="PhoneNumber" class="form-control" required />
                 <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size: 12px;"></span>
             </div>
         </div>
@@ -75,16 +74,16 @@
             </div>
             <div class="form-group">
                 <label class="form-label" asp-for="LicenseNumber">License Number</label>
-                <input asp-for="LicenseNumber" class="form-control" placeholder="MED-123456" required />
+                <input asp-for="LicenseNumber" class="form-control" required />
                 <span asp-validation-for="LicenseNumber" class="text-danger" style="font-size: 12px;"></span>
             </div>
         </div>
 
         <div style="margin-top: 30px; display: flex; gap: 15px;">
-            <button type="submit" class="btn-primary-small" style="padding: 12px 30px; font-size: 16px;">
+            <button type="submit" class="btn-primary-small fw-semibold" style="padding: 12px 30px; font-size: 16px;">
                 <i class="fas fa-save"></i> Register Doctor
             </button>
-            <button type="reset" class="btn-primary-small" style="background: #e2e8f0; color: #475569; padding: 12px 30px; font-size: 16px;">
+            <button type="reset" class="btn-primary-small fw-semibold" style="background: #e2e8f0; color: #475569; padding: 12px 30px; font-size: 16px;">
                 Clear Form
             </button>
         </div>

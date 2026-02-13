@@ -18,7 +18,6 @@
                    (doctor.LastName?.Length > 0 ? doctor.LastName.Substring(0, 1) : "R")).ToUpper();
     
     var yearsOfExperience = (int)(DateTime.Now - doctor.CreatedAt).TotalDays / 365;
-    var profileCompletion = 75; // Calculate based on filled fields
     ViewBag.ActivePage = "Settings"; // Profile is under Settings/User context
     ViewBag.HideHeader = true;
 }

@@ -60,6 +60,14 @@
             {
                 <!-- Top Header -->
                 <header class="content-header px-4">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, Dr. @firstName @lastName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
                     <div class="header-actions">
                         <button class="notification-btn">
                             <i class="fas fa-bell"></i>
@@ -82,6 +90,14 @@
             {
                 <!-- Minimal Header when using Premium Card -->
                 <header class="content-header px-4" style="margin-bottom: 0;">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, Dr. @firstName @lastName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
                     <div class="header-actions">
                         <button class="notification-btn">
                             <i class="fas fa-bell"></i>
@@ -91,7 +107,7 @@
                             <div class="avatar">@initials.ToUpper()</div>
                             <i class="fas fa-chevron-down ms-2"></i>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3" id="userMenu">
-                                <li><h6 class="dropdown-header">Dr. @firstName @lastName</h6></li>
+                                @* <li><h6 class="dropdown-header">Dr. @firstName @lastName</h6></li> *@
                                 <li><a class="dropdown-item" href="@Url.Action("Settings", "Doctor")"><i class="fas fa-user-md me-2"></i>My Profile</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>

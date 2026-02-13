@@ -98,6 +98,10 @@ namespace CareFleet.Controllers
                 _context.Doctors.Add(doctor);
                 _context.SaveChanges();
                 TempData["Success"] = "Doctor added successfully!";
+                if (HttpContext.Session.GetString("UserRole") == "Admin")
+                {
+                    return RedirectToAction("Doctors", "Admin");
+                }
                 return RedirectToAction(nameof(Index));
             }
 
@@ -171,9 +175,14 @@ namespace CareFleet.Controllers
                 _context.SaveChanges();
                 TempData["Success"] = "Profile updated successfully!";
                 
-                if (HttpContext.Session.GetString("UserRole") == "Doctor")
+                var role = HttpContext.Session.GetString("UserRole");
+                if (role == "Doctor")
                 {
                     return RedirectToAction(nameof(Settings));
+                }
+                if (role == "Admin")
+                {
+                    return RedirectToAction("Doctors", "Admin");
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -202,6 +211,10 @@ namespace CareFleet.Controllers
                 TempData["Success"] = "Doctor deleted successfully!";
             }
 
+            if (HttpContext.Session.GetString("UserRole") == "Admin")
+            {
+                return RedirectToAction("Doctors", "Admin");
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -215,9 +228,9 @@ namespace CareFleet.Controllers
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
             // Get upcoming appointments
-            var upcomingAppointments = _context.Appointments
-                .Include(a => a.Patient)
-                .Where(a => a.DoctorId == doctor.Id && a.AppointmentDate >= DateTime.Now)
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            var upcomingAppointments = _context.Set<Appointment>()
+                .Where(a => (a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName)) && a.AppointmentDate >= DateTime.Now)
                 .OrderBy(a => a.AppointmentDate)
                 .Take(5)
                 .ToList();
@@ -225,9 +238,25 @@ namespace CareFleet.Controllers
             ViewBag.UpcomingAppointments = upcomingAppointments;
             
             // Statistics
-            ViewBag.TotalPatients = _context.Patients.Count();
-            ViewBag.ActivePatients = _context.Patients.Count();
-            ViewBag.NewPatientsThisMonth = _context.Patients.Count(p => p.CreatedAt.Month == DateTime.Now.Month && p.CreatedAt.Year == DateTime.Now.Year);
+            // Statistics - Filtered by Doctor
+            // 1. Total Patients: Count distinct patients who have had appointments with this doctor
+            var patientNames = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .Select(a => a.PatientName)
+                .Distinct()
+                .ToList();
+                
+            ViewBag.TotalPatients = patientNames.Count;
+            ViewBag.ActivePatients = patientNames.Count; // Assuming Active = Total for now
+
+            // 2. New Patients This Month: Count patients created this month who are associated with this doctor
+            // Note: Ideally, we'd check created date of first appointment, but using Patient.CreatedAt for simplicity
+            // mixed with association check.
+            ViewBag.NewPatientsThisMonth = _context.Patients
+                .AsEnumerable()
+                .Count(p => p.CreatedAt.Month == DateTime.Now.Month && 
+                           p.CreatedAt.Year == DateTime.Now.Year && 
+                           patientNames.Contains($"{p.FirstName} {p.LastName}"));
 
             ViewBag.HeaderTitle = $"Welcome, Dr. {doctor.FirstName} {doctor.LastName}";
             ViewBag.ActivePage = "Dashboard";
@@ -235,18 +264,26 @@ namespace CareFleet.Controllers
             return View();
         }
 
-        public IActionResult Appointments()
+        public IActionResult Appointments(string searchString)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
             var doctor = GetLoggedInDoctor();
             
-            var appointments = _context.Appointments
-                .Include(a => a.Patient)
-                .Where(a => a.DoctorId == doctor.Id)
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            var appointmentsQuery = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName));
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.PatientName.Contains(searchString));
+            }
+
+            var appointments = appointmentsQuery
                 .OrderByDescending(a => a.AppointmentDate)
                 .ToList();
 
+            ViewBag.CurrentFilter = searchString;
             ViewBag.HeaderTitle = "My Appointments";
             ViewBag.ActivePage = "Appointments";
             return View(appointments);
@@ -259,11 +296,20 @@ namespace CareFleet.Controllers
             var doctor = GetLoggedInDoctor();
 
             // Filter patients who have had appointments with this doctor
-            var patients = _context.Appointments
-                .Where(a => a.DoctorId == doctor.Id)
-                .Select(a => a.Patient)
-                .Where(p => p != null)
+            // Filter patients who have had appointments with this doctor
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            var patientNames = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .Select(a => a.PatientName)
                 .Distinct()
+                .ToList();
+
+            // Fetch all patients and filter in memory to allow flexible string matching
+            // Note: In a real app with large data, we should add PatientId to Appointment
+            var allPatients = _context.Patients.ToList();
+            var patients = allPatients
+                .Where(p => patientNames.Any(n => n.Contains(p.FirstName, StringComparison.OrdinalIgnoreCase) && 
+                                                n.Contains(p.LastName, StringComparison.OrdinalIgnoreCase)))
                 .OrderByDescending(p => p.Id)
                 .ToList();
 
@@ -348,7 +394,88 @@ namespace CareFleet.Controllers
                 _context.SaveChanges();
             }
 
+            if (HttpContext.Session.GetString("UserRole") == "Admin")
+            {
+                return RedirectToAction("Doctors", "Admin");
+            }
             return RedirectToAction(nameof(Index));
+        }
+        // POST: Doctor/UpdateAppointmentStatus
+        [HttpPost]
+        public IActionResult UpdateAppointmentStatus(int appointmentId, string status)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            var appointment = _context.Set<Appointment>()
+                .FirstOrDefault(a => a.Id == appointmentId);
+
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            var doctorName = $"Dr. {(doctor.FirstName)} {(doctor.LastName)}";
+            
+            // Be more flexible with name matching
+            bool isAssignedDoctor = appointment != null && 
+                                   (appointment.DoctorName == doctorName || 
+                                    (appointment.DoctorName.Contains(doctor.FirstName) && appointment.DoctorName.Contains(doctor.LastName)));
+
+            if (appointment != null && isAssignedDoctor)
+            {
+                appointment.Status = status;
+                
+                // Find patient by name for notification
+                var patient = _context.Patients.FirstOrDefault(p => (p.FirstName + " " + p.LastName) == appointment.PatientName);
+                
+                if (patient != null)
+                {
+                    // Create notification for patient
+                    var notification = new Notification
+                    {
+                        PatientId = patient.Id,
+                        Message = $"Your appointment with {doctorName} on {appointment.AppointmentDate:MMM dd} has been updated to: {status}.",
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+
+                    _context.Notifications.Add(notification);
+                }
+                
+                _context.SaveChanges();
+                TempData["Success"] = $"Appointment status updated to {status}!";
+            }
+            else
+            {
+                TempData["Error"] = "Unable to update appointment status. You may not have permission for this record.";
+            }
+
+            return RedirectToAction(nameof(Appointments));
+        }
+
+        public IActionResult AppointmentDetails(int id)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            var appointment = _context.Set<Appointment>().FirstOrDefault(a => a.Id == id);
+            
+            if (appointment == null) return NotFound();
+
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            bool isAssignedDoctor = appointment.DoctorName == doctorName || 
+                                   (appointment.DoctorName.Contains(doctor.FirstName) && appointment.DoctorName.Contains(doctor.LastName));
+
+            if (!isAssignedDoctor)
+            {
+                TempData["Error"] = "Access Denied.";
+                return RedirectToAction(nameof(Appointments));
+            }
+
+            ViewBag.ActivePage = "Appointments";
+            ViewBag.HeaderTitle = "Appointment Details";
+            return View("~/Views/Patient/AppointmentDetails.cshtml", appointment);
         }
     }
 }

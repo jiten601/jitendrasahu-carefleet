@@ -1,10 +1,14 @@
 @model CareFleet.Models.Doctor
 @{
     ViewData["Title"] = "Add New Doctor";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewBag.ActivePage = "Doctors";
     ViewBag.HeaderTitle = "Add New Doctor";
     ViewBag.HideHeader = true;
+}
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/doctor-form.css" asp-append-version="true" />
 }
 
 <div class="fade-in">
@@ -12,72 +16,179 @@
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Register New Doctor</h3>
+                <h1 class="fw-bold text-white mb-2">Register New Doctor</h1>
                 <p class="text-white-50 mb-0">Create a new practitioner account in the system.</p>
             </div>
             <div class="header-actions">
-                <a href="@Url.Action("Index", "Doctor")" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
-                </a>
+                @if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    <a href="@Url.Action("Doctors", "Admin")" class="btn-premium-light text-decoration-none">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Index", "Doctor")" class="btn-premium-light text-decoration-none">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                }
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
+    <!-- Form Container -->
+    <div class="form-wrapper">
+        <div class="form-container">
+            <div class="form-header">
+                <div class="form-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h2 class="form-title">Doctor Information</h2>
+                <p class="form-subtitle">Please fill in all required fields marked with an asterisk (*)</p>
+            </div>
 
-<div class="form-container">
-    <form asp-action="Create" method="post">
-        <div class="form-row">
-            <div class="form-group">
-                <label asp-for="FirstName">First Name <span class="required">*</span></label>
-                <input asp-for="FirstName" class="form-control" required />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LastName">Last Name <span class="required">*</span></label>
-                <input asp-for="LastName" class="form-control" required />
-                <span asp-validation-for="LastName" class="text-danger"></span>
-            </div>
-        </div>
+            <form asp-action="Create" method="post" class="doctor-form">
+                <!-- Personal Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user"></i>
+                        <span>Personal Information</span>
+                    </h3>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label asp-for="Email">Email <span class="required">*</span></label>
-                <input asp-for="Email" type="email" class="form-control" required />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PhoneNumber">Phone Number</label>
-                <input asp-for="PhoneNumber" class="form-control" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-            </div>
-        </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="FirstName" class="form-label">
+                                First Name <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input asp-for="FirstName" class="form-control" placeholder="Enter first name" required />
+                            </div>
+                            <span asp-validation-for="FirstName" class="validation-error"></span>
+                        </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label asp-for="Specialization">Specialization <span class="required">*</span></label>
-                <input asp-for="Specialization" class="form-control" required />
-                <span asp-validation-for="Specialization" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LicenseNumber">License Number <span class="required">*</span></label>
-                <input asp-for="LicenseNumber" class="form-control" required />
-                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
-            </div>
-        </div>
+                        <div class="form-group">
+                            <label asp-for="LastName" class="form-label">
+                                Last Name <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                <input asp-for="LastName" class="form-control" placeholder="Enter last name" required />
+                            </div>
+                            <span asp-validation-for="LastName" class="validation-error"></span>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="form-group">
-            <label>
-                <input asp-for="IsActive" type="checkbox" checked /> Active
-            </label>
-        </div>
+                <!-- Contact Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-address-book"></i>
+                        <span>Contact Information</span>
+                    </h3>
 
-        <div class="form-actions">
-            <button type="submit" class="btn-primary">Create Doctor</button>
-            <a href="@Url.Action("Index", "Doctor")" class="btn-secondary">Cancel</a>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="Email" class="form-label">
+                                Email Address <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="doctor@example.com" required />
+                            </div>
+                            <span asp-validation-for="Email" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="PhoneNumber" class="form-label">
+                                Phone Number
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-phone input-icon"></i>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 123-4567" />
+                            </div>
+                            <span asp-validation-for="PhoneNumber" class="validation-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Professional Information</span>
+                    </h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="Specialization" class="form-label">
+                                Specialization <span class="required">*</span>
+                            </label>
+                            <select asp-for="Specialization" class="form-control" required>
+                                <option value="">Select Specialization</option>
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Dermatology">Dermatology</option>
+                                <option value="Neurology">Neurology</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="General Medicine">General Medicine</option>
+                                <option value="Orthopedics">Orthopedics</option>
+                            </select>
+                            <span asp-validation-for="Specialization" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="LicenseNumber" class="form-label">
+                                License Number <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input asp-for="LicenseNumber" class="form-control" placeholder="Enter medical license number" required />
+                            </div>
+                            <span asp-validation-for="LicenseNumber" class="validation-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-toggle-on"></i>
+                        <span>Account Status</span>
+                    </h3>
+
+                    <div class="checkbox-wrapper">
+                        <label class="checkbox-label">
+                            <input asp-for="IsActive" type="checkbox" checked class="checkbox-input" />
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Active Status</span>
+                        </label>
+                        <p class="checkbox-description">Enable this to allow the doctor to access the system immediately</p>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Create Doctor</span>
+                    </button>
+                    @if (Context.Session.GetString("UserRole") == "Admin")
+                    {
+                        <a href="@Url.Action("Doctors", "Admin")" class="btn-cancel">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Cancel</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", "Doctor")" class="btn-cancel">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Cancel</span>
+                        </a>
+                    }
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
-</div>
-
-

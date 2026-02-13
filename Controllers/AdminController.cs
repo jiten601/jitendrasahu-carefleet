@@ -41,7 +41,14 @@ namespace CareFleet.Controllers
             // Get dashboard statistics
             var totalUsers = _context.Users.Count();
             var activeDoctors = _context.Doctors.Count(d => d.IsActive);
-            var pendingAppointments = _context.Appointments.Count(a => a.Status == "Pending");
+            var totalPatients = _context.Patients.Count();
+            var totalAppointments = _context.Set<Appointment>().Count();
+            var pendingAppointments = _context.Set<Appointment>().Count(a => a.Status == "Pending");
+
+            // Recent Activity
+            var recentDoctors = _context.Doctors.OrderByDescending(d => d.CreatedAt).Take(5).ToList();
+            var recentPatients = _context.Patients.OrderByDescending(p => p.CreatedAt).Take(5).ToList();
+            var recentAppointments = _context.Set<Appointment>().OrderByDescending(a => a.CreatedAt).Take(5).ToList();
 
             ViewBag.UserName = userName;
             ViewBag.FirstName = user.FirstName;
@@ -50,7 +57,13 @@ namespace CareFleet.Controllers
             ViewBag.ActivePage = "Dashboard";
             ViewBag.TotalUsers = totalUsers;
             ViewBag.ActiveDoctors = activeDoctors;
+            ViewBag.TotalPatients = totalPatients;
+            ViewBag.TotalAppointments = totalAppointments;
             ViewBag.PendingAppointments = pendingAppointments;
+            
+            ViewBag.RecentDoctors = recentDoctors;
+            ViewBag.RecentPatients = recentPatients;
+            ViewBag.RecentAppointments = recentAppointments;
 
             return View();
         }
@@ -131,15 +144,78 @@ namespace CareFleet.Controllers
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             SetUserInfo();
-            var appointments = _context.Appointments
-                .Include(a => a.Doctor)
-                .Include(a => a.Patient)
+            var appointments = _context.Set<Appointment>()
                 .OrderByDescending(a => a.AppointmentDate)
                 .ToList();
 
             ViewBag.HeaderTitle = "Appointments Management";
             ViewBag.ActivePage = "Appointments";
+            ViewBag.TotalAppointments = appointments.Count;
             return View(appointments);
+        }
+
+        public IActionResult AppointmentDetails(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var appointment = _context.Set<Appointment>().Find(id);
+            if (appointment == null) return NotFound();
+
+            ViewBag.HeaderTitle = "Appointment Details";
+            ViewBag.ActivePage = "Appointments";
+            return View("~/Views/Patient/AppointmentDetails.cshtml", appointment);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CancelAppointment(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var appointment = _context.Set<Appointment>().Find(id);
+            if (appointment != null)
+            {
+                appointment.Status = "Cancelled";
+                _context.SaveChanges();
+                TempData["Success"] = "Appointment cancelled successfully.";
+            }
+
+            return RedirectToAction(nameof(Appointments));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ConfirmAppointment(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var appointment = _context.Set<Appointment>().Find(id);
+            if (appointment != null)
+            {
+                appointment.Status = "Confirmed";
+                _context.SaveChanges();
+                TempData["Success"] = "Appointment confirmed successfully.";
+            }
+
+            return RedirectToAction(nameof(Appointments));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteAppointment(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var appointment = _context.Set<Appointment>().Find(id);
+            if (appointment != null)
+            {
+                _context.Set<Appointment>().Remove(appointment);
+                _context.SaveChanges();
+                TempData["Success"] = "Appointment deleted successfully!";
+            }
+
+            return RedirectToAction(nameof(Appointments));
         }
 
         public IActionResult Reports()
@@ -147,6 +223,21 @@ namespace CareFleet.Controllers
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             SetUserInfo();
+            
+            // Appointment status breakdown
+            ViewBag.AppointmentsConfirmed = _context.Set<Appointment>().Count(a => a.Status == "Confirmed");
+            ViewBag.AppointmentsPending = _context.Set<Appointment>().Count(a => a.Status == "Pending");
+            ViewBag.AppointmentsCancelled = _context.Set<Appointment>().Count(a => a.Status == "Cancelled");
+            
+            // Monthly growth (Last 6 months)
+            var last6Months = Enumerable.Range(0, 6).Select(i => DateTime.Now.AddMonths(-i)).Reverse().ToList();
+            var patientGrowth = last6Months.Select(m => _context.Patients.Count(p => p.CreatedAt.Month == m.Month && p.CreatedAt.Year == m.Year)).ToList();
+            var doctorGrowth = last6Months.Select(m => _context.Doctors.Count(d => d.CreatedAt.Month == m.Month && d.CreatedAt.Year == m.Year)).ToList();
+            
+            ViewBag.Months = last6Months.Select(m => m.ToString("MMM")).ToList();
+            ViewBag.PatientGrowth = patientGrowth;
+            ViewBag.DoctorGrowth = doctorGrowth;
+
             ViewBag.HeaderTitle = "Reports & Analytics";
             ViewBag.ActivePage = "Reports";
             return View();
@@ -171,4 +262,3 @@ namespace CareFleet.Controllers
         }
     }
 }
-

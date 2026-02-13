@@ -16,14 +16,12 @@
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Patients Management</h3>
-                <p class="text-white-50 mb-0">Review patient information and records.</p>
+                <h1 class="fw-bold text-white mb-2">Patients Management</h1>
             </div>
             <div class="header-actions">
-                <div style="position: relative;">
-                    <input type="text" id="patientSearch" placeholder="Search patients..." class="form-control" style="padding-left: 35px; min-width: 250px; background: white;">
-                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #718096; pointer-events: none;"></i>
-                </div>
+                <a href="@Url.Action("Create", "Patient")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-plus-circle me-2"></i> Add Patient
+                </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
@@ -95,16 +93,3 @@
 </div>
 
 
-<script>
-    document.getElementById('patientSearch').addEventListener('keyup', function() {
-        const value = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#patientsTable tbody tr');
-        
-        rows.forEach(row => {
-            if (row.cells.length > 1) { // Skip empty state row
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.indexOf(value) > -1 ? '' : 'none';
-            }
-        });
-    });
-</script>

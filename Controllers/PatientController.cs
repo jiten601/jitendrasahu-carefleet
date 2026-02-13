@@ -33,6 +33,13 @@ namespace CareFleet.Controllers
                     ViewBag.UserName = $"{user.FirstName} {user.LastName}".Trim();
                     ViewBag.FirstName = user.FirstName;
                     ViewBag.LastName = user.LastName;
+
+                    // Fetch unread notifications
+                    var patient = _context.Patients.FirstOrDefault(p => p.Email == userEmail);
+                    if (patient != null)
+                    {
+                        ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.PatientId == patient.Id && !n.IsRead);
+                    }
                 }
             }
         }
@@ -176,9 +183,17 @@ namespace CareFleet.Controllers
             if (patient == null) return RedirectToAction("Logout", "Account");
 
             // Get upcoming appointment
-            var upcomingAppointment = _context.Appointments
-                .Include(a => a.Doctor)
-                .Where(a => a.PatientId == patient.Id && a.AppointmentDate >= DateTime.Now)
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
+
+            var upcomingAppointment = _context.Set<Appointment>()
+                .AsEnumerable()
+                .Where(a => a.PatientName != null && 
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))) && 
+                            a.AppointmentDate >= DateTime.Now)
                 .OrderBy(a => a.AppointmentDate)
                 .FirstOrDefault();
 
@@ -195,9 +210,16 @@ namespace CareFleet.Controllers
             SetUserInfo();
             var patient = GetLoggedInPatient();
             
-            var appointments = _context.Appointments
-                .Include(a => a.Doctor)
-                .Where(a => a.PatientId == patient.Id)
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
+
+            var appointments = _context.Set<Appointment>()
+                .AsEnumerable()
+                .Where(a => a.PatientName != null && 
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
                 .OrderByDescending(a => a.AppointmentDate)
                 .ToList();
 
@@ -249,10 +271,9 @@ namespace CareFleet.Controllers
             if (patient == null) return RedirectToAction("Logout", "Account");
 
             // Get dynamic stats
-            ViewBag.AppointmentCount = _context.Appointments.Count(a => a.PatientId == patient.Id);
-            // Since we don't have a MedicalRecords table yet, we'll use a placeholder or check a different metric
-            // For now, let's just use 0 or a logical placeholder if you have a table for records.
-            // If there's no table, I'll keep it as 0 but passed through ViewBag for future-proofing.
+            var userName = (string)ViewBag.UserName;
+            var appointments = _context.Set<Appointment>().ToList();
+            ViewBag.AppointmentCount = appointments.Count(a => a.PatientName == userName);
             ViewBag.RecordCount = 3; // Static for now as per the existing view design, but manageable from controller
 
             ViewBag.HeaderTitle = "My Profile";
@@ -299,11 +320,21 @@ namespace CareFleet.Controllers
         public IActionResult CancelAppointment(int id)
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
             
-            var appointment = _context.Appointments.Find(id);
-            var patient = GetLoggedInPatient();
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
+
+            var appointment = _context.Set<Appointment>().Find(id);
             
-            if (appointment != null && patient != null && appointment.PatientId == patient.Id)
+            bool isOwnProperty = appointment != null && 
+                                (appointment.PatientName != null && 
+                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                                   appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
+
+            if (isOwnProperty)
             {
                 appointment.Status = "Cancelled";
                 _context.SaveChanges();
@@ -313,17 +344,53 @@ namespace CareFleet.Controllers
             return RedirectToAction(nameof(Appointments));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteAppointment(int id)
+        {
+            if (!IsPatient()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
+
+            var appointment = _context.Set<Appointment>().Find(id);
+
+            bool isOwnProperty = appointment != null && 
+                                (appointment.PatientName != null && 
+                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                                   appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
+
+            if (isOwnProperty)
+            {
+                _context.Set<Appointment>().Remove(appointment);
+                _context.SaveChanges();
+                TempData["Success"] = "Appointment deleted successfully!";
+            }
+
+            return RedirectToAction(nameof(Appointments));
+        }
+
         public IActionResult AppointmentDetails(int id)
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             SetUserInfo();
 
-            var appointment = _context.Appointments
-                .Include(a => a.Doctor)
-                .FirstOrDefault(a => a.Id == id);
+            var appointment = _context.Set<Appointment>().FirstOrDefault(a => a.Id == id);
+            
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
 
-            var patient = GetLoggedInPatient();
-            if (appointment == null || patient == null || appointment.PatientId != patient.Id)
+            bool isOwnProperty = appointment != null && 
+                                (appointment.PatientName != null && 
+                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                                   appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
+
+            if (!isOwnProperty)
             {
                 return NotFound();
             }

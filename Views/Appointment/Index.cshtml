@@ -34,8 +34,8 @@
                     <tr>
                         <td>@app.AppointmentDate.ToString("MM/dd/yyyy")</td>
                         <td>@app.TimeSlot</td>
-                        <td>@(app.IsForSomeoneElse ? app.OtherPatientName : (app.Patient?.FirstName + " " + app.Patient?.LastName))</td>
-                        <td>Dr. @app.Doctor?.FirstName @app.Doctor?.LastName</td>
+                        <td>@(app.IsForSomeoneElse ? app.OtherPatientName : app.PatientName)</td>
+                        <td>@app.DoctorName</td>
                         <td>@app.Reason</td>
                         <td>
                             <span class="status-badge" style="background-color: @(app.Status == "Confirmed" ? "#d4edda" : (app.Status == "Cancelled" ? "#f8d7da" : "#fff3cd")); color: #333;">

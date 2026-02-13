@@ -7,80 +7,107 @@
     ViewBag.HideHeader = true;
 }
 
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+}
+
 <div class="fade-in">
     <!-- Premium Header Card -->
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Modify Doctor Profile</h3>
-                <p class="text-white-50 mb-0">Update credentials and account details.</p>
+                <h1 class="fw-bold text-white mb-2">Modify Doctor Profile</h1>
+                <p class="text-white-50 mb-0">Update credentials and account details for Dr. @Model.FirstName @Model.LastName.</p>
             </div>
             <div class="header-actions">
-                <a href="@Url.Action("Index", "Doctor")" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
-                </a>
+                @if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    <a href="@Url.Action("Doctors", "Admin")" class="btn-premium-light text-decoration-none">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Index", "Doctor")" class="btn-premium-light text-decoration-none">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                }
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
+    <div class="form-container">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedAt" />
 
-<div class="form-container">
-    <form asp-action="Edit" method="post">
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="CreatedAt" />
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" asp-for="FirstName">First Name <span class="required">*</span></label>
+                    <input asp-for="FirstName" class="form-control" placeholder="e.g. Robert" required />
+                    <span asp-validation-for="FirstName" class="text-danger" style="font-size: 12px;"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="LastName">Last Name <span class="required">*</span></label>
+                    <input asp-for="LastName" class="form-control" placeholder="e.g. Smith" required />
+                    <span asp-validation-for="LastName" class="text-danger" style="font-size: 12px;"></span>
+                </div>
+            </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label asp-for="FirstName">First Name <span class="required">*</span></label>
-                <input asp-for="FirstName" class="form-control" required />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Email">Email Address <span class="required">*</span></label>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="doctor@carefleet.com" required />
+                    <span asp-validation-for="Email" class="text-danger" style="font-size: 12px;"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="PhoneNumber">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 000-0000" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size: 12px;"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="LastName">Last Name <span class="required">*</span></label>
-                <input asp-for="LastName" class="form-control" required />
-                <span asp-validation-for="LastName" class="text-danger"></span>
-            </div>
-        </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label asp-for="Email">Email <span class="required">*</span></label>
-                <input asp-for="Email" type="email" class="form-control" required />
-                <span asp-validation-for="Email" class="text-danger"></span>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Specialization">Specialization <span class="required">*</span></label>
+                    <input asp-for="Specialization" class="form-control" placeholder="e.g. Cardiology" required />
+                    <span asp-validation-for="Specialization" class="text-danger" style="font-size: 12px;"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="LicenseNumber">License Number <span class="required">*</span></label>
+                    <input asp-for="LicenseNumber" class="form-control" placeholder="e.g. LIC-123456" required />
+                    <span asp-validation-for="LicenseNumber" class="text-danger" style="font-size: 12px;"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="PhoneNumber">Phone Number</label>
-                <input asp-for="PhoneNumber" class="form-control" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-            </div>
-        </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label asp-for="Specialization">Specialization <span class="required">*</span></label>
-                <input asp-for="Specialization" class="form-control" required />
-                <span asp-validation-for="Specialization" class="text-danger"></span>
+            <div class="form-group" style="padding: 10px 0;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input asp-for="IsActive" type="checkbox" id="isActive" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="isActive" style="font-weight: 600; cursor: pointer; color: #1B3C53; margin-bottom: 0;">Active Account Status</label>
+                </div>
+                <small class="text-muted">Deactivating will prevent the doctor from logging in.</small>
             </div>
-            <div class="form-group">
-                <label asp-for="LicenseNumber">License Number <span class="required">*</span></label>
-                <input asp-for="LicenseNumber" class="form-control" required />
-                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+                <button type="submit" class="btn-primary-small" style="padding: 12px 30px; font-size: 16px;">
+                    <i class="fas fa-save"></i> Update Doctor
+                </button>
+                @if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    <a href="@Url.Action("Doctors", "Admin")" class="btn-primary-small" style="background: #e2e8f0; color: #475569; padding: 12px 30px; font-size: 16px; text-decoration: none;">
+                        Cancel
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Index", "Doctor")" class="btn-primary-small" style="background: #e2e8f0; color: #475569; padding: 12px 30px; font-size: 16px; text-decoration: none;">
+                        Cancel
+                    </a>
+                }
             </div>
-        </div>
-
-        <div class="form-group">
-            <label>
-                <input asp-for="IsActive" type="checkbox" /> Active
-            </label>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn-primary">Update Doctor</button>
-            <a href="@Url.Action("Index", "Doctor")" class="btn-secondary">Cancel</a>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
-</div>
-
 

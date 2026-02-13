@@ -11,7 +11,7 @@
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">My Appointments</h3>
+                <h1 class="fw-bold text-white mb-2">My Appointments</h1>
                 <p class="text-white-50 mb-0">View, manage, and schedule your health consultations.</p>
             </div>
             <div class="header-actions">
@@ -69,10 +69,15 @@
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sq-sm me-3">
-                                                <span>@((item.Doctor?.FirstName?.Substring(0, 1) ?? "D") + (item.Doctor?.LastName?.Substring(0, 1) ?? "OC"))</span>
+                                                @{
+                                                    var docInitials = item.DoctorName?.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                                                        .Select(p => p[0].ToString())
+                                                                        .Aggregate((a, b) => a + b) ?? "DOC";
+                                                }
+                                                <span>@docInitials.ToUpper()</span>
                                             </div>
                                             <div>
-                                                <div class="fw-bold text-dark">Dr. @item.Doctor.FirstName @item.Doctor.LastName</div>
+                                                <div class="doctor-name">@item.DoctorName</div>
                                                 <div class="x-small text-muted">Consultant</div>
                                             </div>
                                         </div>
@@ -84,7 +89,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="spec-pill">@(item.Doctor?.Specialization ?? "General Practice")</span>
+                                        <span class="spec-pill">Medical Expert</span>
                                     </td>
                                     <td>
                                         @{
