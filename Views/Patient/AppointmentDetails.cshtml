@@ -1,0 +1,228 @@
+@model CareFleet.Models.Appointment
+
+@{
+    ViewData["Title"] = "Appointment Details";
+    var userRole = Context.Session.GetString("UserRole");
+    Layout = userRole == "Admin" ? "~/Views/Shared/_AdminLayout.cshtml" : 
+             userRole == "Doctor" ? "~/Views/Shared/_DoctorLayout.cshtml" : 
+             "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ActivePage = "Appointments";
+    ViewBag.HeaderTitle = "Appointment Details";
+    ViewBag.HideHeader = true;
+    
+    var backUrl = userRole == "Admin" ? Url.Action("Appointments", "Admin") : 
+                 userRole == "Doctor" ? Url.Action("Appointments", "Doctor") : 
+                 Url.Action("Appointments", "Patient");
+    var cancelAction = userRole == "Admin" ? "CancelAppointment" : "CancelAppointment";
+    var cancelController = userRole == "Admin" ? "Admin" : "Patient";
+}
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/appointment-details.css" asp-append-version="true" />
+}
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4 no-print">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-bold text-white mb-2">Appointment Details</h1>
+                <p class="text-white-50 mb-0">Record of appointment with @Model.DoctorName</p>
+            </div>
+            <div class="header-actions">
+                <a href="@backUrl" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <!-- Premium Details Card -->
+    <div class="premium-professional-card mb-5 no-print" id="printableArea">
+        <div class="card-inner-header">
+            <div class="header-left">
+                <div class="doctor-profile-orb">
+                    <i class="fas fa-user-md fa-3x"></i>
+                </div>
+                <div class="header-text">
+                    <h2 class="professional-title">Appointment Record</h2>
+                    <p class="professional-subtitle">CareFleet Medical Center | Ref: #@Model.Id</p>
+                </div>
+            </div>
+            <div class="header-right">
+                @{
+                    var statusClass = Model.Status switch
+                    {
+                        "Confirmed" => "premium-status-confirmed",
+                        "Pending" => "premium-status-pending",
+                        "Cancelled" => "premium-status-cancelled",
+                        "Completed" => "premium-status-completed",
+                        _ => "premium-status-pending"
+                    };
+                }
+                <div class="premium-status-pill @statusClass">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">@Model.Status</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-content-grid">
+            <!-- Left Column: Primary Info -->
+            <div class="primary-column">
+                <div class="info-section schedule-section">
+                    <label class="premium-label">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Schedule Details</span>
+                    </label>
+                    <div class="schedule-display">
+                        <div class="date-block">
+                            <div class="date-day">@Model.AppointmentDate.ToString("dd")</div>
+                            <div class="date-month">@Model.AppointmentDate.ToString("MMM")</div>
+                        </div>
+                        <div class="time-info">
+                            <h4 class="schedule-date">@Model.AppointmentDate.ToString("dddd, MMMM dd, yyyy")</h4>
+                            <p class="schedule-time">
+                                <i class="far fa-clock"></i>
+                                <span>@Model.TimeSlot</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section reason-section">
+                    <label class="premium-label">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Medical Reason</span>
+                    </label>
+                    <div class="reason-display">
+                        <p class="reason-text">"@Model.Reason"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Patient & Doctor -->
+            <div class="secondary-column">
+                <div class="participants-card">
+                    <div class="participant-block">
+                        <label class="participant-label">Physician</label>
+                        <div class="participant-info">
+                            <div class="participant-avatar physician-avatar">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <h5 class="participant-name">Dr. @Model.DoctorName</h5>
+                        </div>
+                    </div>
+
+                    <div class="participant-block">
+                        <label class="participant-label">Patient</label>
+                        <div class="participant-info">
+                            <div class="participant-avatar patient-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h5 class="participant-name">@Model.PatientName</h5>
+                        </div>
+                    </div>
+
+                    @if (Model.IsForSomeoneElse)
+                    {
+                        <div class="additional-info-alert">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Booked for: <strong>@Model.OtherPatientName</strong></span>
+                        </div>
+                    }
+
+                    <div class="creation-info">
+                        <label class="participant-label">Creation Info</label>
+                        <p class="creation-date">
+                            <i class="far fa-clock"></i>
+                            <span>Recorded on @Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Action Bar -->
+        <div class="action-bar-premium">
+            <div class="action-buttons-group">
+                @if (Model.Status == "Completed")
+                {
+                    <form method="post" action="@Url.Action("DeleteAppointment", userRole == "Admin" ? "Admin" : "Patient")" onsubmit="return confirm('Are you sure you want to permanent delete this record?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn-premium-action delete-record">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Delete Record</span>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    @if (Model.Status != "Cancelled")
+                    {
+                        @if (userRole == "Admin" && Model.Status == "Pending")
+                        {
+                            <form asp-action="ConfirmAppointment" asp-controller="Admin" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn-premium-action confirm">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Confirm</span>
+                                </button>
+                            </form>
+                        }
+
+                        <form method="post" action="@Url.Action("CancelAppointment", userRole == "Admin" ? "Admin" : "Patient")" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn-premium-action cancel">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Cancel</span>
+                            </button>
+                        </form>
+
+                        @if (userRole == "Patient")
+                        {
+                            <a href="@Url.Action("Book", "Appointment", new { rescheduleId = Model.Id })" class="btn-premium-action reschedule">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Reschedule</span>
+                            </a>
+                        }
+
+                        <form method="post" action="@Url.Action("DeleteAppointment", userRole == "Admin" ? "Admin" : "Patient")" onsubmit="return confirm('Are you sure you want to permanent delete this record?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn-premium-action delete-minimal" title="Permanently Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" action="@Url.Action("DeleteAppointment", userRole == "Admin" ? "Admin" : "Patient")" onsubmit="return confirm('Are you sure you want to permanent delete this record?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn-premium-action delete-record">
+                                <i class="fas fa-trash-alt"></i>
+                                <span>Delete Record</span>
+                            </button>
+                        </form>
+                    }
+                }
+            </div>
+
+            <button class="btn-premium-action print-record" onclick="window.print()">
+                <i class="fas fa-print"></i>
+                <span>Download / Print</span>
+            </button>
+        </div>
+
+        <!-- Hidden Print Support -->
+        <div class="print-official-footer">
+            <p>This is an official document from CareFleet Hospital. Generated on @DateTime.Now.ToString("F")</p>
+        </div>
+    </div>
+</div>

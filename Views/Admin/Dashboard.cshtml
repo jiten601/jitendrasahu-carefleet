@@ -1,65 +1,264 @@
 @{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Dashboard";
+    ViewBag.HideHeader = true;
+
+    var recentDoctors = ViewBag.RecentDoctors as List<CareFleet.Models.Doctor> ?? new List<CareFleet.Models.Doctor>();
+    var recentPatients = ViewBag.RecentPatients as List<CareFleet.Models.Patient> ?? new List<CareFleet.Models.Patient>();
+    var recentAppointments = ViewBag.RecentAppointments as List<CareFleet.Models.Appointment> ?? new List<CareFleet.Models.Appointment>();
 }
 
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <h3 class="card-title">Total Users</h3>
-                    <div class="card-value">@ViewBag.TotalUsers.ToString("N0")</div>
-                    <p class="card-description">Across all roles</p>
-                    <button class="card-btn primary">Manage Users</button>
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+}
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card animate-in">
+        <div class="header-card-content">
+            <div class="header-info">
+                <span class="text-white-50 fw-medium d-block mb-1">Welcome Back</span>
+                <h1 class="fw-bold text-white mb-2">@ViewBag.UserName</h1>
+                <p class="text-white-50 mb-0">System performance is optimal. Here's what's happening today.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Reports", "Admin")" class="btn-premium-light">
+                    <i class="fas fa-chart-bar me-2"></i>Analytics Overview
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="summary-cards-premium">
+        <div class="stat-card-premium stat-blue animate-in delay-1">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-value">@ViewBag.TotalUsers.ToString("N0")</span>
+                <span class="stat-trend">
+                    <i class="fas fa-arrow-up"></i> 12% increase
+                </span>
+            </div>
+        </div>
+        <div class="stat-card-premium stat-indigo animate-in delay-2">
+            <div class="stat-icon">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Active Doctors</span>
+                <span class="stat-value">@ViewBag.ActiveDoctors.ToString("N0")</span>
+                <span class="stat-trend">
+                    <i class="fas fa-arrow-up"></i> 8% increase
+                </span>
+            </div>
+        </div>
+        <div class="stat-card-premium stat-emerald animate-in delay-3">
+            <div class="stat-icon">
+                <i class="fas fa-procedures"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Patients</span>
+                <span class="stat-value">@ViewBag.TotalPatients.ToString("N0")</span>
+                <span class="stat-trend">
+                    <i class="fas fa-arrow-up"></i> 15% increase
+                </span>
+            </div>
+        </div>
+        <div class="stat-card-premium stat-amber animate-in delay-4">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Appointments</span>
+                <span class="stat-value">@ViewBag.TotalAppointments.ToString("N0")</span>
+                <span class="stat-trend">
+                    <i class="fas fa-arrow-up"></i> 23% increase
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section animate-in">
+        <h2 class="section-title">
+            
+            <span>Quick Actions</span>
+        </h2>
+        <div class="quick-actions-grid">
+            <a href="@Url.Action("AddDoctor", "Admin")" class="action-card">
+                <div class="action-icon-wrapper">
+                    <i class="fas fa-user-plus"></i>
                 </div>
-                <div class="summary-card">
-                    <h3 class="card-title">Active Doctors</h3>
-                    <div class="card-value">@ViewBag.ActiveDoctors</div>
-                    <p class="card-description">Currently registered and active</p>
-                    <a href="@Url.Action("Index", "Doctor")" class="card-btn secondary" style="text-decoration: none; display: block; text-align: center;">View Doctors</a>
+                <span class="action-text">Add Doctor</span>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+            <a href="@Url.Action("Patients", "Admin")" class="action-card">
+                <div class="action-icon-wrapper">
+                    <i class="fas fa-user-injured"></i>
                 </div>
-                <div class="summary-card">
-                    <h3 class="card-title">Pending Appointments</h3>
-                    <div class="card-value">@ViewBag.PendingAppointments</div>
-                    <p class="card-description">Awaiting approval or scheduling</p>
-                    <button class="card-btn primary">Review Appointments</button>
+                <span class="action-text">Manage Patients</span>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+            <a href="@Url.Action("Appointments", "Admin")" class="action-card">
+                <div class="action-icon-wrapper">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span class="action-text">Schedules</span>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+            <a href="@Url.Action("Users", "Admin")" class="action-card">
+                <div class="action-icon-wrapper">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <span class="action-text">Total Users</span>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+            <a href="@Url.Action("Reports", "Admin")" class="action-card">
+                <div class="action-icon-wrapper">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <span class="action-text">Reports</span>
+                <i class="fas fa-chevron-right action-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Dashboard Content Grid -->
+    <div class="dashboard-grid animate-in">
+        <!-- Recent Appointments -->
+        <div class="activity-card">
+            <div class="card-header-flex">
+                <div class="card-header-left">
+                    <h3>Recent Appointments</h3>
+                    <p class="card-subtitle">Latest scheduled consultations</p>
+                </div>
+                <a href="@Url.Action("Appointments", "Admin")" class="view-all-link">
+                    View All <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="activity-list-premium">
+                @if (recentAppointments.Any())
+                {
+                    @foreach (var app in recentAppointments)
+                    {
+                        <div class="activity-item">
+                            <div class="activity-avatar appointment-avatar">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">@app.PatientName</div>
+                                <div class="activity-subtitle">with @app.DoctorName <span class="separator">•</span> @app.Reason</div>
+                            </div>
+                            <div class="activity-meta">
+                                @{
+                                    var statusClass = app.Status switch
+                                    {
+                                        "Confirmed" => "badge-success",
+                                        "Pending" => "badge-warning",
+                                        "Cancelled" => "badge-danger",
+                                        _ => "badge-info"
+                                    };
+                                }
+                                <span class="badge @statusClass">@app.Status</span>
+                                <span class="activity-time">@app.AppointmentDate.ToString("MMM dd, h:mm tt")</span>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>No recent appointments found</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- System Activity Sidebar -->
+        <div class="sidebar-activities">
+            <!-- Recent Doctors -->
+            <div class="activity-card">
+                <div class="card-header-flex">
+                    <div class="card-header-left">
+                        <h3>New Doctors</h3>
+                        <p class="card-subtitle">Recently registered</p>
+                    </div>
+                    <a href="@Url.Action("Doctors", "Admin")" class="view-all-link">
+                        All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="activity-list-premium">
+                    @if (recentDoctors.Any())
+                    {
+                        @foreach (var doc in recentDoctors)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-avatar doctor-avatar">
+                                    @(doc.FirstName.Length > 0 ? doc.FirstName.Substring(0, 1) : "D")@(doc.LastName.Length > 0 ? doc.LastName.Substring(0, 1) : "")
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Dr. @doc.FirstName @doc.LastName</div>
+                                    <div class="activity-subtitle">@doc.Specialization</div>
+                                </div>
+                                <div class="activity-meta">
+                                    <span class="activity-time">@doc.CreatedAt.ToString("MMM dd")</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state-small">
+                            <p>No new doctors</p>
+                        </div>
+                    }
                 </div>
             </div>
 
-            <!-- Recent System Activity -->
-            <section class="activity-section">
-                <h3 class="section-title">Recent System Activity</h3>
-                <div class="table-container">
-                    <table class="activity-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>User</th>
-                                <th>Action</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Oct 26, 2023 10:30 AM</td>
-                                <td>Admin A</td>
-                                <td>User Created</td>
-                                <td>New patient 'Sarah Connor' registered.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Recent Patients -->
+            <div class="activity-card">
+                <div class="card-header-flex">
+                    <div class="card-header-left">
+                        <h3>New Patients</h3>
+                        <p class="card-subtitle">Recently registered</p>
+                    </div>
+                    <a href="@Url.Action("Patients", "Admin")" class="view-all-link">
+                        All <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
-                <a href="#" class="section-link">View All Activity</a>
-            </section>
-
-            <!-- System Health & Alerts -->
-            <section class="health-section">
-                <h3 class="section-title">System Health & Alerts</h3>
-                <ul class="health-list">
-                    <li>Database backup completed successfully on dec 26, 2025.</li>
-                    <li>High server load detected: 85% CPU usage. Investigate.</li>
-                    <li>New software update available for deployment.</li>
-                </ul>
-                <a href="#" class="section-link">Manage System Health</a>
-            </section>
-        </main>
-
+                <div class="activity-list-premium">
+                    @if (recentPatients.Any())
+                    {
+                        @foreach (var patient in recentPatients)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-avatar patient-avatar">
+                                    @(patient.FirstName.Length > 0 ? patient.FirstName.Substring(0, 1) : "P")@(patient.LastName.Length > 0 ? patient.LastName.Substring(0, 1) : "")
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">@patient.FirstName @patient.LastName</div>
+                                    <div class="activity-subtitle">Blood Group: @patient.BloodGroup</div>
+                                </div>
+                                <div class="activity-meta">
+                                    <span class="activity-time">@patient.CreatedAt.ToString("MMM dd")</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state-small">
+                            <p>No new patients</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

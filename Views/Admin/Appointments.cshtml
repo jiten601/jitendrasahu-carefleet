@@ -1,0 +1,154 @@
+@model IEnumerable<CareFleet.Models.Appointment>
+@{
+    ViewData["Title"] = "Appointments Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Appointments";
+    ViewBag.HeaderTitle = "System Appointments";
+    ViewBag.HideHeader = true;
+}
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" />
+}
+
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-bold text-white mb-2">Appointments Management</h1>
+                <div class="d-flex gap-4 mt-2">
+                    <div class="stats-badge bg-white bg-opacity-10 px-3 py-1 rounded-pill">
+                        <span class="text-white-50 small mr-2">Total Appointment:</span>
+                        <span class="text-white fw-bold">@ViewBag.TotalAppointments</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions d-flex gap-3 align-items-center">
+                <select id="statusFilter" class="form-control" style="width: auto; background: white; border-radius: 8px;">
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <a href="@Url.Action("Book", "Appointment")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-plus-circle me-2 fw-semibold"></i> Book Appointment
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table" id="appointmentsTable">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var appointment in Model)
+                    {
+                        <tr data-status="@appointment.Status">
+                            <td>
+                                <div style="font-weight: 600; color: #1B3C53;">@appointment.AppointmentDate.ToString("MMM dd, yyyy")</div>
+                                <div style="font-size: 13px; color: #456882;">@appointment.TimeSlot</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 500;">@appointment.PatientName</div>
+                            </td>
+                            <td>
+                                <div style="color: #456882; font-weight: 500;">
+                                    <i class="fas fa-user-md" style="font-size: 12px; opacity: 0.7;"></i> 
+                                    @appointment.DoctorName
+                                </div>
+                            </td>
+                            <td>
+                                <div style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px;" title="@appointment.Reason">
+                                    @appointment.Reason
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge @appointment.Status.ToLower()">@appointment.Status</span>
+                            </td>
+                            <td>
+                                <div class="action-buttons" style="justify-content: flex-end; align-items: center;">
+                                    @if (appointment.Status == "Pending")
+                                    {
+                                        <form asp-action="ConfirmAppointment" asp-controller="Admin" method="post" style="display: inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@appointment.Id" />
+                                            <button type="submit" class="btn-icon view" title="Confirm Appointment" style="color: #48bb78; border-color: rgba(72, 187, 120, 0.2);">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    <a href="@Url.Action("AppointmentDetails", "Admin", new { id = appointment.Id })" class="btn-icon view" title="View Details" style="text-decoration: none;">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (appointment.Status != "Cancelled")
+                                    {
+                                        <form asp-action="CancelAppointment" asp-controller="Admin" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@appointment.Id" />
+                                            <button type="submit" class="btn-icon delete" title="Cancel Appointment">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    <form asp-action="DeleteAppointment" asp-controller="Admin" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this appointment record?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@appointment.Id" />
+                                        <button type="submit" class="btn-icon delete" title="Permanently Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #718096;">
+                            <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+                            No appointments found in the system.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                const val = this.value;
+                const rows = document.querySelectorAll('#appointmentsTable tbody tr');
+                
+                rows.forEach(row => {
+                    if (row.cells.length > 1) {
+                        if (val === "" || row.dataset.status === val) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+    });
+</script>
+

@@ -1,0 +1,139 @@
+@model IEnumerable<CareFleet.Models.Patient>
+@{
+    ViewData["Title"] = "My Patients";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Patients";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-patients-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-800 text-white mb-0">Total Appoint Patient</h1>
+            </div>
+            <div class="header-actions">
+                <form asp-action="Patients" method="get" class="d-flex w-100">
+                    <div class="premium-search-container bg-white rounded-pill px-4 py-2 border-0 shadow-sm d-flex align-items-center flex-grow-1">
+                        <i class="fas fa-search text-muted me-2"></i>
+                        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="border-0 bg-transparent flex-grow-1" placeholder="Search patients..." style="outline: none; font-size: 14px;" onblur="this.form.submit()" onkeypress="if(event.keyCode == 13) { this.form.submit(); return false; }">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var initials = ((item.FirstName?.Length > 0 ? item.FirstName.Substring(0, 1) : "P") + 
+                               (item.LastName?.Length > 0 ? item.LastName.Substring(0, 1) : "A")).ToUpper();
+                
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="premium-card h-100 border-0 shadow-sm overflow-hidden hvr-lift">
+                        <!-- Card Header / Avatar -->
+                        <div class="card-body-premium p-4 text-center">
+                            <div class="position-relative d-inline-block mb-3">
+                                <div class="avatar-lg bg-primary bg-opacity-10 text-primary fw-800 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 70px; height: 70px; font-size: 24px;">
+                                    @initials
+                                </div>
+                                <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"></span>
+                            </div>
+                            
+                            <h6 class="fw-800 mb-1 text-dark">@item.FirstName @item.LastName</h6>
+                            <p class="text-secondary x-small fw-bold mb-3">ID: #@item.Id.ToString("D5")</p>
+
+                            <div class="d-flex justify-content-center gap-2 mb-4">
+                                <span class="badge @(item.Gender == "Male" ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger") px-2 py-1 rounded-pill x-small border border-opacity-10">@item.Gender</span>
+                                <span class="badge bg-light text-secondary px-2 py-1 rounded-pill x-small border">Regular</span>
+                            </div>
+
+                            <!-- Info Grid -->
+                            <div class="info-grid text-start bg-light rounded-3 p-3 mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="icon-sq me-2 text-primary bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <span class="x-small fw-bold text-dark">@item.PhoneNumber</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-sq me-2 text-info bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <span class="x-small fw-bold text-dark">Since @item.CreatedAt.ToString("MMM yyyy")</span>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("MedicalRecords", "Doctor", new { patientId = item.Id })" class="btn btn-outline-primary btn-sm fw-bold rounded-3">
+                                    View History
+                                </a>
+                                <a href="@Url.Action("Messages", "Doctor")" class="btn btn-light btn-sm fw-bold rounded-3 border">
+                                    Message
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="premium-card p-5 text-center">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user-friends text-secondary opacity-25" style="font-size: 32px;"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold mb-2">No Patients Found</h5>
+                    <p class="text-secondary small mb-0">Patients assigned to you will appear here.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .doctor-patients-page {
+        margin: -20px -40px;
+        padding: 40px;
+    }
+
+    .avatar-lg-circle {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .patient-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .premium-search-container {
+        width: 320px;
+    }
+
+    .x-small { font-size: 10px; }
+
+    .hvr-lift {
+        transition: transform 0.2s;
+    }
+
+    .hvr-lift:hover {
+        transform: translateY(-5px);
+    }
+</style>

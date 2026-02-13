@@ -1,5 +1,3 @@
-using System;
-
 namespace CareFleet.Models
 {
     public class Doctor

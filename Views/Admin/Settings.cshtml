@@ -1,0 +1,153 @@
+@model CareFleet.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Admin Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+    var user = Model ?? new CareFleet.Models.ApplicationUser { 
+        Id = 0,
+        FirstName = ViewBag.FirstName?.ToString() ?? "Admin", 
+        LastName = ViewBag.LastName?.ToString() ?? "User", 
+        Email = ViewBag.UserEmail?.ToString() ?? "admin@carefleet.com"
+    };
+    
+    var initials = ((user.FirstName?.Length > 0 ? user.FirstName.Substring(0, 1) : "A") + 
+                   (user.LastName?.Length > 0 ? user.LastName.Substring(0, 1) : "D")).ToUpper();
+    
+    // Calculate profile completion
+    int completedFields = 0;
+    int totalFields = 4;
+    if (!string.IsNullOrEmpty(user.FirstName)) { completedFields++; }
+    if (!string.IsNullOrEmpty(user.LastName)) { completedFields++; }
+    if (!string.IsNullOrEmpty(user.Email)) { completedFields++; }
+    if (!string.IsNullOrEmpty(user.Role)) { completedFields++; }
+    int profileCompletion = (int)((completedFields / (double)totalFields) * 100);
+    ViewBag.ActivePage = "Settings";
+    ViewBag.HideHeader = true;
+}
+
+<div class="admin-settings-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h3 class="fw-800 text-white mb-0">Account & Profile Settings</h3>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <div class="row g-4 d-flex justify-content-center">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="premium-tabs mb-4">
+                <button class="nav-link-premium active" data-tab="personal" id="personalTab">
+                    <i class="fas fa-user"></i> Personal
+                </button>
+                <button class="nav-link-premium" data-tab="account" id="accountTab">
+                    <i class="fas fa-user-shield"></i> Account & Security
+                </button>
+            </div>
+
+            <form method="post" action="@Url.Action("Profile", "Admin")" id="settingsForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@user.Id" />
+                <input type="hidden" name="Email" value="@user.Email" />
+                <input type="hidden" name="Role" value="@user.Role" />
+                <input type="hidden" name="PasswordHash" value="@user.PasswordHash" />
+
+                <!-- Tab Content -->
+                <div class="tab-content-container">
+                    <!-- Personal Info Tab -->
+                    <div class="tab-pane-premium active" data-content="personal">
+                        <div class="premium-card">
+                            <div class="card-header-premium">
+                                <h5 class="fw-bold mb-0">Personal Profile</h5>
+                            </div>
+                            <div class="card-body-premium p-4">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label class="text-muted small fw-bold mb-2">First Name</label>
+                                            <input type="text" class="form-control p-3 border-2" name="FirstName" value="@user.FirstName" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label class="text-muted small fw-bold mb-2">Last Name</label>
+                                            <input type="text" class="form-control p-3 border-2" name="LastName" value="@user.LastName" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group mb-3">
+                                            <label class="text-muted small fw-bold mb-2">Email Address</label>
+                                            <input type="email" class="form-control p-3 bg-light border-0" value="@user.Email" readonly disabled>
+                                            <p class="text-muted x-small mt-1">Email address cannot be changed for security reasons.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account & Security Tab -->
+                    <div class="tab-pane-premium" data-content="account">
+                        <div class="premium-card">
+                            <div class="card-header-premium">
+                                <h5 class="fw-bold mb-0">Account & Security</h5>
+                            </div>
+                            <div class="card-body-premium p-4">
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">System Role</h6>
+                                    <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
+                                        <span class="text-dark fw-bold">Administrator</span>
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <h6 class="fw-bold mb-3">Security Actions</h6>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-outline-secondary text-start p-3" disabled>
+                                            <i class="fas fa-key me-2"></i> Update Password (Contact IT Support)
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary text-start p-3" disabled>
+                                            <i class="fas fa-shield-alt me-2"></i> Two-Factor Authentication (Disabled)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="d-flex justify-content-center gap-3 mt-5">
+                    <button type="button" class="btn btn-light px-5 py-2 fw-bold rounded-pill" onclick="window.location.href='@Url.Action("Profile", "Admin")'">Back to Profile</button>
+                    <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow-sm">Save Profile Updates</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.nav-link-premium');
+        const contents = document.querySelectorAll('.tab-pane-premium');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = tab.getAttribute('data-tab');
+
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                const targetPane = document.querySelector(`.tab-pane-premium[data-content="${target}"]`);
+                if (targetPane) targetPane.classList.add('active');
+            });
+        });
+    });
+</script>

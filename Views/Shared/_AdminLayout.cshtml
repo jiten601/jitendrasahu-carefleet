@@ -27,10 +27,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CareFleet</title>
-    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/admin-dashboard.css" />
-    <link rel="stylesheet" href="~/css/doctors-page.css" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/doctors-page.css" asp-append-version="true" />
+
 </head>
 <body>
     <div class="admin-container">
@@ -44,28 +48,24 @@
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" class="nav-item @(activePage == "Users" ? "active" : "")">
-                    <i class="fas fa-users"></i>
+                <a href="@Url.Action("Users", "Admin")" class="nav-item @(activePage == "Users" ? "active" : "")">
+                    <i class="fas fa-users-cog"></i>
                     <span>Users</span>
                 </a>
-                <a href="@Url.Action("Index", "Doctor")" class="nav-item @(activePage == "Doctors" ? "active" : "")">
+                <a href="@Url.Action("Doctors", "Admin")" class="nav-item @(activePage == "Doctors" ? "active" : "")">
                     <i class="fas fa-user-md"></i>
                     <span>Doctors</span>
                 </a>
-                <a href="@Url.Action("Index", "Patient")" class="nav-item @(activePage == "Patients" ? "active" : "")">
-                    <i class="fas fa-user"></i>
+                <a href="@Url.Action("Patients", "Admin")" class="nav-item @(activePage == "Patients" ? "active" : "")">
+                    <i class="fas fa-user-injured"></i>
                     <span>Patients</span>
                 </a>
-                <a href="@Url.Action("Index", "Appointment")" class="nav-item @(activePage == "Appointments" ? "active" : "")">
-                    <i class="fas fa-calendar"></i>
+                <a href="@Url.Action("Appointments", "Admin")" class="nav-item @(activePage == "Appointments" ? "active" : "")">
+                    <i class="fas fa-calendar-check"></i>
                     <span>Appointments</span>
                 </a>
 
-                <a href="#" class="nav-item @(activePage == "Settings" ? "active" : "")">
-                    <i class="fas fa-cog"></i>
-                    <span>System Settings</span>
-                </a>
-                <a href="#" class="nav-item @(activePage == "Reports" ? "active" : "")">
+                <a href="@Url.Action("Reports", "Admin")" class="nav-item @(activePage == "Reports" ? "active" : "")">
                     <i class="fas fa-file-alt"></i>
                     <span>Reports</span>
                 </a>
@@ -74,22 +74,59 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
-            <header class="content-header">
-                <h2 class="welcome-text">@ViewBag.HeaderTitle</h2>
-                <div class="header-actions">
-                    <button class="icon-btn">
-                        <i class="fas fa-bell"></i>
-                    </button>
-                    <div class="user-profile" onclick="toggleDropdown()">
-                        <div class="avatar">@initials</div>
-                        <i class="fas fa-chevron-down"></i>
-                        <div class="dropdown-menu" id="userDropdown">
-                            <a href="@Url.Action("Logout", "Account")">Logout</a>
+            @if (ViewBag.HideHeader != true)
+            {
+                <!-- Header -->
+                <header class="content-header">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, @userName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
+                    <div class="header-actions">
+                        <button class="icon-btn">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <div class="user-profile" onclick="toggleDropdown()">
+                            <div class="avatar">@initials</div>
+                            <i class="fas fa-chevron-down"></i>
+                            <div class="dropdown-menu" id="userDropdown">
+                                <a href="@Url.Action("Logout", "Account")">Logout</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </header>
+                </header>
+            }
+            else
+            {
+                <!-- Minimal Header when using Premium Card -->
+                <header class="content-header" style="justify-content: space-between; padding-bottom: 0; background: transparent; border-bottom: none; box-shadow: none;">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, @userName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
+                    <div class="header-actions">
+                        <button class="icon-btn">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <div class="user-profile" onclick="toggleDropdown()">
+                            <div class="avatar">@initials</div>
+                            <i class="fas fa-chevron-down"></i>
+                            <div class="dropdown-menu" id="userDropdownMinimal">
+                                <a href="@Url.Action("Logout", "Account")">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            }
+
 
             @if (TempData["Success"] != null)
             {
@@ -112,15 +149,22 @@
     <script>
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            const dropdownMinimal = document.getElementById('userDropdownMinimal');
+            
+            if (dropdown) dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (dropdownMinimal) dropdownMinimal.style.display = dropdownMinimal.style.display === 'block' ? 'none' : 'block';
         }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
-            const userProfile = document.querySelector('.user-profile');
-            const dropdown = document.getElementById('userDropdown');
-            if (!userProfile.contains(event.target)) {
-                dropdown.style.display = 'none';
+            const profiles = document.querySelectorAll('.user-profile');
+            const dropdowns = [document.getElementById('userDropdown'), document.getElementById('userDropdownMinimal')];
+            
+            let clickedInside = false;
+            profiles.forEach(p => { if (p.contains(event.target)) clickedInside = true; });
+            
+            if (!clickedInside) {
+                dropdowns.forEach(d => { if (d) d.style.display = 'none'; });
             }
         });
     </script>

@@ -1,0 +1,162 @@
+@{
+    ViewData["Title"] = "Medical Records";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "MedicalRecords";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-records-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-800 text-white mb-0">Patient Medical Records</h3>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                    <i class="fas fa-upload me-2"></i>Upload Record
+                </button>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+@*     <!-- Main Content -->
+    <div class="premium-card">
+        <div class="card-header-premium d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Recent Documentation</h5>
+            <div class="search-box">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-0"><i class="fas fa-filter text-muted"></i></span>
+                    <select class="form-select bg-light border-0 px-3 fw-bold small">
+                        <option>All Record Types</option>
+                        <option>Lab Results</option>
+                        <option>Physical Reports</option>
+                        <option>Prescriptions</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card-body-premium p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="px-4 py-3 border-0 small text-uppercase fw-bold text-secondary">Patient</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Record Type</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Date Uploaded</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Status</th>
+                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Action</th>
+                  
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="px-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold">JD</div>
+                                    <h6 class="mb-0 fw-bold">Jane Doe</h6>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="icon-box-sm bg-primary bg-opacity-10 text-primary">
+                                        <i class="fas fa-file-medical"></i>
+                                    </div>
+                                    <div class="fw-bold text-dark small">Annual Physical Report</div>
+                                </div>
+                            </td>
+                            <td class="text-secondary small fw-medium">Oct 15, 2023</td>
+                            <td>
+                                <span class="badge bg-success-subtle text-success border border-success border-opacity-10 px-3 py-2">Finalized</span>
+                            </td>
+                            <td class="px-4 text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button class="btn-action-light" title="Download"><i class="fas fa-download"></i></button>
+                                    <button class="btn-action-light" title="Edit"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-sm-circle bg-info-subtle text-info fw-bold">RS</div>
+                                    <h6 class="mb-0 fw-bold">Robert Smith</h6>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="icon-box-sm bg-info bg-opacity-10 text-info">
+                                        <i class="fas fa-vial"></i>
+                                    </div>
+                                    <div class="fw-bold text-dark small">Blood Chemistry Panel</div>
+                                </div>
+                            </td>
+                            <td class="text-secondary small fw-medium">Oct 12, 2023</td>
+                            <td>
+                                <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-10 px-3 py-2">Pending Review</span>
+                            </td>
+                            <td class="px-4 text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button class="btn-action-light" title="Download"><i class="fas fa-download"></i></button>
+                                    <button class="btn-action-light" title="Edit"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+<style>
+    .doctor-records-page {
+        margin: -20px -40px;
+        padding: 40px;
+    }
+
+    .avatar-sm-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .icon-box-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .btn-action-light {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: var(--text-secondary);
+    }
+
+    .btn-action-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .search-box {
+        min-width: 200px;
+    }
+</style>

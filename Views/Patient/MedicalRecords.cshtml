@@ -1,0 +1,326 @@
+@{
+    ViewData["Title"] = "Medical Records";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ActivePage = "MedicalRecords";
+    ViewBag.HeaderTitle = "Medical Records";
+}
+
+<div class="medical-records-page fade-in">
+    <!-- Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-bold text-white mb-2">My Medical Records</h1>
+                <p class="text-white-50 mb-0">Securely manage your clinical reports and health history.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-premium-light">
+                    <i class="fas fa-file-pdf me-2"></i>Export All Records
+                </button>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+@*     <!-- Main Content Card -->
+    <div class="dashboard-card border-0 shadow-sm overflow-hidden">
+        <div class="card-header-premium">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="header-icon-box">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </span>
+                    <div>
+                        <h5 class="mb-0 fw-bold">Health Documents</h5>
+                        <small class="text-secondary">A central repository for your medical information</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <div class="search-box-modern">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search records...">
+                    </div>
+                    <select class="btn-filter-modern">
+                        <option>All Categories</option>
+                        <option>Laboratory</option>
+                        <option>Radiology</option>
+                        <option>General Health</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="activity-table-modern">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Document Name</th>
+                            <th>Category</th>
+                            <th>Date Issued</th>
+                            <th>Provider</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="doc-icon-box bg-soft-primary">
+                                        <i class="fas fa-file-medical"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Annual Physical Report</div>
+                                        <div class="x-small text-muted">PDF Document • 2.4 MB</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-modern bg-light">General Health</span>
+                            </td>
+                            <td>
+                                <div class="date-text">Oct 15, 2023</div>
+                            </td>
+                            <td>
+                                <div class="provider-info">
+                                    <div class="fw-medium">Dr. Jitendra Shah</div>
+                                    <div class="x-small text-muted">Primary Physician</div>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("ViewRecord", "Patient", new { id = 1 })" class="btn-action-light" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("DownloadRecord", "Patient", new { id = 1 })" class="btn-action-light" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="btn-action-light" title="Share" onclick="alert('Sharing feature coming soon!')">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="doc-icon-box bg-soft-info">
+                                        <i class="fas fa-vials"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Blood Chemistry Panel</div>
+                                        <div class="x-small text-muted">PDF Document • 1.1 MB</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-modern bg-light">Laboratory</span>
+                            </td>
+                            <td>
+                                <div class="date-text">Oct 12, 2023</div>
+                            </td>
+                            <td>
+                                <div class="provider-info">
+                                    <div class="fw-medium">City Lab Center</div>
+                                    <div class="x-small text-muted">Diagnostics</div>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("ViewRecord", "Patient", new { id = 1 })" class="btn-action-light" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("DownloadRecord", "Patient", new { id = 1 })" class="btn-action-light" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="btn-action-light" title="Share" onclick="alert('Sharing feature coming soon!')">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="doc-icon-box bg-soft-warning">
+                                        <i class="fas fa-x-ray"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">Chest X-Ray Results</div>
+                                        <div class="x-small text-muted">DICOM Image • 45 MB</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-modern bg-light">Radiology</span>
+                            </td>
+                            <td>
+                                <div class="date-text">Sep 28, 2023</div>
+                            </td>
+                            <td>
+                                <div class="provider-info">
+                                    <div class="fw-medium">General Hospital</div>
+                                    <div class="x-small text-muted">Imaging Dept.</div>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("ViewRecord", "Patient", new { id = 1 })" class="btn-action-light" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("DownloadRecord", "Patient", new { id = 1 })" class="btn-action-light" title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="btn-action-light" title="Share" onclick="alert('Sharing feature coming soon!')">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+<style>
+    .card-header-premium {
+        padding: 25px 30px;
+        background: white;
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .card-header-premium {
+        padding: 25px 30px;
+        background: white;
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .header-icon-box {
+        width: 45px;
+        height: 45px;
+        background: rgba(84, 119, 146, 0.1);
+        color: var(--primary-blue);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .search-box-modern {
+        position: relative;
+        width: 250px;
+    }
+
+    .search-box-modern i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .search-box-modern input {
+        width: 100%;
+        padding: 10px 15px 10px 38px;
+        border-radius: 10px;
+        border: 1px solid var(--border-main);
+        font-size: 0.9rem;
+        background: #f8fafc;
+        transition: all 0.3s;
+    }
+
+    .btn-filter-modern {
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border-main);
+        background: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        transition: all 0.2s;
+    }
+
+    .activity-table-modern {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activity-table-modern th {
+        background: #fcfcfc;
+        padding: 18px 20px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .activity-table-modern td {
+        padding: 20px;
+        border-bottom: 1px solid #f8fafc;
+        vertical-align: middle;
+    }
+
+    .doc-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-right: 15px;
+    }
+
+    .bg-soft-primary { background: #eff6ff; color: #3b82f6; }
+    .bg-soft-info { background: #f0f9ff; color: #06b6d4; }
+    .bg-soft-warning { background: #fffbeb; color: #f59e0b; }
+
+    .badge-modern {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-action-light {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .btn-action-light:hover {
+        background: white;
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+    }
+
+    .date-text { font-weight: 600; color: #334155; }
+    .provider-info .fw-medium { color: #334155; }
+    .x-small { font-size: 11px; }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

@@ -1,0 +1,165 @@
+@{
+    var firstName = ViewBag.FirstName?.ToString() ?? "Doctor";
+    var lastName = ViewBag.LastName?.ToString() ?? "";
+    var initials = firstName.Length > 0 ? firstName.Substring(0, 1) : "";
+    initials += lastName.Length > 0 ? lastName.Substring(0, 1) : "";
+    var activePage = ViewBag.ActivePage?.ToString() ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CareFleet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/doctor-dashboard.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3 class="logo">CareFleet</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="@Url.Action("Dashboard", "Doctor")" class="nav-item @(activePage == "Dashboard" ? "active" : "")">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="@Url.Action("Appointments", "Doctor")" class="nav-item @(activePage == "Appointments" ? "active" : "")">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Appointments</span>
+                </a>
+                <a href="@Url.Action("Patients", "Doctor")" class="nav-item @(activePage == "Patients" ? "active" : "")">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="@Url.Action("Messages", "Doctor")" class="nav-item @(activePage == "Messages" ? "active" : "")">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </a>
+                <a href="@Url.Action("MedicalRecords", "Doctor")" class="nav-item @(activePage == "MedicalRecords" ? "active" : "")">
+                    <i class="fas fa-file-medical"></i>
+                    <span>Medical Records</span>
+                </a>
+                <a href="@Url.Action("Settings", "Doctor")" class="nav-item @(activePage == "Settings" ? "active" : "")">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            @if (ViewBag.HideHeader != true)
+            {
+                <!-- Top Header -->
+                <header class="content-header px-4">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, Dr. @firstName @lastName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
+                    <div class="header-actions">
+                        <button class="notification-btn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">5</span>
+                        </button>
+                        <div class="user-profile dropdown" id="dropdownTrigger">
+                            <div class="avatar">@initials.ToUpper()</div>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3" id="userMenu">
+                                <li><h6 class="dropdown-header">Dr. @firstName @lastName</h6></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Settings", "Doctor")"><i class="fas fa-user-md me-2"></i>My Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+            }
+            else
+            {
+                <!-- Minimal Header when using Premium Card -->
+                <header class="content-header px-4" style="margin-bottom: 0;">
+                    @if (activePage == "Dashboard")
+                    {
+                        <h2 class="welcome-text fw-bold">Welcome, Dr. @firstName @lastName!</h2>
+                    }
+                    else
+                    {
+                        <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
+                    }
+                    <div class="header-actions">
+                        <button class="notification-btn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">5</span>
+                        </button>
+                        <div class="user-profile dropdown" id="dropdownTrigger">
+                            <div class="avatar">@initials.ToUpper()</div>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3" id="userMenu">
+                                @* <li><h6 class="dropdown-header">Dr. @firstName @lastName</h6></li> *@
+                                <li><a class="dropdown-item" href="@Url.Action("Settings", "Doctor")"><i class="fas fa-user-md me-2"></i>My Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+            }
+
+
+            <!-- Page Content -->
+            <div class="dashboard-content">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="background: white; border-left: 5px solid var(--success) !important;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-3" style="font-size: 20px;"></i>
+                            <div class="text-dark fw-medium">@TempData["Success"]</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple dropdown toggle logic for the header (custom)
+        $(document).ready(function() {
+            $('#dropdownTrigger').on('click', function(e) {
+                $('#userMenu').toggleClass('show');
+                e.stopPropagation();
+            });
+            $(document).on('click', function() {
+                $('#userMenu').removeClass('show');
+            });
+        });
+
+        // Track last visited page for "Remember Me"
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            if (currentPath && !currentPath.includes('/Account/')) {
+                const expires = new Date();
+                expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000));
+                document.cookie = "LastVisitedPath=" + currentPath + ";expires=" + expires.toUTCString() + ";path=/";
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

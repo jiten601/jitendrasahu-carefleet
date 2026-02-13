@@ -1,0 +1,99 @@
+@model CareFleet.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Admin Profile";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+    var user = Model ?? new CareFleet.Models.ApplicationUser { 
+        Id = 0,
+        FirstName = ViewBag.FirstName?.ToString() ?? "Admin", 
+        LastName = ViewBag.LastName?.ToString() ?? "User", 
+        Email = ViewBag.UserEmail?.ToString() ?? "admin@carefleet.com"
+    };
+    
+    var initials = ((user.FirstName?.Length > 0 ? user.FirstName.Substring(0, 1) : "A") + 
+                   (user.LastName?.Length > 0 ? user.LastName.Substring(0, 1) : "D")).ToUpper();
+    
+    ViewBag.ActivePage = "Profile";
+    ViewBag.HideHeader = true;
+}
+
+<div class="admin-profile-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <div class="header-breadcrumb mb-2">
+                    <a href="@Url.Action("Dashboard", "Admin")" class="text-white text-decoration-none opacity-75 hvr-opacity">Dashboard</a>
+                    <i class="fas fa-chevron-right mx-2 small opacity-50 text-white"></i>
+                    <span class="text-white fw-bold">My Profile</span>
+                </div>
+                <h3 class="fw-bold text-white mb-2">@user.FirstName @user.LastName</h3>
+                <p class="text-white opacity-75 mb-0">
+                    <i class="fas fa-user-shield me-2"></i>System Administrator | <i class="fas fa-id-card ms-2 me-2"></i>Admin ID: #@user.Id.ToString("D4")
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Settings", "Admin")" class="btn-premium-light">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Main Content Grid -->
+    <div class="row g-4 d-flex justify-content-center">
+        <!-- Main Column -->
+        <div class="col-lg-8">
+            <div class="premium-card">
+                <div class="card-body-premium p-5">
+                    <div class="text-center mb-5">
+                        <div class="profile-avatar-wrapper mb-3">
+                            <div class="avatar-large-circle mx-auto">@initials</div>
+                        </div>
+                        <h2 class="fw-bold mb-1">@user.FirstName @user.LastName</h2>
+                        <p class="text-primary fw-medium mb-0">System Administrator</p>
+                        <p class="text-muted small">ID: #@user.Id.ToString("D4")</p>
+                    </div>
+
+                    <div class="row g-5">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">Professional Details</h5>
+                            <div class="mb-3">
+                                <label class="text-muted small text-uppercase fw-bold d-block">Email Address</label>
+                                <p class="mb-0">@user.Email</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small text-uppercase fw-bold d-block">Support Level</label>
+                                <p class="mb-0">24/7 Priority Support</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">System Access</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge border text-dark fw-normal p-2 px-3">Full Administrative Access</span>
+                                <span class="badge border text-dark fw-normal p-2 px-3">User Management</span>
+                                <span class="badge border text-dark fw-normal p-2 px-3">System Settings</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">Biography</h5>
+                            <p class="text-secondary lh-lg mb-0">
+                                @user.FirstName @user.LastName manages the CareFleet platform, ensuring daily operations run smoothly and securely. 
+                                Committed to providing high-quality technical oversight and supporting the delivery of healthcare services across the platform.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <a href="@Url.Action("Settings", "Admin")" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm">
+                            <i class="fas fa-cog me-2"></i>Configure Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

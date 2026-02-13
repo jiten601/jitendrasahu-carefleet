@@ -1,0 +1,629 @@
+@model CareFleet.Models.Patient
+@{
+    ViewData["Title"] = "Patient Profile";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    
+    var patient = Model ?? new CareFleet.Models.Patient { 
+        Id = 0,
+        FirstName = ViewBag.FirstName?.ToString() ?? "Patient", 
+        LastName = ViewBag.LastName?.ToString() ?? "User", 
+        Email = ViewBag.UserEmail?.ToString() ?? "patient@carefleet.com",
+        CreatedAt = DateTime.Now.AddYears(-1)
+    };
+    
+    var initials = ((patient.FirstName?.Length > 0 ? patient.FirstName.Substring(0, 1) : "P") + 
+                   (patient.LastName?.Length > 0 ? patient.LastName.Substring(0, 1) : "A")).ToUpper();
+    
+    var memberSince = patient.CreatedAt.ToString("MMMM yyyy");
+}
+
+<div class="profile-page">
+    <!-- Hero Section -->
+    <div class="profile-hero">
+        <div class="hero-background"></div>
+        <div class="container-fluid px-5">
+            <div class="row align-items-end">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-end gap-4">
+                        <div class="profile-avatar-large">
+                            <div class="avatar-circle">@initials</div>
+                            <div class="verified-badge">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="hero-info pb-3">
+                            <h1 class="doctor-name mb-2">@patient.FirstName @patient.LastName</h1>
+                            <p class="specialization mb-3">
+                                <i class="fas fa-id-card me-2"></i>Patient ID: #PAT-@patient.Id.ToString("D4")
+                            </p>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <span class="info-badge">
+                                    <i class="fas fa-calendar-check me-2"></i>Member since @memberSince
+                                </span>
+                                <span class="info-badge">
+                                    <i class="fas fa-tint me-2"></i>Blood Group: @(string.IsNullOrEmpty(patient.BloodGroup) ? "Not Set" : patient.BloodGroup)
+                                </span>
+                                <span class="info-badge">
+                                    <i class="fas fa-venus-mars me-2"></i>@patient.Gender
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-lg-end pb-3">
+                    <a href="@Url.Action("Settings", "Patient")" class="btn btn-edit-profile">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid px-5 py-5">
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Medical Overview Section -->
+                <div class="profile-card mb-4">
+                    <div class="card-header-profile">
+                        <h3 class="section-title">
+                            <i class="fas fa-file-medical me-3"></i>Medical Overview
+                        </h3>
+                    </div>
+                    <div class="card-body-profile">
+                        <h5 class="fw-bold mb-3">Medical History</h5>
+                        <p class="about-text">
+                            @(string.IsNullOrEmpty(patient.MedicalHistory) ? "No medical history recorded yet. Please update your profile to include important health information." : patient.MedicalHistory)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Health Information Section -->
+                <div class="profile-card mb-4">
+                    <div class="card-header-profile">
+                        <h3 class="section-title">
+                            <i class="fas fa-heartbeat me-3"></i>Health Information
+                        </h3>
+                    </div>
+                    <div class="card-body-profile">
+                        <div class="expertise-tags">
+                            <span class="expertise-tag">Blood Group: @(string.IsNullOrEmpty(patient.BloodGroup) ? "N/A" : patient.BloodGroup)</span>
+                            <span class="expertise-tag">@patient.Gender</span>
+                            <span class="expertise-tag">DOB: @patient.DateOfBirth.ToString("MMM dd, yyyy")</span>
+                            <span class="expertise-tag">Status: Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity/Timeline -->
+                <div class="profile-card mb-4">
+                    <div class="card-header-profile">
+                        <h3 class="section-title">
+                            <i class="fas fa-clock me-3"></i>Patient Timeline
+                        </h3>
+                    </div>
+                    <div class="card-body-profile">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h4 class="timeline-title">Account Created</h4>
+                                    <p class="timeline-subtitle">CareFleet Registration</p>
+                                    <p class="timeline-date">@patient.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h4 class="timeline-title">Profile Initialized</h4>
+                                    <p class="timeline-subtitle">Personal information added</p>
+                                    <p class="timeline-date">@patient.CreatedAt.AddMinutes(5).ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Contact Information -->
+                <div class="profile-card mb-4 sticky-card">
+                    <div class="card-header-profile">
+                        <h3 class="section-title">
+                            <i class="fas fa-address-card me-3"></i>Contact Information
+                        </h3>
+                    </div>
+                    <div class="card-body-profile">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-details">
+                                <p class="contact-label">Email</p>
+                                <p class="contact-value">@patient.Email</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <p class="contact-label">Phone</p>
+                                <p class="contact-value">@(string.IsNullOrEmpty(patient.PhoneNumber) ? "Not Provided" : patient.PhoneNumber)</p>
+                            </div>
+                        </div>
+                        <div class="contact-item mb-0">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <p class="contact-label">Address</p>
+                                <p class="contact-value">@(string.IsNullOrEmpty(patient.Address) ? "Not Provided" : patient.Address)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions / Support -->
+                <div class="profile-card mb-4">
+                    <div class="card-header-profile">
+                        <h3 class="section-title">
+                            <i class="fas fa-hand-holding-medical me-3"></i>Care & Support
+                        </h3>
+                    </div>
+                    <div class="card-body-profile">
+                        <div class="availability-item">
+                            <span class="day-label">Last Checkup</span>
+                            <span class="time-label">None</span>
+                        </div>
+                        <div class="availability-item">
+                            <span class="day-label">Upcoming</span>
+                            <span class="time-label text-primary">None scheduled</span>
+                        </div>
+                        <hr class="my-4">
+                        <a href="@Url.Action("Appointments", "Patient")" class="btn btn-book-appointment w-100">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="profile-card">
+                    <div class="card-header-profile">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-bar me-3"></i>My Activity
+                        </h3>
+                    </div>
+                    <div class="card-body-profile p-0">
+                        <div class="stats-grid-modern">
+                            <a href="@Url.Action("Appointments", "Patient")" class="stat-grid-item">
+                                <div class="stat-num-box">
+                                    <span class="stat-number">@ViewBag.AppointmentCount</span>
+                                </div>
+                                <div class="stat-label">Appointments</div>
+                            </a>
+                            <a href="@Url.Action("MedicalRecords", "Patient")" class="stat-grid-item border-start">
+                                <div class="stat-num-box">
+                                    <span class="stat-number">@ViewBag.RecordCount</span>
+                                </div>
+                                <div class="stat-label">Medical Records</div>
+                            </a>
+                        </div>
+                        <div class="stat-full-width border-top">
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <div class="stat-num-badge">
+                                    @(DateTime.Now.Year - patient.CreatedAt.Year + 1)@(DateTime.Now.Year - patient.CreatedAt.Year + 1 == 1 ? "st" : (DateTime.Now.Year - patient.CreatedAt.Year + 1 == 2 ? "nd" : "th"))
+                                </div>
+                                <div class="stat-label mb-0">Year with CareFleet</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-page {
+        margin: -20px -40px;
+    }
+
+    .profile-hero {
+        position: relative;
+        padding: 60px 0 40px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        overflow: hidden;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,101.3C1248,85,1344,75,1392,69.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+    }
+
+    .profile-avatar-large {
+        position: relative;
+        z-index: 10;
+    }
+
+    .avatar-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        color: var(--primary-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 56px;
+        font-weight: 800;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(255, 255, 255, 0.2);
+        border: 6px solid white;
+    }
+
+    .verified-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        background: var(--success);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        border: 4px solid white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .hero-info {
+        color: white;
+    }
+
+    .doctor-name {
+        font-size: 42px;
+        font-weight: 800;
+        color: white;
+        margin: 0;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .specialization {
+        font-size: 20px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.95);
+        margin: 0;
+    }
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-edit-profile {
+        padding: 12px 32px;
+        background: white;
+        color: var(--primary-dark);
+        border: none;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit-profile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        color: var(--primary-dark);
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-main);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .card-header-profile {
+        padding: 24px 30px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-bottom: 1px solid var(--border-main);
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title i {
+        color: var(--primary-blue);
+        font-size: 22px;
+    }
+
+    .card-body-profile {
+        padding: 30px;
+    }
+
+    .about-text {
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+
+    .expertise-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .expertise-tag {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        color: white;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-block;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(33, 52, 72, 0.2);
+    }
+
+    .expertise-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 52, 72, 0.3);
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background: linear-gradient(180deg, var(--primary-blue) 0%, var(--light-blue) 100%);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 32px;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -36px;
+        top: 4px;
+        width: 18px;
+        height: 18px;
+        background: white;
+        border: 3px solid var(--primary-blue);
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.1);
+    }
+
+    .timeline-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .timeline-subtitle {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--primary-blue);
+        margin-bottom: 4px;
+    }
+
+    .timeline-date {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .contact-item {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .contact-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .contact-details {
+        flex: 1;
+    }
+
+    .contact-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .contact-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+        word-break: break-word;
+    }
+
+    .availability-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-main);
+        margin-bottom: 12px;
+    }
+
+    .availability-item:last-of-type {
+        border-bottom: none;
+    }
+
+    .day-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .time-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .btn-book-appointment {
+        padding: 14px 24px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(33, 52, 72, 0.2);
+    }
+
+    .btn-book-appointment:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(33, 52, 72, 0.3);
+        color: white;
+    }
+
+    /* Statistics Modern Grid */
+    .stats-grid-modern {
+        display: flex;
+        width: 100%;
+    }
+
+    .stat-grid-item {
+        flex: 1;
+        padding: 25px 15px;
+        text-align: center;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+    }
+
+    .stat-grid-item:hover {
+        background: #f8f9fa;
+    }
+
+    .stat-num-box {
+        margin-bottom: 5px;
+    }
+
+    .stat-full-width {
+        padding: 20px;
+        text-align: center;
+        background: #fcfcfc;
+    }
+
+    .stat-num-badge {
+        font-size: 20px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        color: white;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(33, 52, 72, 0.2);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border-main);
+        margin-bottom: 20px;
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0;
+        display: inline-block;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+
+    .sticky-card {
+        /* Removed sticky behavior as requested */
+    }
+</style>

@@ -1,0 +1,59 @@
+@model IEnumerable<CareFleet.Models.Appointment>
+@{
+    ViewData["Title"] = "Appointments";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Appointments";
+    ViewBag.HeaderTitle = "Appointments Management";
+}
+
+<div class="page-header">
+    <h3>All Appointments</h3>
+    <a href="@Url.Action("Book", "Appointment")" class="btn-primary-small">
+        <i class="fas fa-plus"></i> Book New Appointment
+    </a>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var app in Model)
+                {
+                    <tr>
+                        <td>@app.AppointmentDate.ToString("MM/dd/yyyy")</td>
+                        <td>@app.TimeSlot</td>
+                        <td>@(app.IsForSomeoneElse ? app.OtherPatientName : app.PatientName)</td>
+                        <td>@app.DoctorName</td>
+                        <td>@app.Reason</td>
+                        <td>
+                            <span class="status-badge" style="background-color: @(app.Status == "Confirmed" ? "#d4edda" : (app.Status == "Cancelled" ? "#f8d7da" : "#fff3cd")); color: #333;">
+                                @app.Status
+                            </span>
+                        </td>
+                        <td class="action-buttons">
+                            <a href="#" class="btn-edit" title="Manage"><i class="fas fa-tasks"></i></a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center">No appointments found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

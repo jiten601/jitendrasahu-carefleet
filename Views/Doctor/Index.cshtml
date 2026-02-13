@@ -4,14 +4,35 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Doctors";
     ViewBag.HeaderTitle = "Doctors Management";
+    ViewBag.HideHeader = true;
 }
 
-<div class="page-header">
-    <h3>All Doctors</h3>
-    <a href="@Url.Action("Create", "Doctor")" class="btn-primary-small">
-        <i class="fas fa-plus"></i> Add New Doctor
-    </a>
-</div>
+<div class="fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-bold text-white mb-2">Medical Professionals</h1>
+                <p class="text-white-50 mb-0">Manage all registered doctors and their system access.</p>
+            </div>
+            <div class="header-actions">
+                @if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    <a href="@Url.Action("AddDoctor", "Admin")" class="btn-premium-light text-decoration-none">
+                        <i class="fas fa-plus me-2"></i>Add New Doctor
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Create", "Doctor")" class="btn-premium-light text-decoration-none">
+                        <i class="fas fa-plus me-2"></i>Add New Doctor
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
 
 <div class="table-container">
     <table class="data-table">
@@ -76,4 +97,6 @@
         </tbody>
     </table>
 </div>
+</div>
+
 

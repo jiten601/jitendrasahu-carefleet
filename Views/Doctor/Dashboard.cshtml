@@ -1,0 +1,275 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Dashboard";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-dashboard-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h2 class="fw-800 text-white mb-2">Welcome Back, Dr. @ViewBag.FirstName!</h2>
+                <p class="text-white opacity-75 mb-0">
+                    Your patient overview and schedule for today.
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Appointments", "Doctor")" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                    <i class="fas fa-calendar-alt me-2"></i>Schedule
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+
+    <!-- Quick Stats Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'" style="background: white; border-left: 5px solid var(--primary-blue) !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Total Patients</p>
+                        <h4 class="fw-800 mb-0">@ViewBag.TotalPatients</h4>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary" style="width: 45px; height: 45px; border-radius: 12px;">
+                        <i class="fas fa-users fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'" style="background: white; border-left: 5px solid var(--success) !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Active Patients</p>
+                        <h4 class="fw-800 mb-0">@ViewBag.ActivePatients</h4>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-10 text-success" style="width: 45px; height: 45px; border-radius: 12px;">
+                        <i class="fas fa-clipboard-check fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'" style="background: white; border-left: 5px solid var(--warning) !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">New This Month</p>
+                        <h4 class="fw-800 mb-0">@ViewBag.NewPatientsThisMonth</h4>
+                    </div>
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning" style="width: 45px; height: 45px; border-radius: 12px;">
+                        <i class="fas fa-user-plus fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="premium-card p-4 border-0 shadow-sm clickable-card" onclick="location.href='@Url.Action("Appointments", "Doctor")'" style="background: white; border-left: 5px solid var(--primary-dark) !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Upcoming</p>
+                        <h4 class="fw-800 mb-0">@(((List<CareFleet.Models.Appointment>)ViewBag.UpcomingAppointments).Count)</h4>
+                    </div>
+                    <div class="stat-icon bg-info bg-opacity-10 text-info" style="width: 45px; height: 45px; border-radius: 12px;">
+                        <i class="fas fa-calendar-alt fs-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Column: Recent Activity -->
+        <div class="col-lg-8">
+            <div class="premium-card h-100">
+                <div class="card-header-premium d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Recent Patient Activity</h5>
+                    <a href="@Url.Action("Appointments", "Doctor")" class="text-primary small fw-bold text-decoration-none">View All</a>
+                </div>
+                <div class="card-body-premium p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="px-4 py-3 border-0 small text-uppercase fw-bold text-secondary">Patient</th>
+                                    <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Reason</th>
+                                    <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Status</th>
+                                    <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Time</th>
+                                    <th class="px-4 py-3 border-0"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var recentAppointments = (List<CareFleet.Models.Appointment>)ViewBag.UpcomingAppointments;
+                                }
+                                @if (recentAppointments.Any())
+                                {
+                                    @foreach (var appt in recentAppointments)
+                                    {
+                                        <tr>
+                                            <td class="px-4">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    @{
+                                                        var nameParts = appt.PatientName?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                                        var initials = "";
+                                                        if (nameParts != null && nameParts.Length > 0)
+                                                        {
+                                                            initials = string.Join("", nameParts.Select(p => p[0].ToString()));
+                                                        }
+                                                        else
+                                                        {
+                                                            initials = "PA";
+                                                        }
+                                                    }
+                                                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold">@initials.ToUpper()</div>
+                                                    <div>
+                                                        <h6 class="mb-0 fw-bold">@appt.PatientName</h6>
+                                                        <small class="text-muted">Appointment Details</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>@appt.Reason</td>
+                                            <td>
+                                                @{
+                                                    var statusClass = appt.Status switch {
+                                                        "Confirmed" => "bg-success-subtle text-success border-success",
+                                                        "Pending" => "bg-warning-subtle text-warning border-warning",
+                                                        "Cancelled" => "bg-danger-subtle text-danger border-danger",
+                                                        _ => "bg-info-subtle text-info border-info"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass border border-opacity-10 px-3 py-2">@appt.Status</span>
+                                            </td>
+                                            <td class="text-secondary small">@appt.TimeSlot</td>
+                                            <td class="px-4 text-end">
+                                                <a href="@Url.Action("Appointments", "Doctor")" class="btn-action-light"><i class="fas fa-eye"></i></a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">No recent activity found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column: Upcoming & Tasks -->
+        <div class="col-lg-4">
+            <!-- Upcoming Card -->
+            <div class="premium-card mb-4">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0">Upcoming Today</h5>
+                </div>
+                <div class="card-body-premium">
+                    @{
+                        var todayAppointments = recentAppointments.Where(a => a.AppointmentDate.Date == DateTime.Now.Date).ToList();
+                    }
+                    @if (todayAppointments.Any())
+                    {
+                        @foreach (var appt in todayAppointments)
+                        {
+                            <div class="appointment-card-mini d-flex gap-3 mb-4">
+                                <div class="time-block text-center p-2 rounded-3 bg-primary bg-opacity-10 text-primary">
+                                    <span class="d-block fw-bold h5 mb-0">@appt.AppointmentDate.Day</span>
+                                    <span class="small fw-bold text-uppercase">@appt.AppointmentDate.ToString("MMM")</span>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">@appt.PatientName</h6>
+                                    <p class="text-muted small mb-0"><i class="far fa-clock me-1"></i>@appt.TimeSlot</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted">
+                            <i class="fas fa-calendar-check d-block mb-2 opacity-25" style="font-size: 32px;"></i>
+                            <p class="small mb-0">No appointments for today.</p>
+                        </div>
+                    }
+                    
+                    <hr class="my-4">
+                    <div class="d-grid">
+                        <button class="btn btn-primary shadow-sm py-3 fw-bold rounded-3">
+                            Video Consult <i class="fas fa-video ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doctor-dashboard-page {
+        margin: 0;
+        padding: 0;
+    }
+
+    .fw-800 { font-weight: 800; }
+
+    /* Stat Icons */
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    /* Avatar Mini */
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    /* Action Tiles */
+    .action-tile {
+        background: #f8f9fa;
+        color: var(--primary-dark);
+        border: 1px solid var(--border-main);
+        transition: all 0.2s;
+    }
+
+    .action-tile:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Table Styles */
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,0.01);
+    }
+
+    .time-block {
+        min-width: 55px;
+    }
+    
+    .clickable-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+</style>

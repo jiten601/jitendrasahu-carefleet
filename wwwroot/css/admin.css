@@ -5,8 +5,8 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f5f5f5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #EAE0CF;
     color: #333333;
 }
 
@@ -74,7 +74,7 @@ body {
     flex: 1;
     margin-left: 250px;
     padding: 30px 40px;
-    background-color: #ffffff;
+    background-color: transparent;
     min-height: 100vh;
 }
 
@@ -444,7 +444,9 @@ body {
     align-items: center;
 }
 
-.btn-edit, .btn-delete, .btn-toggle {
+.btn-edit,
+.btn-delete,
+.btn-toggle {
     padding: 6px 12px;
     border: none;
     border-radius: 6px;
@@ -646,6 +648,19 @@ select.form-control {
     .card-value {
         font-size: 36px;
     }
+
+    .form-container {
+        padding: 20px;
+    }
+
+    .data-table {
+        font-size: 12px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -694,3 +709,107 @@ select.form-control {
     }
 }
 
+/* Premium Header Card */
+.premium-header-card {
+    background: linear-gradient(135deg, #213448 0%, #547792 100%) !important;
+    border-radius: 16px;
+    padding: 35px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.header-card-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.btn-premium-light {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-premium-light:hover {
+    background: white !important;
+    color: #213448 !important;
+    transform: translateY(-2px);
+}
+
+.header-bg-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+    background-size: 20px 20px;
+    opacity: 0.5;
+    z-index: 1;
+}
+
+/* Utility Classes */
+.fw-bold {
+    font-weight: 700 !important;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+.me-2 {
+    margin-right: 0.5rem !important;
+}
+
+.text-decoration-none {
+    text-decoration: none !important;
+}
+
+.d-inline-block {
+    display: inline-block !important;
+}
+
+@keyframes fadeInCustom {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInCustom 0.5s ease forwards;
+}
