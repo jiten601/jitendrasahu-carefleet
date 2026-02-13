@@ -1,265 +1,52 @@
-:root {
-    --primary-dark: #213448;
-    --primary-blue: #547792;
-    --light-blue: #94B4C1;
-    --warm-accent: #EAE0CF;
-    --sidebar-bg: #213448;
-    --sidebar-hover: rgba(255, 255, 255, 0.1);
-    --sidebar-active: #547792;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --bg-main: #EAE0CF;
-    --card-bg: #ffffff;
-    --border-main: #e2e8f0;
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
+/* Patient Dashboard Specific Styles */
+
+.bg-primary-soft {
+    background: #eef2ff;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+.bg-info-soft {
+    background: #f0f9ff;
 }
 
-body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    overflow-x: hidden;
+.bg-success-soft {
+    background: #f0fdf4;
 }
 
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* Sidebar Styles */
-.sidebar {
-    width: 280px;
-    background-color: var(--sidebar-bg);
-    color: white;
-    position: fixed;
-    height: 100vh;
-    left: 0;
-    top: 0;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-header {
-    padding: 35px 30px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.logo {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: white;
+.stat-icon-container {
+    width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
-.sidebar-nav {
-    padding: 20px 15px;
-    flex: 1;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: 14px 20px;
-    color: #ffffff;
-    text-decoration: none;
-    border-radius: var(--radius-sm);
-    margin-bottom: 5px;
-    transition: all 0.2s ease;
-    font-weight: 500;
-    font-size: 15px;
-}
-
-.nav-item i {
-    width: 20px;
-    margin-right: 15px;
-    font-size: 18px;
-    opacity: 0.8;
-}
-
-.nav-item:hover {
-    background-color: var(--sidebar-hover);
-    color: white;
-}
-
-.nav-item.active {
-    background-color: var(--primary-blue);
-    color: white;
-    font-weight: 600;
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    margin-left: 280px;
-    position: relative;
-    padding: 0;
-}
-
-/* Header */
-.content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    background: transparent;
-    margin-bottom: 20px;
-}
-
-.welcome-text {
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.notification-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 20px;
+.clickable-card {
     cursor: pointer;
-    position: relative;
-    width: 40px;
+    transition: all 0.3s ease;
+}
+
+.clickable-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.activity-icon-container {
+    min-width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: background 0.2s;
 }
 
-.notification-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.notification-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: var(--danger);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 5px;
-    border-radius: 10px;
-    border: 2px solid var(--bg-main);
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    background: white;
-    padding: 6px 12px 6px 6px;
-    border-radius: 30px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-main);
-}
-
-.avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--primary-blue);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 12px;
-}
-
-.user-profile i {
-    font-size: 10px;
-    color: var(--text-secondary);
-}
-
-/* Dashboard Content */
-.dashboard-content {
-    padding: 0 40px 40px;
-}
-
-.dashboard-card {
-    background: white;
-    border-radius: var(--radius-md);
-    padding: 25px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-main);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Premium Header Card */
-.premium-header-card {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
-    border-radius: var(--radius-lg);
-    padding: 35px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.header-card-content {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.btn-premium-light {
-    background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-    padding: 12px 24px;
+.tip-card-premium {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
     border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
+    padding: 1rem;
 }
 
-.btn-premium-light:hover {
-    background: white !important;
-    color: var(--primary-dark) !important;
-    transform: translateY(-2px);
-}
-
-.header-bg-pattern {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 300px;
-    height: 100%;
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
-    background-size: 20px 20px;
-    opacity: 0.5;
-    z-index: 1;
+.dashboard-wrapper {
+    margin: 0;
 }

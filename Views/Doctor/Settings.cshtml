@@ -33,7 +33,10 @@
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-800 text-white mb-0">Account & Profile Settings</h1>
+                <h2 class="fw-800 text-white mb-2">Account Settings</h2>
+                <p class="text-white opacity-75 mb-0">Manage your profile, credentials, and security preferences.</p>
+            </div>
+            <div class="header-actions">
             </div>
         </div>
         <div class="header-bg-pattern"></div>
@@ -43,50 +46,43 @@
     <div class="row g-4">
         <!-- Left Sidebar: Profile Summary -->
         <div class="col-lg-4">
-            <div class="premium-card sticky-sidebar">
-                <div class="card-body-premium">
-                    <!-- Avatar Section -->
-                    <div class="avatar-settings-section text-center mb-4">
-                        <div class="avatar-wrapper">
-                            <div class="avatar-large-circle mx-auto">@initials</div>
-                            <div class="avatar-upload-overlay">
-                                <label for="avatarUpload" class="upload-trigger">
-                                    <i class="fas fa-camera"></i>
-                                </label>
-                                <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
-                            </div>
+            <div class="profile-summary-card sticky-sidebar">
+                <!-- Avatar Section -->
+                <div class="avatar-section">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-large-circle mx-auto">@initials</div>
+                        <div class="avatar-upload-overlay">
+                            <label for="avatarUpload" class="upload-trigger m-0">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
                         </div>
-                        <h4 class="fw-bold mt-3 mb-1">Dr. @doctor.FirstName @doctor.LastName</h4>
-                        <p class="text-secondary small mb-3">@doctor.Email</p>
-                        <span class="badge bg-success bg-opacity-10 text-success p-2 px-3 rounded-pill">
-                            <i class="fas fa-check-circle me-1"></i>Verified Practitioner
-                        </span>
                     </div>
+                    <h5 class="profile-name">Dr. @doctor.FirstName @doctor.LastName</h5>
+                    <p class="profile-email">@doctor.Email</p>
+                    <span class="verified-badge-inline">
+                        <i class="fas fa-check-circle me-1"></i>Verified Practitioner
+                    </span>
+                </div>
 
-                    <!-- Profile Completion -->
-                    <div class="completion-section mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted small fw-bold text-uppercase ls-1">Completion</span>
-                            <span class="fw-bold text-primary">@profileCompletion%</span>
-                        </div>
-                        <div class="progress" style="height: 8px; border-radius: 4px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: @(profileCompletion)%" aria-valuenow="@profileCompletion" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
+                <!-- Profile Completion -->
+                <div class="completion-section">
+                    <div class="completion-header">
+                        <span>Profile Completion</span>
+                        <span class="text-primary">@profileCompletion%</span>
                     </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: @(profileCompletion)%"></div>
+                    </div>
+                </div>
 
-                    <!-- Quick Links -->
-                    <div class="list-group list-group-flush border-top pt-3">
-                        <a href="@Url.Action("Profile", "Doctor")" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center gap-3">
-                            <i class="fas fa-eye text-primary"></i>
-                            <span>View Public Profile</span>
-                            <i class="fas fa-chevron-right ms-auto small opacity-50"></i>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center gap-3" onclick="document.getElementById('passwordTab').click(); return false;">
-                            <i class="fas fa-key text-primary"></i>
-                            <span>Security Settings</span>
-                            <i class="fas fa-chevron-right ms-auto small opacity-50"></i>
-                        </a>
-                    </div>
+                <!-- Quick Links -->
+                <div class="quick-actions-section">
+                    <a href="#" class="quick-action-link" onclick="document.getElementById('securityTab').click(); return false;">
+                        <i class="fas fa-shield-check"></i>
+                        <span>Security & Privacy</span>
+                        <i class="fas fa-chevron-right ms-auto v-small opacity-50"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -94,14 +90,14 @@
         <!-- Right Content: Tabbed Settings -->
         <div class="col-lg-8">
             <!-- Premium Tabs -->
-            <div class="premium-tabs mb-4">
-                <button class="nav-link-premium active" data-tab="personal" id="personalTab">
-                    <i class="fas fa-user"></i> Personal
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="personal" id="personalTab">
+                    <i class="fas fa-user"></i> Personal Info
                 </button>
-                <button class="nav-link-premium" data-tab="professional" id="professionalTab">
+                <button class="tab-btn" data-tab="professional" id="professionalTab">
                     <i class="fas fa-stethoscope"></i> Professional
                 </button>
-                <button class="nav-link-premium" data-tab="security" id="passwordTab">
+                <button class="tab-btn" data-tab="security" id="securityTab">
                     <i class="fas fa-shield-alt"></i> Security
                 </button>
             </div>
@@ -117,35 +113,34 @@
                 <div class="tab-content-container">
                     <!-- Personal Info Tab -->
                     <div class="tab-pane-premium active" data-content="personal">
-                        <div class="premium-card">
-                            <div class="card-header-premium">
-                                <h5 class="fw-bold mb-0">Personal Information</h5>
+                        <div class="dashboard-card">
+                            <div class="border-bottom pb-3 mb-4">
+                                <h5 class="fw-bold mb-1">Personal Details</h5>
+                                <p class="text-muted small mb-0">Update your basic information to help patients identify you.</p>
                             </div>
-                            <div class="card-body-premium">
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="FirstName" value="@doctor.FirstName" placeholder="First Name" required>
-                                            <label>First Name</label>
-                                        </div>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">First Name</label>
+                                        <input type="text" class="form-control-modern" name="FirstName" value="@doctor.FirstName" placeholder="Enter first name" required>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="LastName" value="@doctor.LastName" placeholder="Last Name" required>
-                                            <label>Last Name</label>
-                                        </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">Last Name</label>
+                                        <input type="text" class="form-control-modern" name="LastName" value="@doctor.LastName" placeholder="Enter last name" required>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="email" class="form-control bg-light" value="@doctor.Email" placeholder="Email" readonly disabled>
-                                            <label>Email Address (Locked)</label>
-                                        </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">Email Address</label>
+                                        <input type="email" class="form-control-modern locked-input" value="@doctor.Email" readonly disabled>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="tel" class="form-control" name="PhoneNumber" value="@doctor.PhoneNumber" placeholder="Phone">
-                                            <label>Phone Number</label>
-                                        </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">Phone Number</label>
+                                        <input type="tel" class="form-control-modern" name="PhoneNumber" value="@doctor.PhoneNumber" placeholder="+1 234 567 890">
                                     </div>
                                 </div>
                             </div>
@@ -154,23 +149,24 @@
 
                     <!-- Professional Tab -->
                     <div class="tab-pane-premium" data-content="professional">
-                        <div class="premium-card">
-                            <div class="card-header-premium">
-                                <h5 class="fw-bold mb-0">Professional Credentials</h5>
+                        <div class="dashboard-card">
+                            <div class="border-bottom pb-3 mb-4">
+                                <h5 class="fw-bold mb-1">Medical Credentials</h5>
+                                <p class="text-muted small mb-0">Manage your medical license and areas of expertise.</p>
                             </div>
-                            <div class="card-body-premium">
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="Specialization" value="@doctor.Specialization" placeholder="Specialization" required>
-                                            <label>Primary Specialization</label>
-                                        </div>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">Primary Specialization</label>
+                                        <input type="text" class="form-control-modern" name="Specialization" value="@doctor.Specialization" placeholder="e.g., Cardiology" required>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control locked-input" name="LicenseNumber" value="@doctor.LicenseNumber" readonly placeholder="License">
-                                            <label>Medical License (Verified)</label>
-                                            <i class="fas fa-lock position-absolute top-50 end-0 translate-middle-y me-3 opacity-50"></i>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">Medical License Number</label>
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control-modern locked-input" name="LicenseNumber" value="@doctor.LicenseNumber" readonly>
+                                            <i class="fas fa-lock position-absolute top-50 end-0 translate-middle-y me-3 opacity-25"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -180,44 +176,35 @@
 
                     <!-- Security Tab -->
                     <div class="tab-pane-premium" data-content="security">
-                        <div class="premium-card">
-                            <div class="card-header-premium">
-                                <h5 class="fw-bold mb-0">Account Security</h5>
+                        <div class="dashboard-card">
+                            <div class="border-bottom pb-3 mb-4">
+                                <h5 class="fw-bold mb-1">Password & Security</h5>
+                                <p class="text-muted small mb-0">Control your account security and authentication methods.</p>
                             </div>
-                            <div class="card-body-premium">
-                                <div class="alert alert-info border-0 shadow-sm d-flex gap-3 p-4 mb-4">
-                                    <i class="fas fa-info-circle fs-4"></i>
-                                    <div>
-                                        <h6 class="fw-bold mb-1">Security Management</h6>
-                                        <p class="small mb-0">To update your password or enable Two-Factor Authentication, please follow the secure verification process.</p>
-                                    </div>
+                            <div class="security-notice">
+                                <i class="fas fa-shield-check mt-1"></i>
+                                <div>
+                                    <p class="mb-0 fw-bold">Security Best Practices</p>
+                                    <p class="mb-0 opacity-75">Enable 2FA and use a unique password of at least 12 characters.</p>
                                 </div>
-                                <div class="d-grid gap-3">
-                                    <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="p-3 bg-white rounded-circle shadow-sm">
-                                                <i class="fas fa-key text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="fw-bold mb-0">Account Password</h6>
-                                                <p class="text-muted small mb-0">Last changed 3 months ago</p>
-                                            </div>
-                                        </div>
-                                        <button type="button" class="btn btn-outline-primary btn-sm px-4 rounded-pill" disabled>Update</button>
-                                    </div>
-                                    <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="p-3 bg-white rounded-circle shadow-sm">
-                                                <i class="fas fa-shield-alt text-primary"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="fw-bold mb-0">2FA Verification</h6>
-                                                <p class="text-muted small mb-0">Currently disabled</p>
-                                            </div>
-                                        </div>
-                                        <button type="button" class="btn btn-primary btn-sm px-4 rounded-pill" disabled>Enable</button>
-                                    </div>
+                            </div>
+                            
+                            <div class="security-item">
+                                <div class="security-item-icon"><i class="fas fa-key"></i></div>
+                                <div class="security-item-content">
+                                    <h5>Account Password</h5>
+                                    <p>Last changed 92 days ago</p>
                                 </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm px-4 rounded-pill" disabled>Update</button>
+                            </div>
+
+                            <div class="security-item">
+                                <div class="security-item-icon"><i class="fas fa-fingerprint"></i></div>
+                                <div class="security-item-content">
+                                    <h5>Two-Factor Authentication</h5>
+                                    <p>Protect your account with an extra layer</p>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm px-4 rounded-pill" disabled>Enable</button>
                             </div>
                         </div>
                     </div>
@@ -225,202 +212,48 @@
 
                 <!-- Footer Actions -->
                 <div class="d-flex justify-content-end gap-3 mt-4">
-                    <button type="button" class="btn btn-light px-5 py-3 fw-bold rounded-3 hvr-lift" onclick="window.location.href='@Url.Action("Dashboard", "Doctor")'">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-5 py-3 fw-bold rounded-3 shadow-sm hvr-lift">Save Changes</button>
+                    <button type="button" class="btn btn-light px-5 py-3 fw-bold rounded-3" onclick="window.location.href='@Url.Action("Dashboard", "Doctor")'">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-5 py-3 fw-bold rounded-3 shadow-sm">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<style>
-    .doctor-settings-page {
-        margin: -20px -40px;
-        padding: 40px;
-    }
+@section Styles {
+    <link rel="stylesheet" href="~/css/doctor-settings.css" asp-append-version="true" />
+}
 
-    .sticky-sidebar {
-        position: sticky;
-        top: 20px;
-    }
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-pane-premium');
 
-    /* Avatar Settings */
-    .avatar-large-circle {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 42px;
-        font-weight: 800;
-        box-shadow: 0 10px 25px rgba(33, 52, 72, 0.2);
-        border: 4px solid white;
-    }
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
 
-    .avatar-wrapper {
-        position: relative;
-        display: inline-block;
-    }
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
 
-    .avatar-upload-overlay {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        width: 36px;
-        height: 36px;
-        background: var(--primary-blue);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        cursor: pointer;
-        border: 3px solid white;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        transition: all 0.2s;
-    }
-
-    .avatar-upload-overlay:hover {
-        transform: scale(1.1);
-        background: var(--primary-dark);
-    }
-
-    /* Premium Tabs */
-    .premium-tabs {
-        display: flex;
-        background: white;
-        padding: 6px;
-        border-radius: 12px;
-        border: 1px solid var(--border-main);
-        gap: 6px;
-    }
-
-    .nav-link-premium {
-        flex: 1;
-        border: none;
-        background: transparent;
-        padding: 12px;
-        border-radius: 8px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .nav-link-premium.active {
-        background: var(--primary-dark);
-        color: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .nav-link-premium:not(.active):hover {
-        background: #f8f9fa;
-        color: var(--primary-dark);
-    }
-
-    /* Tab Panes */
-    .tab-pane-premium {
-        display: none;
-    }
-
-    .tab-pane-premium.active {
-        display: block;
-        animation: fadeIn 0.4s ease;
-    }
-
-    /* Form Styling */
-    .form-floating > .form-control {
-        border: 2px solid #f1f5f9;
-        border-radius: 10px;
-    }
-
-    .form-floating > .form-control:focus {
-        border-color: var(--primary-blue);
-        box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.1);
-    }
-
-    .locked-input {
-        background: #f8f9fa !important;
-        cursor: not-allowed;
-    }
-
-    .ls-1 { letter-spacing: 1px; }
-
-    .hvr-lift {
-        transition: transform 0.2s;
-    }
-
-    .hvr-lift:hover {
-        transform: translateY(-3px);
-    }
-
-    @@keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.nav-link-premium');
-        const contents = document.querySelectorAll('.tab-pane-premium');
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const target = tab.getAttribute('data-tab');
-
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
-
-                tab.classList.add('active');
-                document.querySelector(`.tab-pane-premium[data-content="${target}"]`).classList.add('active');
+                    tab.classList.add('active');
+                    const targetContent = document.querySelector(`.tab-pane-premium[data-content="${target}"]`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
             });
-        });
 
-        // Trigger avatar upload (placeholder)
-        document.getElementById('avatarUpload').addEventListener('change', function() {
-            if(this.files && this.files[0]) {
-                alert('Avatar upload triggered! In a real app, this would send to server.');
+            // Trigger avatar upload (placeholder)
+            const avatarUpload = document.getElementById('avatarUpload');
+            if (avatarUpload) {
+                avatarUpload.addEventListener('change', function() {
+                    if(this.files && this.files[0]) {
+                        alert('Avatar upload functionality will be implemented with backend integration.');
+                    }
+                });
             }
         });
-    });
-</script>
-
-<script>
-    // Tab switching functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const targetTab = this.getAttribute('data-tab');
-
-                // Remove active class from all tabs and contents
-                tabBtns.forEach(b => b.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-
-                // Add active class to clicked tab and corresponding content
-                this.classList.add('active');
-                document.querySelector(`[data-content="${targetTab}"]`).classList.add('active');
-            });
-        });
-
-        // Avatar upload preview (UI only)
-        const avatarUpload = document.getElementById('avatarUpload');
-        if (avatarUpload) {
-            avatarUpload.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    // In a real implementation, this would upload the file
-                    alert('Avatar upload functionality will be implemented with backend integration.');
-                }
-            });
-        }
-    });
-</script>
+    </script>
+}

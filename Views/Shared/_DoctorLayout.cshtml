@@ -17,7 +17,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/doctor-dashboard.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <div class="dashboard-container">
@@ -89,7 +91,7 @@
             else
             {
                 <!-- Minimal Header when using Premium Card -->
-                <header class="content-header px-4" style="margin-bottom: 0;">
+                <header class="content-header px-4 mb-0">
                     @if (activePage == "Dashboard")
                     {
                         <h2 class="welcome-text fw-bold">Welcome, Dr. @firstName @lastName!</h2>
@@ -122,9 +124,9 @@
             <div class="dashboard-content">
                 @if (TempData["Success"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="background: white; border-left: 5px solid var(--success) !important;">
+                    <div class="alert alert-success alert-dismissible fade show alert-premium alert-premium-success mb-4" role="alert">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-3" style="font-size: 20px;"></i>
+                            <i class="fas fa-check-circle text-success me-3 fs-5"></i>
                             <div class="text-dark fw-medium">@TempData["Success"]</div>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

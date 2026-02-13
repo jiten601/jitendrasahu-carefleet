@@ -119,19 +119,6 @@
     </div>
 </div>
 
-<style>
-    .bg-primary-soft { background: #eef2ff; }
-    .bg-info-soft { background: #f0f9ff; }
-    .bg-success-soft { background: #f0fdf4; }
-    .x-small { font-size: 11px; }
-    .fw-800 { font-weight: 800; }
-    
-    .clickable-card {
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    .clickable-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/patient-dashboard.css" asp-append-version="true" />
+}

@@ -1,0 +1,102 @@
+@* Shared Video Call Modal *@
+<div id="videoCallModal" class="video-call-modal">
+    <div class="video-call-container">
+        <div class="video-bg-placeholder"></div>
+        
+        <div class="my-video-pip">
+            <i class="fas fa-user"></i>
+            <video id="localVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+        </div>
+
+        <div class="video-call-content">
+            <div class="caller-info">
+                <div class="caller-avatar" id="callAvatar">
+                    <span id="callInitials">?</span>
+                </div>
+                <h2 class="caller-name" id="callName">Healthcare Provider</h2>
+                <div class="call-status pulse-animation" id="callStatusText">Calling...</div>
+                <div id="callTimer" style="display: none; font-size: 20px; font-weight: 500; margin-top: 10px;">00:00</div>
+            </div>
+
+            <div class="call-actions">
+                <button class="btn-call-action" onclick="toggleMute()" title="Mute">
+                    <i class="fas fa-microphone" id="muteIcon"></i>
+                </button>
+                <button class="btn-call-action" onclick="toggleCamera()" title="Turn off Camera">
+                    <i class="fas fa-video" id="cameraIcon"></i>
+                </button>
+                <button class="btn-call-action btn-end-call" onclick="endCall()" title="End Call">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let timerInterval;
+    let seconds = 0;
+    let localStream;
+
+    async function startVideoCall(name, initials) {
+        document.getElementById('callName').innerText = name;
+        document.getElementById('callInitials').innerText = initials || 'HP';
+        document.getElementById('videoCallModal').style.display = 'block';
+        document.getElementById('callStatusText').innerText = 'Calling...';
+        document.getElementById('callStatusText').classList.add('pulse-animation');
+        
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+        } catch (err) {
+            console.error("Error accessing media devices.", err);
+        }
+
+        // Simulate connection after 3 seconds
+        setTimeout(() => {
+            document.getElementById('callStatusText').innerText = 'Connected';
+            document.getElementById('callStatusText').classList.remove('pulse-animation');
+            document.getElementById('callStatusText').style.color = '#10b981';
+            startTimer();
+        }, 3000);
+    }
+
+    function startTimer() {
+        seconds = 0;
+        document.getElementById('callTimer').style.display = 'block';
+        timerInterval = setInterval(() => {
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('callTimer').innerText = 
+                (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }, 1000);
+    }
+
+    function endCall() {
+        document.getElementById('videoCallModal').style.display = 'none';
+        clearInterval(timerInterval);
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+        }
+        document.getElementById('callTimer').style.display = 'none';
+    }
+
+    function toggleMute() {
+        const icon = document.getElementById('muteIcon');
+        if (localStream) {
+            const audioTrack = localStream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+            icon.className = audioTrack.enabled ? 'fas fa-microphone' : 'fas fa-microphone-slash text-danger';
+        }
+    }
+
+    function toggleCamera() {
+        const icon = document.getElementById('cameraIcon');
+        if (localStream) {
+            const videoTrack = localStream.getVideoTracks()[0];
+            videoTrack.enabled = !videoTrack.enabled;
+            icon.className = videoTrack.enabled ? 'fas fa-video' : 'fas fa-video-slash text-danger';
+        }
+    }
+</script>

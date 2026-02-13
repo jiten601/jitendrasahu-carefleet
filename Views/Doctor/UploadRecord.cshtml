@@ -1,0 +1,129 @@
+@model CareFleet.Models.MedicalRecord
+@{
+    ViewData["Title"] = "Upload Record";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "MedicalRecords";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-records-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-800 text-white mb-0">Upload Medical Record</h1>
+                <p class="text-white opacity-75 mb-0">Add a new health document for a patient.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="dashboard-card border-0 shadow-sm overflow-hidden">
+                <div class="card-header-premium px-4 py-3">
+                    <h5 class="fw-bold mb-0">Record Details</h5>
+                </div>
+                <div class="card-body-premium p-4">
+                    <form asp-action="UploadRecord" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Patient</label>
+                                <select asp-for="PatientId" class="form-select bg-light border-0 px-3 py-2 fw-medium" required>
+                                    <option value="">Select Patient</option>
+                                    @if (ViewBag.Patients != null)
+                                    {
+                                        foreach (var patient in ViewBag.Patients)
+                                        {
+                                            <option value="@patient.Id">@patient.FirstName @patient.LastName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="PatientId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Category</label>
+                                <select asp-for="Category" class="form-select bg-light border-0 px-3 py-2 fw-medium" required>
+                                    <option value="General Health">General Health</option>
+                                    <option value="Laboratory">Laboratory</option>
+                                    <option value="Radiology">Radiology</option>
+                                    <option value="Prescription">Prescription</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Document Name</label>
+                                <input asp-for="DocumentName" class="form-control bg-light border-0 px-3 py-2 fw-medium" placeholder="e.g., Annual Physical Report" required />
+                                <span asp-validation-for="DocumentName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Provider</label>
+                                <input asp-for="Provider" class="form-control bg-light border-0 px-3 py-2 fw-medium" placeholder="e.g., CareFleet Clinic" required />
+                                <span asp-validation-for="Provider" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Date Issued</label>
+                                <input asp-for="DateIssued" type="date" class="form-control bg-light border-0 px-3 py-2 fw-medium" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                                <span asp-validation-for="DateIssued" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-uppercase text-secondary">Attach File (PDF, Image)</label>
+                                <div class="upload-zone p-4 text-center border-2 border-dashed rounded-4 bg-light">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="mb-0 fw-medium">Choose a file or drag it here</p>
+                                    <small class="text-muted d-block mb-3">PDF, JPG, or PNG up to 10MB</small>
+                                    <input type="file" name="file" class="form-control d-none" id="fileInput" required />
+                                    <button type="button" class="btn btn-outline-primary fw-bold" onclick="document.getElementById('fileInput').click()">Select File</button>
+                                    <div id="fileNameDisplay" class="mt-2 fw-bold text-success small"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
+                                    <i class="fas fa-check-circle me-2"></i>Save & Upload Record
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('fileInput').onchange = function () {
+            document.getElementById('fileNameDisplay').textContent = "Selected: " + this.files[0].name;
+        };
+    </script>
+}
+
+<style>
+    .upload-zone {
+        border-style: dashed !important;
+        border-color: #dee2e6 !important;
+        transition: all 0.3s ease;
+    }
+    .upload-zone:hover {
+        border-color: var(--primary-color) !important;
+        background-color: rgba(var(--primary-rgb), 0.05) !important;
+    }
+</style>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/doctor-medical-records.css" asp-append-version="true" />
+}

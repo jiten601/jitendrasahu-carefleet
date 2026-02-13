@@ -1,0 +1,89 @@
+.doctor-profile-page {
+    margin: -20px -40px;
+    padding: 40px;
+}
+
+/* Profile Avatar Large */
+.avatar-large-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 800;
+    box-shadow: 0 10px 25px rgba(33, 52, 72, 0.2);
+    border: 4px solid white;
+}
+
+.profile-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.verified-badge-premium {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 32px;
+    height: 32px;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats Mini Grid */
+.stats-mini-grid {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px 5px;
+}
+
+.stat-mini-item {
+    flex: 1;
+    padding: 0 10px;
+}
+
+.stat-val {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 2px;
+}
+
+.stat-lab {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Timeline Dot */
+.timeline-dot-premium {
+    width: 12px;
+    height: 12px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.1);
+}
+
+/* Utility */
+.x-small {
+    font-size: 11px;
+}
+
+.lh-lg {
+    line-height: 1.8;
+}

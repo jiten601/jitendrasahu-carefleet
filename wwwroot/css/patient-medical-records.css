@@ -1,0 +1,68 @@
+/* patient-medical-records.css - Medical Records Specific Styles */
+
+.activity-table-modern {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.activity-table-modern th {
+    background: #fcfcfc;
+    padding: 18px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid var(--border-main);
+}
+
+.activity-table-modern td {
+    padding: 20px;
+    border-bottom: 1px solid #f8fafc;
+    vertical-align: middle;
+}
+
+.doc-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-right: 15px;
+}
+
+.bg-soft-primary {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.bg-soft-info {
+    background: #f0f9ff;
+    color: #06b6d4;
+}
+
+.bg-soft-warning {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+.badge-modern {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.date-text {
+    font-weight: 600;
+    color: #334155;
+}
+
+.provider-info .fw-medium {
+    color: #334155;
+}

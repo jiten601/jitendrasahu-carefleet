@@ -1,3 +1,4 @@
+@model IEnumerable<CareFleet.Models.MedicalRecord>
 @{
     ViewData["Title"] = "Medical Records";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
@@ -10,153 +11,141 @@
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-800 text-white mb-0">Patient Medical Records</h3>
+                <h1 class="fw-800 text-white mb-0">Patient Medical Records</h1>
+                <p class="text-white opacity-75 mb-0">Manage and review patient health documentation.</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                <a href="@Url.Action("UploadRecord", "Doctor")" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
                     <i class="fas fa-upload me-2"></i>Upload Record
-                </button>
+                </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-
-@*     <!-- Main Content -->
-    <div class="premium-card">
-        <div class="card-header-premium d-flex justify-content-between align-items-center">
+    <!-- Main Content -->
+    <div class="dashboard-card border-0 shadow-sm overflow-hidden">
+        <!-- Header -->
+        <div class="card-header-premium d-flex justify-content-between align-items-center px-4 py-3">
             <h5 class="fw-bold mb-0">Recent Documentation</h5>
+
             <div class="search-box">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light border-0"><i class="fas fa-filter text-muted"></i></span>
-                    <select class="form-select bg-light border-0 px-3 fw-bold small">
-                        <option>All Record Types</option>
-                        <option>Lab Results</option>
-                        <option>Physical Reports</option>
-                        <option>Prescriptions</option>
+                    <span class="input-group-text bg-light border-0">
+                        <i class="fas fa-filter text-muted"></i>
+                    </span>
+                    <select class="form-select bg-light border-0 px-3 fw-bold small" id="doctorCategoryFilter">
+                        <option value="All">All Record Types</option>
+                        <option value="Laboratory">Lab Results</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Physical">Physical Reports</option>
+                        <option value="Prescription">Prescriptions</option>
                     </select>
                 </div>
             </div>
         </div>
+
+        <!-- Table -->
         <div class="card-body-premium p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                    <thead class="bg-light border-bottom">
                         <tr>
-                            <th class="px-4 py-3 border-0 small text-uppercase fw-bold text-secondary">Patient</th>
+                            <th class="px-5 py-3 border-0 small text-uppercase fw-bold text-secondary">Patient</th>
                             <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Record Type</th>
                             <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Date Uploaded</th>
                             <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Status</th>
-                            <th class="py-3 border-0 small text-uppercase fw-bold text-secondary">Action</th>
-                  
+                            <th class="py-3 px-4 border-0 small text-uppercase fw-bold text-secondary text-center">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td class="px-4">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold">JD</div>
-                                    <h6 class="mb-0 fw-bold">Jane Doe</h6>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="icon-box-sm bg-primary bg-opacity-10 text-primary">
-                                        <i class="fas fa-file-medical"></i>
+                    <tbody id="doctorRecordsTableBody">
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var record in Model)
+                            {
+                                <tr class="doctor-record-row" data-category="@record.Category">
+                                    <td class="px-5">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold">
+                                                @(record.Patient != null ? (record.Patient.FirstName.Substring(0, 1) + record.Patient.LastName.Substring(0, 1)) : "??")
+                                            </div>
+                                            <h6 class="mb-0 fw-bold">@(record.Patient != null ? $"{record.Patient.FirstName} {record.Patient.LastName}" : "Unknown Patient")</h6>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="icon-box-sm bg-primary bg-opacity-10 text-primary">
+                                                <i class="fas @(record.Category == "Laboratory" ? "fa-vials" : record.Category == "Radiology" ? "fa-x-ray" : "fa-file-medical")"></i>
+                                            </div>
+                                            <div class="fw-bold text-dark small">@record.DocumentName</div>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-secondary small fw-medium">@record.DateIssued.ToString("MMM dd, yyyy")</td>
+
+                                    <td>
+                                        <span class="badge bg-success-subtle text-success border border-success border-opacity-10 px-3 py-2">
+                                            Finalized
+                                        </span>
+                                    </td>
+
+                                    <td class="px-4 text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="@Url.Action("DownloadRecord", "Doctor", new { id = record.Id })" class="btn-action-light" title="Download">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <a href="@Url.Action("EditRecord", "Doctor", new { id = record.Id })" class="btn-action-light" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form asp-action="DeleteRecord" method="post" onsubmit="return confirm('Are you sure you want to delete this record?');" style="display:inline;">
+                                                <input type="hidden" name="id" value="@record.Id" />
+                                                <button type="submit" class="btn-action-light text-danger" title="Delete">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-secondary">
+                                        <i class="fas fa-file-medical fa-3x mb-3 opacity-25"></i>
+                                        <p class="fw-bold mb-0">No medical records found.</p>
+                                        <small>Records you upload for your patients will appear here.</small>
                                     </div>
-                                    <div class="fw-bold text-dark small">Annual Physical Report</div>
-                                </div>
-                            </td>
-                            <td class="text-secondary small fw-medium">Oct 15, 2023</td>
-                            <td>
-                                <span class="badge bg-success-subtle text-success border border-success border-opacity-10 px-3 py-2">Finalized</span>
-                            </td>
-                            <td class="px-4 text-end">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <button class="btn-action-light" title="Download"><i class="fas fa-download"></i></button>
-                                    <button class="btn-action-light" title="Edit"><i class="fas fa-edit"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="px-4">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-sm-circle bg-info-subtle text-info fw-bold">RS</div>
-                                    <h6 class="mb-0 fw-bold">Robert Smith</h6>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="icon-box-sm bg-info bg-opacity-10 text-info">
-                                        <i class="fas fa-vial"></i>
-                                    </div>
-                                    <div class="fw-bold text-dark small">Blood Chemistry Panel</div>
-                                </div>
-                            </td>
-                            <td class="text-secondary small fw-medium">Oct 12, 2023</td>
-                            <td>
-                                <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-10 px-3 py-2">Pending Review</span>
-                            </td>
-                            <td class="px-4 text-end">
-                                <div class="d-flex justify-content-end gap-2">
-                                    <button class="btn-action-light" title="Download"><i class="fas fa-download"></i></button>
-                                    <button class="btn-action-light" title="Edit"><i class="fas fa-edit"></i></button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-</div> *@
+</div>
 
-<style>
-    .doctor-records-page {
-        margin: -20px -40px;
-        padding: 40px;
-    }
+@section Scripts {
+    <script>
+        document.getElementById('doctorCategoryFilter').addEventListener('change', function() {
+            const selectedCategory = this.value;
+            const rows = document.querySelectorAll('.doctor-record-row');
+            
+            rows.forEach(row => {
+                const category = row.dataset.category;
+                if (selectedCategory === 'All' || category.includes(selectedCategory)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}
 
-    .avatar-sm-circle {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-    }
-
-    .icon-box-sm {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-    }
-
-    .btn-action-light {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: #f8f9fa;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        color: var(--text-secondary);
-    }
-
-    .btn-action-light:hover {
-        background: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    .search-box {
-        min-width: 200px;
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/doctor-medical-records.css" asp-append-version="true" />
+}
