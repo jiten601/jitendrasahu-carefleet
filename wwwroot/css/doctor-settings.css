@@ -1,0 +1,649 @@
+/* ============================================================
+   Doctor Settings Page — Premium Styles
+   Carefleet Design System v2
+   ============================================================ */
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.doctor-settings-page {
+    margin: 0;
+}
+
+/* ── Utility helpers (local scope) ───────────────────────── */
+.fw-800 { font-weight: 800; }
+.v-small { font-size: 0.75rem; }
+
+/* ── Profile Summary Sidebar Card ────────────────────────── */
+.profile-summary-card {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-main);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.sticky-sidebar {
+    position: sticky;
+    top: 2rem;
+}
+
+/* ── Avatar ───────────────────────────────────────────────── */
+.avatar-section {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-main);
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 1.25rem;
+}
+
+.avatar-large-circle {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+    color: #ffffff;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(33, 52, 72, 0.25);
+    letter-spacing: -1px;
+    transition: var(--transition);
+}
+
+.avatar-large-circle:hover {
+    transform: scale(1.03);
+}
+
+.avatar-upload-overlay {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+}
+
+.upload-trigger {
+    width: 36px;
+    height: 36px;
+    background: #ffffff;
+    border: 2px solid var(--border-main);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    color: var(--primary-blue);
+    font-size: 0.85rem;
+}
+
+.upload-trigger:hover {
+    background: var(--primary-blue);
+    color: #ffffff;
+    border-color: var(--primary-blue);
+    transform: scale(1.1);
+}
+
+.profile-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 0.35rem;
+}
+
+.profile-email {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.verified-badge-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* ── Profile Completion Bar ───────────────────────────────── */
+.completion-section {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border-main);
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.completion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.progress-bar-custom {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-blue), var(--light-blue));
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Quick Action Links ───────────────────────────────────── */
+.quick-actions-section {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.quick-action-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 13px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: var(--transition);
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    border: 1px solid transparent;
+}
+
+.quick-action-link i:first-child {
+    width: 18px;
+    text-align: center;
+    color: var(--primary-blue);
+    font-size: 0.9rem;
+}
+
+.quick-action-link:hover {
+    background: #f0f6fb;
+    border-color: var(--border-main);
+    color: var(--primary-blue);
+}
+
+/* ── Account Info Mini Section ────────────────────────────── */
+.account-info-section {
+    text-align: left;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-main);
+}
+
+.account-info-section h6 {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 0.85rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.83rem;
+}
+
+.info-label {
+    color: var(--text-secondary);
+}
+
+.info-value {
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.status-badge-active {
+    padding: 3px 10px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* ── Tab Navigation ───────────────────────────────────────── */
+.settings-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    background: #ffffff;
+    padding: 7px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-main);
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 11px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab-btn i {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.tab-btn:hover {
+    background: #f1f7fb;
+    color: var(--primary-blue);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(33, 52, 72, 0.22);
+}
+
+/* ── Tab Content Panels ───────────────────────────────────── */
+.tab-pane-premium {
+    display: none;
+}
+
+.tab-pane-premium.active {
+    display: block;
+    animation: tabFadeIn 0.3s ease;
+}
+
+/* ── Settings Cards (inside tabs) ────────────────────────── */
+.settings-section-card {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-main);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.settings-section-header {
+    padding: 1.4rem 2rem;
+    border-bottom: 1px solid var(--border-main);
+    background: #fbfcfd;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(84, 119, 146, 0.1);
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.settings-section-body {
+    padding: 2rem;
+}
+
+/* ── Modern Form Controls ─────────────────────────────────── */
+.form-group-modern {
+    margin-bottom: 0;
+}
+
+.form-label-modern {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 7px;
+    display: block;
+    letter-spacing: 0.01em;
+}
+
+.form-control-modern {
+    height: 50px;
+    border-radius: 11px;
+    border: 1.5px solid var(--border-main);
+    padding: 12px 16px;
+    font-size: 0.93rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: var(--transition);
+    width: 100%;
+    background: #ffffff;
+}
+
+.form-control-modern:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.12);
+    outline: none;
+    background: #ffffff;
+}
+
+textarea.form-control-modern {
+    height: auto;
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Locked / read-only fields */
+.locked-input {
+    background: #f8fafc !important;
+    color: var(--text-secondary) !important;
+    cursor: not-allowed;
+    border-style: dashed !important;
+}
+
+.input-lock-wrapper {
+    position: relative;
+}
+
+.input-lock-wrapper .lock-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    opacity: 0.4;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.form-hint {
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+    display: block;
+}
+
+/* ── Security Section ─────────────────────────────────────── */
+.security-notice {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4e8 100%);
+    border: 1px solid rgba(84, 119, 146, 0.2);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 1.75rem;
+}
+
+.security-notice i {
+    font-size: 1.4rem;
+    color: var(--primary-blue);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.security-notice p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.security-notice .fw-bold {
+    color: var(--primary-dark);
+}
+
+.security-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 1.25rem 1.5rem;
+    background: #fcfdfe;
+    border: 1px solid var(--border-main);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.security-item + .security-item {
+    margin-top: 0.875rem;
+}
+
+.security-item:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(84, 119, 146, 0.07);
+}
+
+.security-item-icon {
+    width: 46px;
+    height: 46px;
+    background: rgba(84, 119, 146, 0.1);
+    color: var(--primary-blue);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.security-item-content {
+    flex: 1;
+}
+
+.security-item-content h5 {
+    font-size: 0.93rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: var(--primary-dark);
+}
+
+.security-item-content p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+/* ── Footer Action Buttons ────────────────────────────────── */
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-main);
+}
+
+.btn-settings-cancel {
+    padding: 13px 28px;
+    background: #ffffff;
+    color: var(--text-primary);
+    border: 1.5px solid var(--border-main);
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.btn-settings-cancel:hover {
+    background: #f8fafc;
+    border-color: var(--text-secondary);
+}
+
+.btn-settings-save {
+    padding: 13px 32px;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 18px rgba(33, 52, 72, 0.2);
+    transition: var(--transition);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-settings-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(33, 52, 72, 0.28);
+}
+
+.btn-settings-save:disabled {
+    opacity: 0.7;
+    transform: none;
+    cursor: not-allowed;
+}
+
+.btn-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: btnSpin 0.7s linear infinite;
+}
+
+.btn-settings-save.loading .btn-spinner {
+    display: inline-block;
+}
+
+.btn-settings-save.loading .btn-label {
+    opacity: 0.8;
+}
+
+/* ── Success Toast Notification ───────────────────────────── */
+.save-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid var(--border-main);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 280px;
+    transform: translateY(120%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.save-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.save-toast-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.save-toast-body strong {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+.save-toast-body p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes btnSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 991px) {
+    .sticky-sidebar {
+        position: static;
+        margin-bottom: 1.5rem;
+    }
+
+    .settings-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .tab-btn {
+        min-width: 130px;
+        flex-shrink: 0;
+    }
+
+    .save-toast {
+        left: 1rem;
+        right: 1rem;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-summary-card {
+        padding: 1.75rem 1.25rem;
+    }
+
+    .settings-section-body {
+        padding: 1.25rem;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+    }
+
+    .btn-settings-cancel,
+    .btn-settings-save {
+        width: 100%;
+        justify-content: center;
+    }
+}

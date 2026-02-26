@@ -1,16 +1,23 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using CareFleet.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace CareFleet.Controllers
 {
     public class DoctorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public DoctorController(ApplicationDbContext context)
+        public DoctorController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
+            _hostEnvironment = hostEnvironment;
         }
 
         // Check authentication helper
@@ -32,6 +39,7 @@ namespace CareFleet.Controllers
                     ViewBag.UserName = $"{user.FirstName} {user.LastName}".Trim();
                     ViewBag.FirstName = user.FirstName;
                     ViewBag.LastName = user.LastName;
+                    ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.ReceiverEmail == userEmail && !n.IsRead);
                 }
             }
         }
@@ -97,6 +105,26 @@ namespace CareFleet.Controllers
                 doctor.CreatedAt = DateTime.Now;
                 _context.Doctors.Add(doctor);
                 _context.SaveChanges();
+
+                // If admin added this doctor, notify all admins
+                if (HttpContext.Session.GetString("UserRole") == "Admin")
+                {
+                    var adminEmails = _context.Users
+                        .Where(u => u.Role == "Admin")
+                        .Select(u => u.Email).ToList();
+                    foreach (var email in adminEmails)
+                    {
+                        _context.Notifications.Add(new Notification
+                        {
+                            ReceiverEmail = email,
+                            Message = $"New doctor added: Dr. {doctor.FirstName} {doctor.LastName} ({doctor.Email}).",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                    if (adminEmails.Any()) _context.SaveChanges();
+                }
+
                 TempData["Success"] = "Doctor added successfully!";
                 if (HttpContext.Session.GetString("UserRole") == "Admin")
                 {
@@ -172,7 +200,24 @@ namespace CareFleet.Controllers
 
                 doctor.UpdatedAt = DateTime.Now;
                 _context.Update(doctor);
+
+                // Synchronize with ApplicationUser table
+                var user = _context.Users.FirstOrDefault(u => u.Email == doctor.Email);
+                if (user != null)
+                {
+                    user.FirstName = doctor.FirstName;
+                    user.LastName = doctor.LastName;
+                    _context.Users.Update(user);
+                }
+
                 _context.SaveChanges();
+
+                // Update Session if the logged-in doctor is editing their own profile
+                if (HttpContext.Session.GetString("UserEmail") == doctor.Email)
+                {
+                    HttpContext.Session.SetString("UserName", $"{doctor.FirstName} {doctor.LastName}");
+                }
+
                 TempData["Success"] = "Profile updated successfully!";
                 
                 var role = HttpContext.Session.GetString("UserRole");
@@ -190,7 +235,8 @@ namespace CareFleet.Controllers
             SetUserInfo();
             ViewBag.HeaderTitle = "Edit Profile";
             ViewBag.ActivePage = "Settings";
-            return View(HttpContext.Session.GetString("UserRole") == "Doctor" ? "Settings" : "Edit", doctor);
+            string viewName = HttpContext.Session.GetString("UserRole") == "Doctor" ? "~/Views/Doctor/Settings.cshtml" : "~/Views/Doctor/Edit.cshtml";
+            return View(viewName, doctor);
         }
 
         // POST: Doctor/Delete/5
@@ -235,7 +281,14 @@ namespace CareFleet.Controllers
                 .Take(5)
                 .ToList();
 
+            var recentActivity = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .OrderByDescending(a => a.AppointmentDate)
+                .Take(5)
+                .ToList();
+
             ViewBag.UpcomingAppointments = upcomingAppointments;
+            ViewBag.RecentActivity = recentActivity;
             
             // Statistics
             // Statistics - Filtered by Doctor
@@ -262,6 +315,27 @@ namespace CareFleet.Controllers
             ViewBag.ActivePage = "Dashboard";
 
             return View();
+        }
+
+        // GET: Doctor/Activity
+        public IActionResult Activity()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            SetUserInfo();
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            // Get all recent appointments for this doctor
+            var appointments = _context.Set<Appointment>()
+                .Where(a => (a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName)))
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToList();
+
+            ViewBag.HeaderTitle = "Recent Patient Activity";
+            ViewBag.ActivePage = "Activity";
+
+            return View(appointments);
         }
 
         public IActionResult Appointments(string searchString)
@@ -318,22 +392,328 @@ namespace CareFleet.Controllers
             return View(patients);
         }
 
-        public IActionResult Messages()
+        public IActionResult Messages(string? receiverEmail)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            ViewBag.HeaderTitle = "Messages";
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+
+            // Get patients from appointments
+            var patientNamesFromApps = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .Select(a => a.PatientName)
+                .Distinct()
+                .ToList();
+
+            var patientsFromApps = _context.Patients
+                .AsEnumerable()
+                .Where(p => patientNamesFromApps.Any(n => n.Contains(p.FirstName) && n.Contains(p.LastName)))
+                .ToList();
+
+            // Get patients from messages
+            var emailsFromMessages = _context.Messages
+                .Where(m => m.SenderEmail == doctor.Email || m.ReceiverEmail == doctor.Email)
+                .Select(m => m.SenderEmail == doctor.Email ? m.ReceiverEmail : m.SenderEmail)
+                .Distinct()
+                .ToList();
+
+            var messageContacts = _context.Patients
+                .Where(p => emailsFromMessages.Contains(p.Email))
+                .ToList();
+
+            // Union contacts
+            var allContacts = patientsFromApps.Union(messageContacts, new PatientComparer()).ToList();
+
+            ViewBag.Contacts = allContacts;
+            ViewBag.SelectedContactEmail = receiverEmail ?? allContacts.FirstOrDefault()?.Email;
+            string selectedEmail = ViewBag.SelectedContactEmail;
+
+            if (!string.IsNullOrEmpty(selectedEmail))
+            {
+                var selectedPatient = allContacts.FirstOrDefault(p => p.Email == selectedEmail);
+                ViewBag.SelectedContactName = selectedPatient != null ? $"{selectedPatient.FirstName} {selectedPatient.LastName}" : "Patient";
+
+                var chatHistory = _context.Messages
+                    .Where(m => (m.SenderEmail == doctor.Email && m.ReceiverEmail == selectedEmail) ||
+                                (m.SenderEmail == selectedEmail && m.ReceiverEmail == doctor.Email))
+                    .OrderBy(m => m.Timestamp)
+                    .ToList();
+
+                ViewBag.ChatHistory = chatHistory;
+
+                // Mark received messages as read
+                var unread = chatHistory.Where(m => m.ReceiverEmail == doctor.Email && !m.IsRead).ToList();
+                if (unread.Any())
+                {
+                    unread.ForEach(m => m.IsRead = true);
+                    _context.SaveChanges();
+                }
+            }
+
             ViewBag.ActivePage = "Messages";
+            ViewBag.HeaderTitle = "Secure Messaging";
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(string receiverEmail, string content, IFormFile? file)
+        {
+            if (!IsDoctor()) return Unauthorized();
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return Unauthorized();
+
+            if ((!string.IsNullOrEmpty(content) || file != null) && !string.IsNullOrEmpty(receiverEmail))
+            {
+                var message = new Message
+                {
+                    SenderEmail = doctor.Email,
+                    ReceiverEmail = receiverEmail,
+                    Content = content ?? string.Empty,
+                    Timestamp = DateTime.Now,
+                    IsRead = false
+                };
+
+                if (file != null && file.Length > 0)
+                {
+                    string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "uploads", "messages");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
+
+                    message.AttachmentPath = "/uploads/messages/" + uniqueFileName;
+                    message.AttachmentName = file.FileName;
+                }
+
+                _context.Messages.Add(message);
+                await _context.SaveChangesAsync();
+
+                // Notify the patient they received a new message
+                var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                _context.Notifications.Add(new Notification
+                {
+                    ReceiverEmail = receiverEmail,
+                    Message = $"{doctorName} sent you a message.",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Messages), new { receiverEmail = receiverEmail });
+        }
+
+        // Helper class for Union
+        private class PatientComparer : System.Collections.Generic.IEqualityComparer<Patient>
+        {
+            public bool Equals(Patient x, Patient y) => x.Id == y.Id;
+            public int GetHashCode(Patient obj) => obj.Id.GetHashCode();
         }
 
         public IActionResult MedicalRecords()
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
+            
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            // Filter patients who have had appointments with this doctor
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            var patientNames = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .Select(a => a.PatientName)
+                .Distinct()
+                .ToList();
+
+            var patientIds = _context.Patients
+                .AsEnumerable()
+                .Where(p => patientNames.Any(n => n.Contains(p.FirstName) && n.Contains(p.LastName)))
+                .Select(p => p.Id)
+                .ToList();
+
+            var records = _context.MedicalRecords
+                .Include(m => m.Patient)
+                .Where(m => patientIds.Contains(m.PatientId))
+                .OrderByDescending(m => m.DateIssued)
+                .ToList();
+
             ViewBag.HeaderTitle = "Medical Records Access";
             ViewBag.ActivePage = "MedicalRecords";
+            return View(records);
+        }
+
+        // GET: Doctor/UploadRecord
+        public IActionResult UploadRecord()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            // Only show patients associated with this doctor
+            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+            var patientNames = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .Select(a => a.PatientName)
+                .Distinct()
+                .ToList();
+
+            var patients = _context.Patients
+                .AsEnumerable()
+                .Where(p => patientNames.Any(n => n.Contains(p.FirstName) && n.Contains(p.LastName)))
+                .ToList();
+
+            ViewBag.Patients = patients;
+            ViewBag.HeaderTitle = "Upload Medical Record";
+            ViewBag.ActivePage = "MedicalRecords";
             return View();
+        }
+
+        // POST: Doctor/UploadRecord
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadRecord(MedicalRecord record, IFormFile? file)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            if (file != null && file.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "uploads", "medical_records");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                record.FilePath = "/uploads/medical_records/" + uniqueFileName;
+                record.FileType = Path.GetExtension(file.FileName).ToUpper().Replace(".", "");
+                
+                if (record.DateIssued == default) record.DateIssued = DateTime.Now;
+
+                _context.MedicalRecords.Add(record);
+                await _context.SaveChangesAsync();
+
+                // Create notification for patient
+                var patient = _context.Patients.Find(record.PatientId);
+                var doctor = GetLoggedInDoctor();
+                if (patient != null && doctor != null)
+                {
+                    var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                    var notification = new Notification
+                    {
+                        ReceiverEmail = patient.Email,
+                        Message = $"A new medical record '{record.DocumentName}' has been uploaded for you by {doctorName}.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.Notifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["Success"] = "Medical record uploaded successfully!";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            TempData["Error"] = "Please select a file to upload.";
+            return RedirectToAction(nameof(UploadRecord));
+        }
+
+        // GET: Doctor/DownloadRecord/5
+        public IActionResult DownloadRecord(int id)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            var record = _context.MedicalRecords.Find(id);
+            if (record == null || string.IsNullOrEmpty(record.FilePath))
+            {
+                TempData["Error"] = "Record not found.";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            string filePath = Path.Combine(_hostEnvironment.WebRootPath, record.FilePath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath))
+            {
+                TempData["Error"] = "File not found on server.";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes, "application/octet-stream", record.DocumentName + Path.GetExtension(record.FilePath));
+        }
+
+        // GET: Doctor/EditRecord/5
+        public IActionResult EditRecord(int id)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var record = _context.MedicalRecords.Include(m => m.Patient).FirstOrDefault(m => m.Id == id);
+            if (record == null) return NotFound();
+
+            ViewBag.HeaderTitle = "Edit Medical Record";
+            ViewBag.ActivePage = "MedicalRecords";
+            return View(record);
+        }
+
+        // POST: Doctor/EditRecord/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRecord(int id, MedicalRecord record)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+            if (id != record.Id) return NotFound();
+
+            var existingRecord = _context.MedicalRecords.AsNoTracking().FirstOrDefault(m => m.Id == id);
+            if (existingRecord == null) return NotFound();
+
+            // Preserve file info if not being changed (currently not supporting file update in Edit)
+            record.FilePath = existingRecord.FilePath;
+            record.FileType = existingRecord.FileType;
+            record.PatientId = existingRecord.PatientId;
+
+            _context.Update(record);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Record updated successfully!";
+            return RedirectToAction(nameof(MedicalRecords));
+        }
+
+        // POST: Doctor/DeleteRecord/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRecord(int id)
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            var record = _context.MedicalRecords.Find(id);
+            if (record != null)
+            {
+                if (!string.IsNullOrEmpty(record.FilePath))
+                {
+                    string filePath = Path.Combine(_hostEnvironment.WebRootPath, record.FilePath.TrimStart('/'));
+                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                }
+
+                _context.MedicalRecords.Remove(record);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Record deleted successfully!";
+            }
+
+            return RedirectToAction(nameof(MedicalRecords));
         }
 
         public IActionResult Settings()
@@ -347,7 +727,7 @@ namespace CareFleet.Controllers
             ViewBag.HeaderTitle = "Profile Settings";
             ViewBag.ActivePage = "Settings";
             ViewBag.UserEmail = doctor.Email;
-            return View(doctor);
+            return View("~/Views/Doctor/Settings.cshtml", doctor);
         }
 
         public IActionResult Profile()
@@ -361,7 +741,7 @@ namespace CareFleet.Controllers
             ViewBag.HeaderTitle = "My Profile";
             ViewBag.ActivePage = "Profile";
             ViewBag.UserEmail = doctor.Email;
-            return View(doctor);
+            return View("~/Views/Doctor/Profile.cshtml", doctor);
         }
 
 
@@ -431,9 +811,8 @@ namespace CareFleet.Controllers
                     // Create notification for patient
                     var notification = new Notification
                     {
-                        PatientId = patient.Id,
+                        ReceiverEmail = patient.Email,
                         Message = $"Your appointment with {doctorName} on {appointment.AppointmentDate:MMM dd} has been updated to: {status}.",
-                        CreatedAt = DateTime.Now,
                         IsRead = false
                     };
 

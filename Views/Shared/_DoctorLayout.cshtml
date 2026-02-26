@@ -17,7 +17,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/doctor-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/notifications.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <div class="dashboard-container">
@@ -69,10 +72,24 @@
                         <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
                     }
                     <div class="header-actions">
-                        <button class="notification-btn">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge">5</span>
-                        </button>
+                        <div class="notification-container">
+                            <button class="notification-btn notiBtn">
+                                <i class="fas fa-bell"></i>
+                                @if (ViewBag.UnreadNotifications > 0)
+                                {
+                                    <span class="notification-badge notiBadge">@ViewBag.UnreadNotifications</span>
+                                }
+                            </button>
+                            <div class="notification-dropdown notiDropdown">
+                                <div class="notification-header">
+                                    <h5 class="text-dark">Notifications</h5>
+                                    <button class="mark-all-btn" onclick="markAllAsRead(event)">Mark all as read</button>
+                                </div>
+                                <div class="notification-list notiList">
+                                    <div class="notification-empty">Loading notifications...</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="user-profile dropdown" id="dropdownTrigger">
                             <div class="avatar">@initials.ToUpper()</div>
                             <i class="fas fa-chevron-down ms-2"></i>
@@ -89,7 +106,7 @@
             else
             {
                 <!-- Minimal Header when using Premium Card -->
-                <header class="content-header px-4" style="margin-bottom: 0;">
+                <header class="content-header px-4 mb-0">
                     @if (activePage == "Dashboard")
                     {
                         <h2 class="welcome-text fw-bold">Welcome, Dr. @firstName @lastName!</h2>
@@ -99,10 +116,24 @@
                         <h2 class="welcome-text fw-bold">@ViewBag.HeaderTitle</h2>
                     }
                     <div class="header-actions">
-                        <button class="notification-btn">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge">5</span>
-                        </button>
+                        <div class="notification-container">
+                            <button class="notification-btn notiBtn">
+                                <i class="fas fa-bell"></i>
+                                @if (ViewBag.UnreadNotifications > 0)
+                                {
+                                    <span class="notification-badge notiBadge">@ViewBag.UnreadNotifications</span>
+                                }
+                            </button>
+                            <div class="notification-dropdown notiDropdown">
+                                <div class="notification-header">
+                                    <h5 class="text-dark">Notifications</h5>
+                                    <button class="mark-all-btn" onclick="markAllAsRead(event)">Mark all as read</button>
+                                </div>
+                                <div class="notification-list notiList">
+                                    <div class="notification-empty">Loading notifications...</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="user-profile dropdown" id="dropdownTrigger">
                             <div class="avatar">@initials.ToUpper()</div>
                             <i class="fas fa-chevron-down ms-2"></i>
@@ -122,9 +153,9 @@
             <div class="dashboard-content">
                 @if (TempData["Success"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="background: white; border-left: 5px solid var(--success) !important;">
+                    <div class="alert alert-success alert-dismissible fade show alert-premium alert-premium-success mb-4" role="alert">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-3" style="font-size: 20px;"></i>
+                            <i class="fas fa-check-circle text-success me-3 fs-5"></i>
                             <div class="text-dark fw-medium">@TempData["Success"]</div>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -148,6 +179,95 @@
             $(document).on('click', function() {
                 $('#userMenu').removeClass('show');
             });
+        });
+
+        // Notification Logic
+        function fetchNotifications() {
+            fetch('/Notification/GetNotifications')
+                .then(response => response.json())
+                .then(data => {
+                    const lists = document.querySelectorAll('.notiList');
+                    lists.forEach(list => {
+                        if (data.length === 0) {
+                            list.innerHTML = '<div class="notification-empty">No notifications yet</div>';
+                            return;
+                        }
+                        
+                        list.innerHTML = data.map(item => `
+                            <div class="notification-item ${item.isRead ? '' : 'unread'}"
+                                 style="cursor:pointer;"
+                                 onclick="handleNotificationClick(${item.id}, '${item.targetUrl}', event)">
+                                <div class="notification-content text-dark">${item.message}</div>
+                                <div class="notification-time">${item.createdAt}</div>
+                            </div>
+                        `).join('');
+                    });
+
+                    // Update badge count live
+                    const unreadCount = data.filter(n => !n.isRead).length;
+                    document.querySelectorAll('.notiBadge').forEach(b => {
+                        if (unreadCount > 0) {
+                            b.textContent = unreadCount;
+                            b.style.display = '';
+                        } else {
+                            b.style.display = 'none';
+                        }
+                    });
+                });
+        }
+
+        function handleNotificationClick(id, targetUrl, e) {
+            e.stopPropagation();
+            fetch('/Notification/MarkAsRead/' + id, { method: 'POST' })
+                .then(() => {
+                    if (targetUrl && targetUrl !== '') {
+                        window.location.href = targetUrl;
+                    } else {
+                        fetchNotifications();
+                    }
+                });
+        }
+
+        function markAsRead(id, e) {
+            e.stopPropagation();
+            fetch('/Notification/MarkAsRead/' + id, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        fetchNotifications();
+                    }
+                });
+        }
+
+        function markAllAsRead(e) {
+            e.stopPropagation();
+            fetch('/Notification/MarkAllAsRead', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        fetchNotifications();
+                        document.querySelectorAll('.notiBadge').forEach(b => b.style.display = 'none');
+                    }
+                });
+        }
+
+        document.querySelectorAll('.notiBtn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const dropdown = this.parentElement.querySelector('.notiDropdown');
+                const isShowing = dropdown.classList.contains('show');
+                
+                document.querySelectorAll('.notiDropdown.show').forEach(d => d.classList.remove('show'));
+                
+                if (!isShowing) {
+                    dropdown.classList.add('show');
+                    fetchNotifications();
+                }
+            });
+        });
+
+        $(document).on('click', function(event) {
+            if (!$(event.target).closest('.notification-container').length) {
+                $('.notiDropdown.show').removeClass('show');
+            }
         });
 
         // Track last visited page for "Remember Me"

@@ -1,0 +1,87 @@
+.doctor-records-page {
+    margin: -20px -40px;
+    padding: 40px;
+}
+
+.avatar-sm-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.icon-box-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.btn-action-light {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #64748b;
+    /* explicit base icon colour — never transparent */
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-action-light:hover {
+    background: #547792;
+    border-color: #547792;
+    color: #ffffff !important;
+    /* icon turns white on hover — never transparent */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(84, 119, 146, 0.35);
+}
+
+/* Delete button stays red-tinted */
+.btn-action-light.text-danger {
+    color: #ef4444;
+}
+
+.btn-action-light.text-danger:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+/* Keep icon colour visible at all times */
+.btn-action-light i,
+.btn-action-light:hover i {
+    pointer-events: none;
+}
+
+.search-box {
+    min-width: 200px;
+}
+
+.btn-premium {
+    background: #547792;
+    border-color: #547792;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+.btn-premium:hover {
+    background: #3a5a72;
+    border-color: #3a5a72;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(84, 119, 146, 0.35);
+}

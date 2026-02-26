@@ -1,0 +1,119 @@
+@model IEnumerable<CareFleet.Models.Appointment>
+@{
+    ViewData["Title"] = "Recent Activity";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Activity";
+    ViewBag.HideHeader = true;
+}
+
+<div class="doctor-activity-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-800 text-white mb-0">Recent Patient Activity</h1>
+                <p class="text-white opacity-75 mb-0">Detailed log of patient interactions and appointments.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Dashboard", "Doctor")" class="btn-premium-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-card p-0 overflow-hidden">
+        <div class="card-header-premium d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="fw-bold mb-0">All Recent Activity</h5>
+            <div class="badge bg-primary-subtle text-primary fw-700 px-3 py-2 rounded-pill">
+                @Model.Count() Total Records
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="activity-table-modern">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Patient</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Date & Time</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var appt in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @{
+                                            var nameParts = appt.PatientName?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                            var initials = "";
+                                            if (nameParts != null && nameParts.Length > 0)
+                                            {
+                                                initials = string.Join("", nameParts.Select(p => p[0].ToString()));
+                                            }
+                                            else
+                                            {
+                                                initials = "PA";
+                                            }
+                                        }
+                                        <div class="avatar-sm-premium">@initials.ToUpper()</div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@appt.PatientName</h6>
+                                            <small class="text-muted">Appointment</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@appt.Reason</td>
+                                <td>
+                                    @{
+                                        var statusClass = appt.Status switch {
+                                            "Confirmed" => "status-pill-success",
+                                            "Pending" => "status-pill-warning",
+                                            "Cancelled" => "status-pill-danger",
+                                            _ => "status-pill-info"
+                                        };
+                                        var statusIcon = appt.Status switch {
+                                            "Confirmed" => "fa-check-circle",
+                                            "Pending" => "fa-clock",
+                                            "Cancelled" => "fa-times-circle",
+                                            _ => "fa-info-circle"
+                                        };
+                                    }
+                                    <span class="status-pill @statusClass">
+                                        <i class="fas @statusIcon me-1"></i>@appt.Status
+                                    </span>
+                                </td>
+                                <td class="text-secondary small">
+                                    <div>@appt.AppointmentDate.ToString("MMM dd, yyyy")</div>
+                                    <div>@appt.TimeSlot</div>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="@Url.Action("AppointmentDetails", "Doctor", new { id = appt.Id })" class="btn-action-light ms-auto" title="View Details"><i class="fas fa-eye"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-history d-block mb-3 opacity-25 fs-1"></i>
+                                No activity records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/doctor-dashboard.css" asp-append-version="true" />
+}

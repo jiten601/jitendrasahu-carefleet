@@ -2,53 +2,53 @@
 @{
     ViewData["Title"] = "Admin Settings";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    
-    var user = Model ?? new CareFleet.Models.ApplicationUser { 
+
+    var user = Model ?? new CareFleet.Models.ApplicationUser
+    {
         Id = 0,
-        FirstName = ViewBag.FirstName?.ToString() ?? "Admin", 
-        LastName = ViewBag.LastName?.ToString() ?? "User", 
+        FirstName = ViewBag.FirstName?.ToString() ?? "Admin",
+        LastName = ViewBag.LastName?.ToString() ?? "User",
         Email = ViewBag.UserEmail?.ToString() ?? "admin@carefleet.com"
     };
-    
-    var initials = ((user.FirstName?.Length > 0 ? user.FirstName.Substring(0, 1) : "A") + 
+
+    var initials = ((user.FirstName?.Length > 0 ? user.FirstName.Substring(0, 1) : "A") +
                    (user.LastName?.Length > 0 ? user.LastName.Substring(0, 1) : "D")).ToUpper();
-    
-    // Calculate profile completion
-    int completedFields = 0;
-    int totalFields = 4;
-    if (!string.IsNullOrEmpty(user.FirstName)) { completedFields++; }
-    if (!string.IsNullOrEmpty(user.LastName)) { completedFields++; }
-    if (!string.IsNullOrEmpty(user.Email)) { completedFields++; }
-    if (!string.IsNullOrEmpty(user.Role)) { completedFields++; }
-    int profileCompletion = (int)((completedFields / (double)totalFields) * 100);
+
     ViewBag.ActivePage = "Settings";
     ViewBag.HideHeader = true;
 }
 
-<div class="admin-settings-page fade-in">
-    <!-- Premium Header Card -->
-    <div class="premium-header-card mb-4">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-settings.css" asp-append-version="true" />
+}
+
+<div class="admin-settings-page fade-in py-5">
+
+    <!-- Premium Header -->
+    <div class="premium-header-card mb-5">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-800 text-white mb-0">Account & Profile Settings</h3>
+                <h1 class="fw-bold text-white mb-2">Account Settings</h1>
+                <p class="text-white-50 mb-0">Manage your profile and system security preferences</p>
+            </div>
+            <div class="header-actions">
+                <div class="profile-badge-premium">
+                    <div class="avatar-circle">@initials</div>
+                    <div class="badge-text text-white">
+                        <span class="d-block fw-bold">@user.FirstName @user.LastName</span>
+                        <span class="d-block small text-white-50">Administrator</span>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-
-    <div class="row g-4 d-flex justify-content-center">
-        <!-- Main Content -->
+    <div class="row g-5 d-flex justify-content-center">
         <div class="col-lg-8">
-            <div class="premium-tabs mb-4">
-                <button class="nav-link-premium active" data-tab="personal" id="personalTab">
-                    <i class="fas fa-user"></i> Personal
-                </button>
-                <button class="nav-link-premium" data-tab="account" id="accountTab">
-                    <i class="fas fa-user-shield"></i> Account & Security
-                </button>
-            </div>
 
+            <!-- Tabs -->
             <form method="post" action="@Url.Action("Profile", "Admin")" id="settingsForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" value="@user.Id" />
@@ -56,98 +56,87 @@
                 <input type="hidden" name="Role" value="@user.Role" />
                 <input type="hidden" name="PasswordHash" value="@user.PasswordHash" />
 
-                <!-- Tab Content -->
-                <div class="tab-content-container">
-                    <!-- Personal Info Tab -->
-                    <div class="tab-pane-premium active" data-content="personal">
-                        <div class="premium-card">
-                            <div class="card-header-premium">
-                                <h5 class="fw-bold mb-0">Personal Profile</h5>
-                            </div>
-                            <div class="card-body-premium p-4">
-                                <div class="row g-4">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="text-muted small fw-bold mb-2">First Name</label>
-                                            <input type="text" class="form-control p-3 border-2" name="FirstName" value="@user.FirstName" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label class="text-muted small fw-bold mb-2">Last Name</label>
-                                            <input type="text" class="form-control p-3 border-2" name="LastName" value="@user.LastName" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-group mb-3">
-                                            <label class="text-muted small fw-bold mb-2">Email Address</label>
-                                            <input type="email" class="form-control p-3 bg-light border-0" value="@user.Email" readonly disabled>
-                                            <p class="text-muted x-small mt-1">Email address cannot be changed for security reasons.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Single Profile Section (No Tabs) -->
+                <div class="premium-card">
+                    <div class="card-header-premium">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-user-edit me-2"></i>Personal Profile Information
+                        </h5>
                     </div>
-
-                    <!-- Account & Security Tab -->
-                    <div class="tab-pane-premium" data-content="account">
-                        <div class="premium-card">
-                            <div class="card-header-premium">
-                                <h5 class="fw-bold mb-0">Account & Security</h5>
-                            </div>
-                            <div class="card-body-premium p-4">
-                                <div class="mb-4">
-                                    <h6 class="fw-bold mb-3">System Role</h6>
-                                    <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
-                                        <span class="text-dark fw-bold">Administrator</span>
-                                        <span class="badge bg-success">Active</span>
-                                    </div>
+                    <div class="card-body-premium">
+                        <h6 class="settings-section-title">Identity Details</h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-user"></i> First Name
+                                    </label>
+                                    <input type="text" class="form-control" name="FirstName" value="@user.FirstName" required>
                                 </div>
-                                <div class="mb-0">
-                                    <h6 class="fw-bold mb-3">Security Actions</h6>
-                                    <div class="d-grid gap-2">
-                                        <button type="button" class="btn btn-outline-secondary text-start p-3" disabled>
-                                            <i class="fas fa-key me-2"></i> Update Password (Contact IT Support)
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary text-start p-3" disabled>
-                                            <i class="fas fa-shield-alt me-2"></i> Two-Factor Authentication (Disabled)
-                                        </button>
-                                    </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-user"></i> Last Name
+                                    </label>
+                                    <input type="text" class="form-control" name="LastName" value="@user.LastName" required>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">
+                                        <i class="fas fa-envelope"></i> Email Address <span class="text-muted ms-2">(Read-only)</span>
+                                    </label>
+                                    <input type="email" class="form-control"
+                                           style="background-color: #f8fafc; cursor: not-allowed;"
+                                           value="@user.Email"
+                                           readonly disabled><br></br>
+                                    <p class="text-muted small mt-4 mb-0">
+                                        <i class="fas fa-info-circle me-1"></i> Email address is used for system identity and cannot be changed here.
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
-                <div class="d-flex justify-content-center gap-3 mt-5">
-                    <button type="button" class="btn btn-light px-5 py-2 fw-bold rounded-pill" onclick="window.location.href='@Url.Action("Profile", "Admin")'">Back to Profile</button>
-                    <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow-sm">Save Profile Updates</button>
+                <!-- Footer Buttons -->
+                <div class="d-flex justify-content-center gap-4 mt-5 pt-4">
+                    <button type="submit" class="btn-primary-small"
+                            style="padding: 16px 50px; font-size: 16px;">
+                        <i class="fas fa-check-circle me-2"></i> Save Changes
+                    </button>
+
+                    <button type="reset" class="btn-primary-small"
+                            style="background: #f1f5f9; color: #475569;
+                                   padding: 16px 50px; font-size: 16px;
+                                   border: 1px solid #e2e8f0; box-shadow: none;">
+                        Reset Form
+                    </button>
                 </div>
             </form>
-        </div>
     </div>
 </div>
 
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.nav-link-premium');
-        const contents = document.querySelectorAll('.tab-pane-premium');
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.nav-link-premium');
+            const contents = document.querySelectorAll('.tab-pane-premium');
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                const target = tab.getAttribute('data-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
 
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
 
-                tab.classList.add('active');
-                const targetPane = document.querySelector(`.tab-pane-premium[data-content="${target}"]`);
-                if (targetPane) targetPane.classList.add('active');
+                    tab.classList.add('active');
+                    document.querySelector(`.tab-pane-premium[data-content="${target}"]`)
+                        .classList.add('active');
+                });
             });
         });
-    });
-</script>
+    </script>
+}

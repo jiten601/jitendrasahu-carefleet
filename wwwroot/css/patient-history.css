@@ -1,0 +1,441 @@
+/* Patient Activity History - Premium System Design v2.0 */
+
+/* Activity Table Modern */
+.activity-table-modern {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.activity-table-modern th {
+    padding: 16px 20px;
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-main);
+}
+
+.activity-table-modern td {
+    padding: 18px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.activity-table-modern tr:last-child td {
+    border-bottom: none;
+}
+
+.activity-table-modern tr:hover td {
+    background: #f8fafc;
+}
+
+/* Status Pills */
+.status-pill {
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status-pill-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.status-pill-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.status-pill-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.status-pill-info {
+    background: rgba(84, 119, 146, 0.1);
+    color: var(--primary-blue);
+}
+
+.avatar-sm-premium {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--primary-dark);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.activity-history-page {
+    margin: 0;
+}
+
+/* Activity Insight Stats */
+.activity-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 3rem;
+}
+
+.stat-entry {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-main);
+    text-align: center;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-entry:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-blue);
+}
+
+.stat-val {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 5px;
+}
+
+.stat-lab {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Activity Intelligence Filter Bar */
+.activity-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1.2rem 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-main);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filter-label {
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 0.9rem;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-pill {
+    padding: 10px 20px;
+    border-radius: 100px;
+    border: 1px solid var(--border-main);
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-pill:hover {
+    background: white;
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.filter-pill.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    box-shadow: 0 4px 12px rgba(84, 119, 146, 0.25);
+}
+
+/* Date Grouping Headers */
+.date-group-section {
+    position: relative;
+    margin-bottom: 4rem;
+}
+
+.date-group-header {
+    position: sticky;
+    top: 1rem;
+    z-index: 10;
+    margin-bottom: 2.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.date-header-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--primary-dark);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Registry Matrix Container */
+.registry-matrix {
+    position: relative;
+    padding-left: 20px;
+}
+
+.registry-matrix-line {
+    position: absolute;
+    left: 45px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-main);
+    opacity: 0.4;
+}
+
+/* Activity Registry Item */
+.registry-item-entry {
+    position: relative;
+    padding-left: 70px;
+    margin-bottom: 2rem;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.registry-item-entry.hidden {
+    display: none;
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+/* Timeline Marker Intelligence */
+.registry-marker {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    z-index: 2;
+    background: white;
+    border: 2px solid var(--border-main);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.registry-item-entry:hover .registry-marker {
+    transform: translateY(-50%) scale(1.1) rotate(-5deg);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-blue);
+}
+
+/* Marker Type Variants */
+.marker-appointment {
+    color: var(--primary-blue);
+    border-color: rgba(84, 119, 146, 0.3);
+}
+
+.marker-message {
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.marker-medicalrecord {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.marker-account {
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Registry Card */
+.registry-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-main);
+    padding: 1.8rem 2.2rem;
+    transition: var(--transition);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.registry-item-meta {
+    flex: 1;
+}
+
+.registry-item-entry:hover .registry-card {
+    border-color: var(--primary-blue);
+    transform: translateX(12px);
+    box-shadow: var(--shadow-md);
+}
+
+.registry-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+}
+
+.registry-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.registry-time-stamp {
+    text-align: right;
+    min-width: 150px;
+}
+
+.stamp-date {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--primary-blue);
+    margin-bottom: 2px;
+}
+
+.stamp-time {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Type Badges */
+.type-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.badge-appointment {
+    background: rgba(84, 119, 146, 0.1);
+    color: var(--primary-blue);
+}
+
+.badge-message {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.badge-medicalrecord {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.badge-account {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+/* Empty State Registry */
+.empty-registry {
+    text-align: center;
+    padding: 6rem 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-main);
+    box-shadow: var(--shadow-sm);
+}
+
+.empty-registry i {
+    font-size: 4.5rem;
+    color: #e2e8f0;
+    margin-bottom: 2rem;
+}
+
+.empty-registry h4 {
+    color: var(--primary-dark);
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 991px) {
+    .activity-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .registry-matrix {
+        padding-left: 0;
+    }
+
+    .registry-matrix-line {
+        left: 18px;
+    }
+
+    .registry-item-entry {
+        padding-left: 45px;
+    }
+
+    .registry-marker {
+        left: 8px;
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .registry-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.5rem;
+    }
+
+    .registry-time-stamp {
+        text-align: left;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #f1f5f9;
+        width: 100%;
+    }
+
+    .date-header-content {
+        padding: 8px 18px;
+        font-size: 0.8rem;
+    }
+}
