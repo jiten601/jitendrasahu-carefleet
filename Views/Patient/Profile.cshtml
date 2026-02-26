@@ -17,212 +17,222 @@
     var memberSince = patient.CreatedAt.ToString("MMMM yyyy");
 }
 
-<div class="profile-page">
-    <!-- Hero Section -->
-    <div class="profile-hero">
-        <div class="hero-background"></div>
-        <div class="container-fluid px-5">
-            <div class="row align-items-end">
-                <div class="col-lg-8">
-                    <div class="d-flex align-items-end gap-4">
-                        <div class="profile-avatar-large">
-                            <div class="avatar-circle">@initials</div>
-                            <div class="verified-badge">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                        </div>
-                        <div class="hero-info pb-3">
-                            <h1 class="doctor-name mb-2">@patient.FirstName @patient.LastName</h1>
-                            <p class="specialization mb-3">
-                                <i class="fas fa-id-card me-2"></i>Patient ID: #PAT-@patient.Id.ToString("D4")
-                            </p>
-                            <div class="d-flex gap-3 flex-wrap">
-                                <span class="info-badge">
-                                    <i class="fas fa-calendar-check me-2"></i>Member since @memberSince
-                                </span>
-                                <span class="info-badge">
-                                    <i class="fas fa-tint me-2"></i>Blood Group: @(string.IsNullOrEmpty(patient.BloodGroup) ? "Not Set" : patient.BloodGroup)
-                                </span>
-                                <span class="info-badge">
-                                    <i class="fas fa-venus-mars me-2"></i>@patient.Gender
-                                </span>
-                            </div>
+<div class="profile-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <div class="header-breadcrumb mb-2">
+                    <a href="@Url.Action("Dashboard", "Patient")" class="text-white text-decoration-none opacity-75 hvr-opacity">Dashboard</a>
+                    <i class="fas fa-chevron-right mx-2 small opacity-50 text-white"></i>
+                    <span class="text-white fw-bold">My Profile</span>
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="header-avatar-circle">@initials</div>
+                    <div>
+                        <h2 class="fw-800 text-white mb-2">@patient.FirstName @patient.LastName</h2>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <span class="info-badge-light">
+                                <i class="fas fa-id-card me-2"></i>ID: PAT-@(patient.Id.ToString("D4"))
+                            </span>
+                            <span class="info-badge-light">
+                                <i class="fas fa-check-circle me-2"></i>Verified Profile
+                            </span>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-4 text-lg-end pb-3">
-                    <a href="@Url.Action("Settings", "Patient")" class="btn btn-edit-profile">
-                        <i class="fas fa-edit me-2"></i>Edit Profile
-                    </a>
                 </div>
             </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Settings", "Patient")" class="btn-premium-light">
+                    <i class="fas fa-user-cog me-2"></i>Edit Settings
+                </a>
+            </div>
         </div>
+        <div class="header-bg-pattern"></div>
     </div>
 
-    <!-- Main Content -->
-    <div class="container-fluid px-5 py-5">
-        <div class="row g-4">
-            <!-- Left Column -->
-            <div class="col-lg-8">
-                <!-- Medical Overview Section -->
-                <div class="profile-card mb-4">
-                    <div class="card-header-profile">
-                        <h3 class="section-title">
-                            <i class="fas fa-file-medical me-3"></i>Medical Overview
-                        </h3>
-                    </div>
-                    <div class="card-body-profile">
-                        <h5 class="fw-bold mb-3">Medical History</h5>
-                        <p class="about-text">
-                            @(string.IsNullOrEmpty(patient.MedicalHistory) ? "No medical history recorded yet. Please update your profile to include important health information." : patient.MedicalHistory)
+    <!-- Main Content Area -->
+    <div class="row g-4 mt-1">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Medical Overview Card -->
+            <div class="premium-card mb-4 elevation-1">
+                <div class="card-header-premium d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-notes-medical text-primary me-2"></i>Health Overview
+                    </h5>
+                    <span class="badge bg-light text-primary border px-3 py-2 rounded-pill">Active Patient</span>
+                </div>
+                <div class="card-body-premium">
+                    <div class="bio-section mb-4">
+                        <h6 class="text-uppercase x-small fw-800 text-secondary ls-1 mb-3">Medical History</h6>
+                        <p class="text-secondary lh-lg mb-0 text-justify">
+                            @(string.IsNullOrEmpty(patient.MedicalHistory) ? "No medical history recorded yet. Please update your profile in settings to provide your health narrative." : patient.MedicalHistory)
                         </p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Health Information Section -->
-                <div class="profile-card mb-4">
-                    <div class="card-header-profile">
-                        <h3 class="section-title">
-                            <i class="fas fa-heartbeat me-3"></i>Health Information
-                        </h3>
-                    </div>
-                    <div class="card-body-profile">
-                        <div class="expertise-tags">
-                            <span class="expertise-tag">Blood Group: @(string.IsNullOrEmpty(patient.BloodGroup) ? "N/A" : patient.BloodGroup)</span>
-                            <span class="expertise-tag">@patient.Gender</span>
-                            <span class="expertise-tag">DOB: @patient.DateOfBirth.ToString("MMM dd, yyyy")</span>
-                            <span class="expertise-tag">Status: Active</span>
+            <!-- Health Vital Stats Section -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6 col-xl-3">
+                    <div class="vital-card">
+                        <div class="vital-icon bg-soft-danger text-danger">
+                            <i class="fas fa-dna"></i>
+                        </div>
+                        <div class="vital-info">
+                            <span class="vital-label">Blood Group</span>
+                            <span class="vital-value">@(string.IsNullOrEmpty(patient.BloodGroup) ? "N/A" : patient.BloodGroup)</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Recent Activity/Timeline -->
-                <div class="profile-card mb-4">
-                    <div class="card-header-profile">
-                        <h3 class="section-title">
-                            <i class="fas fa-clock me-3"></i>Patient Timeline
-                        </h3>
+                <div class="col-md-6 col-xl-3">
+                    <div class="vital-card">
+                        <div class="vital-icon bg-soft-primary text-primary">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="vital-info">
+                            <span class="vital-label">Gender</span>
+                            <span class="vital-value">@patient.Gender</span>
+                        </div>
                     </div>
-                    <div class="card-body-profile">
-                        <div class="timeline">
-                            <div class="timeline-item">
-                                <div class="timeline-marker"></div>
-                                <div class="timeline-content">
-                                    <h4 class="timeline-title">Account Created</h4>
-                                    <p class="timeline-subtitle">CareFleet Registration</p>
-                                    <p class="timeline-date">@patient.CreatedAt.ToString("MMM dd, yyyy")</p>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-marker"></div>
-                                <div class="timeline-content">
-                                    <h4 class="timeline-title">Profile Initialized</h4>
-                                    <p class="timeline-subtitle">Personal information added</p>
-                                    <p class="timeline-date">@patient.CreatedAt.AddMinutes(5).ToString("MMM dd, yyyy")</p>
-                                </div>
-                            </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="vital-card">
+                        <div class="vital-icon bg-soft-info text-info">
+                            <i class="fas fa-birthday-cake"></i>
+                        </div>
+                        <div class="vital-info">
+                            <span class="vital-label">Date of Birth</span>
+                            <span class="vital-value text-nowrap">@patient.DateOfBirth.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <div class="vital-card">
+                        <div class="vital-icon bg-soft-success text-success">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="vital-info">
+                            <span class="vital-label">Status</span>
+                            <span class="vital-value">Active</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column -->
-            <div class="col-lg-4">
-                <!-- Contact Information -->
-                <div class="profile-card mb-4 sticky-card">
-                    <div class="card-header-profile">
-                        <h3 class="section-title">
-                            <i class="fas fa-address-card me-3"></i>Contact Information
-                        </h3>
-                    </div>
-                    <div class="card-body-profile">
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div class="contact-details">
-                                <p class="contact-label">Email</p>
-                                <p class="contact-value">@patient.Email</p>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div class="contact-details">
-                                <p class="contact-label">Phone</p>
-                                <p class="contact-value">@(string.IsNullOrEmpty(patient.PhoneNumber) ? "Not Provided" : patient.PhoneNumber)</p>
+            <!-- Enhanced Timeline Card -->
+            <div class="premium-card elevation-1">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-history text-primary me-2"></i>My Timeline
+                    </h5>
+                </div>
+                <div class="card-body-premium p-0">
+                    <div class="journey-timeline p-4">
+                        <div class="journey-item">
+                            <div class="journey-marker current"></div>
+                            <div class="journey-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="fw-bold mb-0">Profile Created</h6>
+                                    <span class="journey-time">@patient.CreatedAt.AddMinutes(5).ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <p class="text-secondary small mb-0">Your account was successfully set up and active.</p>
                             </div>
                         </div>
-                        <div class="contact-item mb-0">
-                            <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="contact-details">
-                                <p class="contact-label">Address</p>
-                                <p class="contact-value">@(string.IsNullOrEmpty(patient.Address) ? "Not Provided" : patient.Address)</p>
+                        <div class="journey-item">
+                            <div class="journey-marker"></div>
+                            <div class="journey-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="fw-bold mb-0">Joined CareFleet</h6>
+                                    <span class="journey-time">@patient.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <p class="text-secondary small mb-0">Welcome to the CareFleet healthcare community.</p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Quick Actions / Support -->
-                <div class="profile-card mb-4">
-                    <div class="card-header-profile">
-                        <h3 class="section-title">
-                            <i class="fas fa-hand-holding-medical me-3"></i>Care & Support
-                        </h3>
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Professional Contact Card -->
+            <div class="premium-card mb-4 elevation-1 sticky-card">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-address-book text-primary me-2"></i>Contact Details</h5>
+                </div>
+                <div class="card-body-premium">
+                    <div class="registry-item mb-4">
+                        <div class="registry-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="registry-detail">
+                            <label>Email</label>
+                            <p>@patient.Email</p>
+                        </div>
                     </div>
-                    <div class="card-body-profile">
-                        <div class="availability-item">
-                            <span class="day-label">Last Checkup</span>
-                            <span class="time-label">None</span>
+                    <div class="registry-item mb-4">
+                        <div class="registry-icon"><i class="fas fa-phone"></i></div>
+                        <div class="registry-detail">
+                            <label>Phone</label>
+                            <p>@(string.IsNullOrEmpty(patient.PhoneNumber) ? "Not Provided" : patient.PhoneNumber)</p>
                         </div>
-                        <div class="availability-item">
-                            <span class="day-label">Upcoming</span>
-                            <span class="time-label text-primary">None scheduled</span>
+                    </div>
+                    <div class="registry-item">
+                        <div class="registry-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="registry-detail">
+                            <label>Address</label>
+                            <p>@(string.IsNullOrEmpty(patient.Address) ? "Update required" : patient.Address)</p>
                         </div>
-                        <hr class="my-4">
-                        <a href="@Url.Action("Appointments", "Patient")" class="btn btn-book-appointment w-100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Care & Quick Planning Card -->
+            <div class="premium-card mb-4 elevation-1">
+                <div class="card-header-premium">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-primary me-2"></i>Appointments</h5>
+                </div>
+                <div class="card-body-premium">
+                    <div class="planning-row mb-3">
+                        <span class="text-secondary fw-600">Last Consultation</span>
+                        <span class="fw-bold">No records</span>
+                    </div>
+                    <div class="planning-row mb-4">
+                        <span class="text-secondary fw-600">Upcoming Visit</span>
+                        <span class="badge bg-soft-primary text-primary px-3">Syncing...</span>
+                    </div>
+                    <div class="d-grid">
+                        <a href="@Url.Action("Book", "Appointment")" class="btn btn-primary btn-premium-action py-3">
                             <i class="fas fa-calendar-plus me-2"></i>Book Appointment
                         </a>
                     </div>
                 </div>
+            </div>
 
-                <!-- Statistics -->
-                <div class="profile-card">
-                    <div class="card-header-profile">
-                        <h3 class="section-title">
-                            <i class="fas fa-chart-bar me-3"></i>My Activity
-                        </h3>
+            <!-- Enhanced Activity Board -->
+            <div class="premium-card elevation-1">
+                <div class="card-header-premium bg-light-soft">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Activity Board</h5>
+                </div>
+                <div class="card-body-premium p-0">
+                    <div class="activity-grid">
+                        <a href="@Url.Action("Appointments", "Patient")" class="activity-box">
+                            <span class="activity-val">@ViewBag.AppointmentCount</span>
+                            <span class="activity-lab">Visits</span>
+                        </a>
+                        <a href="@Url.Action("MedicalRecords", "Patient")" class="activity-box border-start">
+                            <span class="activity-val">@ViewBag.RecordCount</span>
+                            <span class="activity-lab">Files</span>
+                        </a>
                     </div>
-                    <div class="card-body-profile p-0">
-                        <div class="stats-grid-modern">
-                            <a href="@Url.Action("Appointments", "Patient")" class="stat-grid-item">
-                                <div class="stat-num-box">
-                                    <span class="stat-number">@ViewBag.AppointmentCount</span>
-                                </div>
-                                <div class="stat-label">Appointments</div>
-                            </a>
-                            <a href="@Url.Action("MedicalRecords", "Patient")" class="stat-grid-item border-start">
-                                <div class="stat-num-box">
-                                    <span class="stat-number">@ViewBag.RecordCount</span>
-                                </div>
-                                <div class="stat-label">Medical Records</div>
-                            </a>
-                        </div>
-                        <div class="stat-full-width border-top">
-                            <div class="d-flex align-items-center justify-content-center gap-3">
-                                <div class="stat-num-badge">
-                                    @(DateTime.Now.Year - patient.CreatedAt.Year + 1)@(DateTime.Now.Year - patient.CreatedAt.Year + 1 == 1 ? "st" : (DateTime.Now.Year - patient.CreatedAt.Year + 1 == 2 ? "nd" : "th"))
-                                </div>
-                                <div class="stat-label mb-0">Year with CareFleet</div>
-                            </div>
-                        </div>
+                    <div class="activity-footer py-3 text-center border-top bg-light-v-soft">
+                        <span class="text-secondary v-small fw-bold text-uppercase">Member since @memberSince</span>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
     </div>
 </div>
 

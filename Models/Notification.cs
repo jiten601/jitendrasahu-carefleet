@@ -8,10 +8,7 @@ namespace CareFleet.Models
         public int Id { get; set; }
 
         [Required]
-        public int PatientId { get; set; }
-
-        [ForeignKey("PatientId")]
-        public virtual Patient? Patient { get; set; }
+        public string ReceiverEmail { get; set; } = string.Empty;
 
         [Required]
         public string Message { get; set; } = string.Empty;

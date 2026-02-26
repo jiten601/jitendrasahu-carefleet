@@ -61,19 +61,19 @@
                             <!-- Info Grid -->
                             <div class="info-grid-premium text-start border rounded-3 p-3 mb-4 bg-light bg-opacity-50">
                                 <div class="info-item-sm mb-2">
-                                    <div class="info-icon-sq"><i class="fas fa-phone-alt"></i></div>
+                                    <div class="info-icon-sq"><i class="fas fa-phone-alt" style="color: #547792;"></i></div>
                                     <span>@item.PhoneNumber</span>
                                 </div>
                                 <div class="info-item-sm">
-                                    <div class="info-icon-sq"><i class="fas fa-calendar-check"></i></div>
+                                    <div class="info-icon-sq"><i class="fas fa-calendar-check" style="color: #547792;"></i></div>
                                     <span>Since @item.CreatedAt.ToString("MMM yyyy")</span>
                                 </div>
                             </div>
 
                             <!-- Actions -->
                             <div class="d-grid gap-2">
-                                <a href="@Url.Action("MedicalRecords", "Doctor", new { patientId = item.Id })" class="btn btn-primary btn-sm fw-bold rounded-3 py-2">
-                                    View History
+                                <a href="@Url.Action("MedicalRecords", "Doctor", new { patientId = item.Id })" class="btn btn-primary btn-sm fw-bold rounded-3 py-2" style="background-color: #547792; border-color: #547792; color: #ffffff;">
+                                    <i class="fas fa-history me-1 text-white"></i>View History
                                 </a>
                                 <a href="@Url.Action("Messages", "Doctor")" class="btn btn-outline-secondary btn-sm fw-bold rounded-3 py-2">
                                     Message

@@ -38,6 +38,7 @@
         <div class="header-card-content">
             <div class="header-info">
                 <h1 class="fw-bold text-white mb-2">Schedule Appointment</h1>
+                <p class="text-white-50 mb-0">Book a consultation with our specialized doctors</p>
             </div>
             <div class="header-actions">
                 <a href="@cancelUrl" class="btn-premium-light text-decoration-none">
@@ -46,7 +47,7 @@
             </div>
         </div>
         <div class="header-bg-pattern"></div>
-    </div><br>
+    </div>
 
     <div class="form-container">
         <form asp-action="Book" method="post">
@@ -54,7 +55,9 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" asp-for="DoctorName">Select Doctor <span class="required">*</span></label>
+                    <label class="form-label" asp-for="DoctorName">
+                        <i class="fas fa-user-md"></i> Select Doctor <span class="required">*</span>
+                    </label>
                     <select asp-for="DoctorName" class="form-control" required>
                         <option value="">Choose a Doctor</option>
                         @if (doctors != null)
@@ -69,7 +72,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" asp-for="AppointmentDate">Appointment Date <span class="required">*</span></label>
+                    <label class="form-label" asp-for="AppointmentDate">
+                        <i class="fas fa-calendar-alt"></i> Appointment Date <span class="required">*</span>
+                    </label>
                     <input asp-for="AppointmentDate" type="date" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     <span asp-validation-for="AppointmentDate" class="text-danger validation-error-small"></span>
                 </div>
@@ -77,7 +82,9 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label" asp-for="TimeSlot">Preferred Time <span class="required">*</span></label>
+                    <label class="form-label" asp-for="TimeSlot">
+                        <i class="fas fa-clock"></i> Preferred Time <span class="required">*</span>
+                    </label>
                     <select asp-for="TimeSlot" class="form-control" required>
                         <option value="">Select Time Slot</option>
                         <option>09:00 AM</option>
@@ -92,15 +99,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" asp-for="PatientName">Patient Name <small class="text-muted fw-normal">(Leave blank if booking for yourself)</small></label>
-                    <input asp-for="PatientName" type="text" class="form-control" />
+                    <label class="form-label" asp-for="PatientName">
+                        <i class="fas fa-user"></i> Patient Name <small class="text-muted fw-normal">(Leave blank if for self)</small>
+                    </label>
+                    <input asp-for="PatientName" type="text" class="form-control"/>
                     <span asp-validation-for="PatientName" class="text-danger validation-error-small"></span>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" asp-for="Reason">Reason for Visit <span class="required">*</span></label>
-                <textarea asp-for="Reason" class="form-control" rows="3" required></textarea>
+                <label class="form-label" asp-for="Reason">
+                    <i class="fas fa-notes-medical"></i> Reason for Visit <span class="required">*</span>
+                </label>
+                <textarea asp-for="Reason" class="form-control" rows="2" required></textarea>
                 <span asp-validation-for="Reason" class="text-danger validation-error-small"></span>
             </div>
 
@@ -114,11 +125,15 @@
                 <div id="otherPatientInfo" class="nested-info-box">
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Patient Full Name</label>
+                            <label class="form-label">
+                                <i class="fas fa-user-circle"></i> Patient Full Name
+                            </label>
                             <input asp-for="OtherPatientName" class="form-control" />
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Patient Date of Birth</label>
+                            <label class="form-label">
+                                <i class="fas fa-birthday-cake"></i> Patient Date of Birth
+                            </label>
                             <input asp-for="OtherPatientDOB" type="date" class="form-control" />
                         </div>
                     </div>
@@ -126,10 +141,10 @@
             </div>
 
             <div class="form-actions-modern">
-                <button type="submit" class="btn-primary-small btn-confirm-booking">
+                <button type="submit" class="btn-primary-small fw-bold btn-confirm-booking" style="padding: 14px 40px; font-size: 16px;">
                     <i class="fas fa-check-circle"></i> Confirm Booking
                 </button>
-                <a href="@cancelUrl" class="btn-primary-small btn-cancel-booking">
+                <a href="@cancelUrl" class="btn-primary-small btn-cancel-booking" style="background: #f1f5f9; color: #475569; padding: 14px 40px; font-size: 16px; text-decoration: none; border: 1px solid #e2e8f0; box-shadow: none;">
                     Cancel
                 </a>
             </div>

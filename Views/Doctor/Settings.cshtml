@@ -2,221 +2,351 @@
 @{
     ViewData["Title"] = "Profile Settings";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
-    
-    var doctor = Model ?? new CareFleet.Models.Doctor { 
+
+    var doctor = Model ?? new CareFleet.Models.Doctor {
         Id = 0,
-        FirstName = ViewBag.FirstName?.ToString() ?? "Doctor", 
-        LastName = ViewBag.LastName?.ToString() ?? "", 
+        FirstName = ViewBag.FirstName?.ToString() ?? "Doctor",
+        LastName = ViewBag.LastName?.ToString() ?? "",
         Email = ViewBag.UserEmail?.ToString() ?? "doctor@carefleet.com",
         CreatedAt = DateTime.Now.AddYears(-1)
     };
-    
-    var initials = ((doctor.FirstName?.Length > 0 ? doctor.FirstName.Substring(0, 1) : "D") + 
-                   (doctor.LastName?.Length > 0 ? doctor.LastName.Substring(0, 1) : "R")).ToUpper();
-    
-    // Calculate profile completion
+
+    var initials = ((doctor.FirstName?.Length > 0 ? doctor.FirstName.Substring(0, 1) : "D") +
+                   (doctor.LastName?.Length > 0  ? doctor.LastName.Substring(0, 1)  : "R")).ToUpper();
+
+    // Profile completion
     int completedFields = 0;
     int totalFields = 6;
-    if (!string.IsNullOrEmpty(doctor.FirstName)) { completedFields++; }
-    if (!string.IsNullOrEmpty(doctor.LastName)) { completedFields++; }
-    if (!string.IsNullOrEmpty(doctor.Email)) { completedFields++; }
-    if (!string.IsNullOrEmpty(doctor.Specialization)) { completedFields++; }
+    if (!string.IsNullOrEmpty(doctor.FirstName))     { completedFields++; }
+    if (!string.IsNullOrEmpty(doctor.LastName))      { completedFields++; }
+    if (!string.IsNullOrEmpty(doctor.Email))         { completedFields++; }
+    if (!string.IsNullOrEmpty(doctor.Specialization)){ completedFields++; }
     if (!string.IsNullOrEmpty(doctor.LicenseNumber)) { completedFields++; }
-    if (!string.IsNullOrEmpty(doctor.PhoneNumber)) { completedFields++; }
+    if (!string.IsNullOrEmpty(doctor.PhoneNumber))   { completedFields++; }
     int profileCompletion = (int)((completedFields / (double)totalFields) * 100);
-    ViewBag.ActivePage = "Settings";
-    ViewBag.HideHeader = true;
+
+    ViewBag.ActivePage  = "Settings";
+    ViewBag.HideHeader  = true;
+
+    bool hasSaved = TempData["Success"] != null;
+    string saveMessage = TempData["Success"]?.ToString() ?? "Profile updated successfully.";
 }
 
 <div class="doctor-settings-page fade-in">
-    <!-- Premium Header Card -->
+
+    <!-- ─── Premium Header Card ─────────────────────────── -->
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h2 class="fw-800 text-white mb-2">Account Settings</h2>
-                <p class="text-white opacity-75 mb-0">Manage your profile, credentials, and security preferences.</p>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div style="width:44px;height:44px;background:rgba(255,255,255,0.15);
+                                border-radius:12px;display:flex;align-items:center;
+                                justify-content:center;border:1px solid rgba(255,255,255,0.25);">
+                        <i class="fas fa-user-cog" style="color:#fff;font-size:1.1rem;"></i>
+                    </div>
+                    <h2 class="fw-800 text-white mb-0">Account Settings</h2>
+                </div>
+                <p class="text-white mb-0" style="opacity:.75;">
+                    Manage your profile, credentials, and security preferences.
+                </p>
             </div>
             <div class="header-actions">
+                <a href="@Url.Action("Profile","Doctor")" class="btn-premium-light">
+                    <i class="fas fa-eye me-2"></i>View Profile
+                </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-
     <div class="row g-4">
-        <!-- Left Sidebar: Profile Summary -->
+
+        <!-- ─── LEFT SIDEBAR ─────────────────────────────── -->
         <div class="col-lg-4">
             <div class="profile-summary-card sticky-sidebar">
-                <!-- Avatar Section -->
+
+                <!-- Avatar -->
                 <div class="avatar-section">
                     <div class="avatar-wrapper">
                         <div class="avatar-large-circle mx-auto">@initials</div>
                         <div class="avatar-upload-overlay">
-                            <label for="avatarUpload" class="upload-trigger m-0">
+                            <label for="avatarUpload" class="upload-trigger m-0" title="Change photo">
                                 <i class="fas fa-camera"></i>
                             </label>
-                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                            <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
                         </div>
                     </div>
                     <h5 class="profile-name">Dr. @doctor.FirstName @doctor.LastName</h5>
                     <p class="profile-email">@doctor.Email</p>
+                    @if (!string.IsNullOrEmpty(doctor.Specialization))
+                    {
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-stethoscope me-1" style="color:var(--primary-blue);"></i>
+                            @doctor.Specialization
+                        </p>
+                    }
                     <span class="verified-badge-inline">
-                        <i class="fas fa-check-circle me-1"></i>Verified Practitioner
+                        <i class="fas fa-check-circle"></i>Verified Practitioner
                     </span>
                 </div>
 
-                <!-- Profile Completion -->
+                <!-- Completion -->
                 <div class="completion-section">
                     <div class="completion-header">
                         <span>Profile Completion</span>
-                        <span class="text-primary">@profileCompletion%</span>
+                        <span style="color:var(--primary-blue);font-weight:800;">@profileCompletion%</span>
                     </div>
                     <div class="progress-bar-custom">
-                        <div class="progress-fill" style="width: @(profileCompletion)%"></div>
+                        <div class="progress-fill" style="width:@(profileCompletion)%"></div>
                     </div>
+                    @if (profileCompletion < 100)
+                    {
+                        <p class="form-hint mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Fill in all fields to complete your profile.
+                        </p>
+                    }
                 </div>
 
                 <!-- Quick Links -->
                 <div class="quick-actions-section">
-                    <a href="#" class="quick-action-link" onclick="document.getElementById('securityTab').click(); return false;">
-                        <i class="fas fa-shield-check"></i>
-                        <span>Security & Privacy</span>
-                        <i class="fas fa-chevron-right ms-auto v-small opacity-50"></i>
+                    <a href="#" class="quick-action-link"
+                       onclick="switchTab('personal'); return false;">
+                        <i class="fas fa-user"></i>
+                        <span>Personal Info</span>
+                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:.4;"></i>
                     </a>
+                    <a href="#" class="quick-action-link"
+                       onclick="switchTab('professional'); return false;">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Professional Details</span>
+                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:.4;"></i>
+                    </a>
+                    <a href="#" class="quick-action-link"
+                       onclick="switchTab('security'); return false;">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Security &amp; Privacy</span>
+                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:.4;"></i>
+                    </a>
+                </div>
+
+                <!-- Account Info -->
+                <div class="account-info-section">
+                    <h6>Account Info</h6>
+                    <div class="info-row">
+                        <span class="info-label">Member Since</span>
+                        <span class="info-value">@doctor.CreatedAt.ToString("MMM yyyy")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Account ID</span>
+                        <span class="info-value">#@doctor.Id.ToString("D5")</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="status-badge-active">Active</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Content: Tabbed Settings -->
+        <!-- ─── RIGHT CONTENT ─────────────────────────────── -->
         <div class="col-lg-8">
-            <!-- Premium Tabs -->
-            <div class="settings-tabs">
+
+            <!-- Tab Navigation -->
+            <div class="settings-tabs" id="settingsTabs">
                 <button class="tab-btn active" data-tab="personal" id="personalTab">
-                    <i class="fas fa-user"></i> Personal Info
+                    <i class="fas fa-user"></i><span>Personal Info</span>
                 </button>
                 <button class="tab-btn" data-tab="professional" id="professionalTab">
-                    <i class="fas fa-stethoscope"></i> Professional
+                    <i class="fas fa-stethoscope"></i><span>Professional</span>
                 </button>
                 <button class="tab-btn" data-tab="security" id="securityTab">
-                    <i class="fas fa-shield-alt"></i> Security
+                    <i class="fas fa-shield-alt"></i><span>Security</span>
                 </button>
             </div>
 
-            <form method="post" action="@Url.Action("Edit", "Doctor")" id="settingsForm">
+            <form method="post" action="@Url.Action("Edit","Doctor")" id="settingsForm">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="Id" value="@doctor.Id" />
+                <input type="hidden" name="Id"        value="@doctor.Id" />
                 <input type="hidden" name="CreatedAt" value="@doctor.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")" />
-                <input type="hidden" name="Email" value="@doctor.Email" />
-                <input type="hidden" name="IsActive" value="@doctor.IsActive.ToString().ToLower()" />
+                <input type="hidden" name="Email"     value="@doctor.Email" />
+                <input type="hidden" name="IsActive"  value="@doctor.IsActive.ToString().ToLower()" />
 
-                <!-- Tab Content -->
-                <div class="tab-content-container">
-                    <!-- Personal Info Tab -->
-                    <div class="tab-pane-premium active" data-content="personal">
-                        <div class="dashboard-card">
-                            <div class="border-bottom pb-3 mb-4">
-                                <h5 class="fw-bold mb-1">Personal Details</h5>
-                                <p class="text-muted small mb-0">Update your basic information to help patients identify you.</p>
+                <!-- ── Personal Info Tab ─────────────────── -->
+                <div class="tab-pane-premium active" data-content="personal">
+                    <div class="settings-section-card">
+                        <div class="settings-section-header">
+                            <div class="settings-section-icon">
+                                <i class="fas fa-id-card"></i>
                             </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Personal Details</h5>
+                                <p class="text-muted small mb-0">Update your basic contact information.</p>
+                            </div>
+                        </div>
+                        <div class="settings-section-body">
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <div class="form-group-modern">
                                         <label class="form-label-modern">First Name</label>
-                                        <input type="text" class="form-control-modern" name="FirstName" value="@doctor.FirstName" placeholder="Enter first name" required>
+                                        <input type="text" class="form-control-modern"
+                                               name="FirstName" value="@doctor.FirstName"
+                                               placeholder="Enter first name" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group-modern">
                                         <label class="form-label-modern">Last Name</label>
-                                        <input type="text" class="form-control-modern" name="LastName" value="@doctor.LastName" placeholder="Enter last name" required>
+                                        <input type="text" class="form-control-modern"
+                                               name="LastName" value="@doctor.LastName"
+                                               placeholder="Enter last name" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group-modern">
                                         <label class="form-label-modern">Email Address</label>
-                                        <input type="email" class="form-control-modern locked-input" value="@doctor.Email" readonly disabled>
+                                        <div class="input-lock-wrapper">
+                                            <input type="email" class="form-control-modern locked-input"
+                                                   value="@doctor.Email" readonly disabled
+                                                   style="padding-right:42px;">
+                                            <i class="fas fa-lock lock-icon"></i>
+                                        </div>
+                                        <span class="form-hint">Email address cannot be changed.</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group-modern">
                                         <label class="form-label-modern">Phone Number</label>
-                                        <input type="tel" class="form-control-modern" name="PhoneNumber" value="@doctor.PhoneNumber" placeholder="+1 234 567 890">
+                                        <input type="tel" class="form-control-modern"
+                                               name="PhoneNumber" value="@doctor.PhoneNumber"
+                                               placeholder="+977 98XXXXXXXX">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Professional Tab -->
-                    <div class="tab-pane-premium" data-content="professional">
-                        <div class="dashboard-card">
-                            <div class="border-bottom pb-3 mb-4">
-                                <h5 class="fw-bold mb-1">Medical Credentials</h5>
-                                <p class="text-muted small mb-0">Manage your medical license and areas of expertise.</p>
+                <!-- ── Professional Tab ──────────────────── -->
+                <div class="tab-pane-premium" data-content="professional">
+                    <div class="settings-section-card">
+                        <div class="settings-section-header">
+                            <div class="settings-section-icon">
+                                <i class="fas fa-hospital-user"></i>
                             </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Medical Details</h5>
+                                <p class="text-muted small mb-0">Manage your license and areas of expertise.</p>
+                            </div>
+                        </div>
+                        <div class="settings-section-body">
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <div class="form-group-modern">
                                         <label class="form-label-modern">Primary Specialization</label>
-                                        <input type="text" class="form-control-modern" name="Specialization" value="@doctor.Specialization" placeholder="e.g., Cardiology" required>
+                                        <input type="text" class="form-control-modern"
+                                               name="Specialization" value="@doctor.Specialization"
+                                               placeholder="e.g., Cardiology" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group-modern">
                                         <label class="form-label-modern">Medical License Number</label>
-                                        <div class="position-relative">
-                                            <input type="text" class="form-control-modern locked-input" name="LicenseNumber" value="@doctor.LicenseNumber" readonly>
-                                            <i class="fas fa-lock position-absolute top-50 end-0 translate-middle-y me-3 opacity-25"></i>
+                                        <div class="input-lock-wrapper">
+                                            <input type="text" class="form-control-modern locked-input"
+                                                   name="LicenseNumber" value="@doctor.LicenseNumber"
+                                                   readonly style="padding-right:42px;">
+                                            <i class="fas fa-lock lock-icon"></i>
                                         </div>
+                                        <span class="form-hint">License number is set by the administrator.</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Security Tab -->
-                    <div class="tab-pane-premium" data-content="security">
-                        <div class="dashboard-card">
-                            <div class="border-bottom pb-3 mb-4">
-                                <h5 class="fw-bold mb-1">Password & Security</h5>
-                                <p class="text-muted small mb-0">Control your account security and authentication methods.</p>
+                <!-- ── Security Tab ──────────────────────── -->
+                <div class="tab-pane-premium" data-content="security">
+                    <div class="settings-section-card">
+                        <div class="settings-section-header">
+                            <div class="settings-section-icon">
+                                <i class="fas fa-shield-alt"></i>
                             </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Password &amp; Security</h5>
+                                <p class="text-muted small mb-0">Control your account security settings.</p>
+                            </div>
+                        </div>
+                        <div class="settings-section-body">
                             <div class="security-notice">
-                                <i class="fas fa-shield-check mt-1"></i>
+                                <i class="fas fa-info-circle"></i>
                                 <div>
                                     <p class="mb-0 fw-bold">Security Best Practices</p>
-                                    <p class="mb-0 opacity-75">Enable 2FA and use a unique password of at least 12 characters.</p>
+                                    <p class="mb-0 opacity-75">
+                                        Use a unique password of at least 12 characters and enable
+                                        two-factor authentication for extra protection.
+                                    </p>
                                 </div>
-                            </div>
-                            
-                            <div class="security-item">
-                                <div class="security-item-icon"><i class="fas fa-key"></i></div>
-                                <div class="security-item-content">
-                                    <h5>Account Password</h5>
-                                    <p>Last changed 92 days ago</p>
-                                </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm px-4 rounded-pill" disabled>Update</button>
                             </div>
 
                             <div class="security-item">
-                                <div class="security-item-icon"><i class="fas fa-fingerprint"></i></div>
+                                <div class="security-item-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="security-item-content">
+                                    <h5>Account Password</h5>
+                                    <p>Keep your password strong and change it regularly.</p>
+                                </div>
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm px-4 rounded-pill"
+                                        style="margin-left:auto;" disabled>
+                                    Update
+                                </button>
+                            </div>
+
+                            <div class="security-item">
+                                <div class="security-item-icon">
+                                    <i class="fas fa-fingerprint"></i>
+                                </div>
                                 <div class="security-item-content">
                                     <h5>Two-Factor Authentication</h5>
-                                    <p>Protect your account with an extra layer</p>
+                                    <p>Add an extra layer of protection to your account.</p>
                                 </div>
-                                <button type="button" class="btn btn-primary btn-sm px-4 rounded-pill" disabled>Enable</button>
+                                <button type="button"
+                                        class="btn btn-primary btn-sm px-4 rounded-pill"
+                                        style="margin-left:auto;" disabled>
+                                    Enable
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
-                <div class="d-flex justify-content-end gap-3 mt-4">
-                    <button type="button" class="btn btn-light px-5 py-3 fw-bold rounded-3" onclick="window.location.href='@Url.Action("Dashboard", "Doctor")'">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-5 py-3 fw-bold rounded-3 shadow-sm">Save Changes</button>
+                <!-- ── Footer Actions ─────────────────────── -->
+                <div class="settings-actions">
+                    <button type="button" class="btn-settings-cancel"
+                            onclick="window.location.href='@Url.Action("Dashboard","Doctor")'">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-settings-save" id="saveBtn">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-label">
+                            <i class="fas fa-save me-1"></i>Save Changes
+                        </span>
+                    </button>
                 </div>
             </form>
         </div>
+    </div>
+</div>
+
+<!-- ── Success Toast ──────────────────────────────────────── -->
+<div class="save-toast" id="saveToast">
+    <div class="save-toast-icon"><i class="fas fa-check"></i></div>
+    <div class="save-toast-body">
+        <strong>Changes Saved!</strong>
+        <p>@saveMessage</p>
     </div>
 </div>
 
@@ -226,33 +356,56 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabs = document.querySelectorAll('.tab-btn');
+        // ── Tab Switching ─────────────────────────────────
+        function switchTab(tabName) {
+            const tabs     = document.querySelectorAll('.tab-btn');
             const contents = document.querySelectorAll('.tab-pane-premium');
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const target = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
 
-                    tabs.forEach(t => t.classList.remove('active'));
-                    contents.forEach(c => c.classList.remove('active'));
+            const activeTab = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+            const activeContent = document.querySelector(`.tab-pane-premium[data-content="${tabName}"]`);
 
-                    tab.classList.add('active');
-                    const targetContent = document.querySelector(`.tab-pane-premium[data-content="${target}"]`);
-                    if (targetContent) {
-                        targetContent.classList.add('active');
-                    }
-                });
+            if (activeTab)    activeTab.classList.add('active');
+            if (activeContent) activeContent.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Wire up tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
             });
 
-            // Trigger avatar upload (placeholder)
+            // Avatar upload placeholder
             const avatarUpload = document.getElementById('avatarUpload');
             if (avatarUpload) {
-                avatarUpload.addEventListener('change', function() {
-                    if(this.files && this.files[0]) {
-                        alert('Avatar upload functionality will be implemented with backend integration.');
+                avatarUpload.addEventListener('change', function () {
+                    if (this.files && this.files[0]) {
+                        alert('Avatar upload will be available with the next backend release.');
                     }
                 });
+            }
+
+            // Save button loading state
+            const form    = document.getElementById('settingsForm');
+            const saveBtn = document.getElementById('saveBtn');
+            if (form && saveBtn) {
+                form.addEventListener('submit', function () {
+                    saveBtn.classList.add('loading');
+                    saveBtn.disabled = true;
+                });
+            }
+
+            // Show success toast if data was saved
+            const showToast = @(hasSaved ? "true" : "false");
+            if (showToast) {
+                const toast = document.getElementById('saveToast');
+                if (toast) {
+                    setTimeout(() => toast.classList.add('show'), 300);
+                    setTimeout(() => toast.classList.remove('show'), 4500);
+                }
             }
         });
     </script>

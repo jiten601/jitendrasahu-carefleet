@@ -139,7 +139,7 @@ body {
 
 .user-profile i {
     color: #213448;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .dropdown-menu {
@@ -153,7 +153,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
     min-width: 150px;
-    z-index: 1000;
+    z-index: 1000; 
 }
 
 .dropdown-menu a {
@@ -460,8 +460,16 @@ body {
 }
 
 .btn-edit {
-    background-color: #547792;
-    color: #ffffff;
+    background-color: #547792 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 8px 15px !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .btn-edit:hover {
@@ -469,12 +477,39 @@ body {
 }
 
 .btn-delete {
-    background-color: #dc3545;
-    color: #ffffff;
+    background-color: #dc3545 !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 15px !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .btn-delete:hover {
-    background-color: #c82333;
+    background-color: #c82333 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.logout-item {
+    color: #dc3545 !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.logout-item:hover {
+    background-color: #f8fafc !important;
+    color: #dc3545 !important;
+}
+
+.logout-item:hover i {
+    color: #dc3545 !important;
 }
 
 .btn-toggle {

@@ -1,0 +1,110 @@
+@model CareFleet.Models.Patient
+@{
+    ViewData["Title"] = "Activity History";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ActivePage = "Dashboard";
+    ViewBag.HideHeader = true;
+
+    var activities = (IEnumerable<CareFleet.Models.PatientActivity>)ViewBag.AllActivities;
+}
+
+<div class="activity-history-page fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-800 text-white mb-0">Activity History</h1>
+                <p class="text-white opacity-75 mb-0">A comprehensive record of your healthcare journey and system interactions.</p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Dashboard", "Patient")" class="btn-premium-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-card p-0 overflow-hidden">
+        <div class="card-header-premium d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="fw-bold mb-0">All Recent Activity</h5>
+            <div class="badge bg-primary-subtle text-primary fw-700 px-3 py-2 rounded-pill">
+                @(activities?.Count() ?? 0) Total Records
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="activity-table-modern">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Type</th>
+                        <th>Activity Details</th>
+                        <th>Category</th>
+                        <th>Date & Time</th>
+                        <th class="text-end pe-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (activities != null && activities.Any())
+                    {
+                        @foreach (var activity in activities)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @{
+                                            var typeIcon = activity.Icon ?? "fas fa-info-circle";
+                                            var typeColor = activity.Type switch {
+                                                "Appointment" => "status-pill-info",
+                                                "Message" => "status-pill-warning",
+                                                "MedicalRecord" => "status-pill-danger",
+                                                _ => "status-pill-success"
+                                            };
+                                        }
+                                        <div class="avatar-sm-premium">
+                                            <i class="@typeIcon"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold d-block">@activity.Type</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <h6 class="mb-0 fw-bold">@activity.Title</h6>
+                                    <small class="text-muted">@activity.Subtitle</small>
+                                </td>
+                                <td>
+                                    <span class="status-pill @typeColor">@activity.Type</span>
+                                </td>
+                                <td class="text-secondary small">
+                                    <div class="fw-bold">@activity.Date.ToString("MMM dd, yyyy")</div>
+                                    <div>@activity.Date.ToString("hh:mm tt")</div>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    @if(activity.Type == "Appointment") {
+                                        <span class="badge bg-success-subtle text-success py-2 px-3 rounded-pill">Completed</span>
+                                    } else {
+                                        <span class="badge bg-light text-secondary py-2 px-3 rounded-pill">Logged</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fas fa-history d-block mb-3 opacity-25 fs-1"></i>
+                                No activity records found in your history.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/patient-history.css" asp-append-version="true" />
+}

@@ -26,13 +26,7 @@ namespace CareFleet.Controllers
                     ViewBag.UserName = $"{user.FirstName} {user.LastName}".Trim();
                     ViewBag.FirstName = user.FirstName;
                     ViewBag.LastName = user.LastName;
-
-                    // Fetch unread notifications if patient
-                    var patient = _context.Patients.FirstOrDefault(p => p.Email == userEmail);
-                    if (patient != null)
-                    {
-                        ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.PatientId == patient.Id && !n.IsRead);
-                    }
+                    ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.ReceiverEmail == userEmail && !n.IsRead);
                 }
             }
         }
@@ -93,6 +87,45 @@ namespace CareFleet.Controllers
                 appointment.Status = "Pending";
                 
                 _context.Set<Appointment>().Add(appointment);
+                _context.SaveChanges();
+
+                // --- Notifications ---
+                var bookerEmail = HttpContext.Session.GetString("UserEmail") ?? "";
+                var patientName = appointment.PatientName ?? "A patient";
+                var appointmentDateStr = appointment.AppointmentDate.ToString("MMMM dd, yyyy 'at' hh:mm tt");
+
+                // 1. Notify the doctor about the new appointment
+                // DoctorName is stored as "Dr. FirstName LastName" — find the doctor record
+                var doctorNameParts = appointment.DoctorName
+                    .Replace("Dr.", "", StringComparison.OrdinalIgnoreCase).Trim().Split(' ');
+                var doctor = doctorNameParts.Length >= 2
+                    ? _context.Doctors.FirstOrDefault(d =>
+                        d.FirstName == doctorNameParts[0] && d.LastName == doctorNameParts[1])
+                    : null;
+
+                if (doctor != null)
+                {
+                    _context.Notifications.Add(new Notification
+                    {
+                        ReceiverEmail = doctor.Email,
+                        Message = $"New appointment booked by {patientName} on {appointmentDateStr}.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
+                // 2. Notify the patient/booker with a confirmation
+                if (!string.IsNullOrEmpty(bookerEmail))
+                {
+                    _context.Notifications.Add(new Notification
+                    {
+                        ReceiverEmail = bookerEmail,
+                        Message = $"Your appointment with {appointment.DoctorName} on {appointmentDateStr} has been booked successfully.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
                 _context.SaveChanges();
 
                 TempData["Success"] = "Appointment booked successfully!";

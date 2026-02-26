@@ -117,6 +117,10 @@ namespace CareFleet.Controllers
                     doctor.CreatedAt = DateTime.Now;
                     _context.Doctors.Add(doctor);
                     _context.SaveChanges();
+
+                    // Notify all admins about the new doctor
+                    NotifyAllAdmins($"New doctor added: Dr. {doctor.FirstName} {doctor.LastName} ({doctor.Email}).");
+
                     TempData["Success"] = "Doctor added successfully!";
                     return RedirectToAction(nameof(Doctors));
                 }
@@ -218,6 +222,159 @@ namespace CareFleet.Controllers
             return RedirectToAction(nameof(Appointments));
         }
 
+        public IActionResult Settings()
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+
+            SetUserInfo();
+            ViewBag.HeaderTitle = "System Settings";
+            ViewBag.ActivePage = "Settings";
+            ViewBag.UserEmail = userEmail;
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Profile(ApplicationUser model)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Find(model.Id);
+            if (user != null)
+            {
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                // We don't allow email/role changes for security via this form
+
+                _context.Users.Update(user);
+                _context.SaveChanges();
+
+                // Update session
+                if (HttpContext.Session.GetString("UserEmail") == user.Email)
+                {
+                    HttpContext.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
+                }
+
+                TempData["Success"] = "Profile updated successfully!";
+            }
+
+            return RedirectToAction(nameof(Settings));
+        }
+
+        public IActionResult EditUser(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var user = _context.Users.Find(id);
+            if (user == null) return NotFound();
+
+            ViewBag.HeaderTitle = "Edit User";
+            ViewBag.ActivePage = "Users";
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditUser(ApplicationUser model)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Find(model.Id);
+            if (user == null) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                // Check if email changed and if new email already exists
+                if (user.Email != model.Email && _context.Users.Any(u => u.Email == model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email already exists.");
+                }
+                else
+                {
+                    // Update associated records if email or name changes
+                    if (user.Role == "Doctor")
+                    {
+                        var doctor = _context.Doctors.FirstOrDefault(d => d.Email == user.Email);
+                        if (doctor != null)
+                        {
+                            doctor.FirstName = model.FirstName;
+                            doctor.LastName = model.LastName;
+                            doctor.Email = model.Email;
+                            _context.Doctors.Update(doctor);
+                        }
+                    }
+                    else if (user.Role == "Patient")
+                    {
+                        var patient = _context.Patients.FirstOrDefault(p => p.Email == user.Email);
+                        if (patient != null)
+                        {
+                            patient.FirstName = model.FirstName;
+                            patient.LastName = model.LastName;
+                            patient.Email = model.Email;
+                            _context.Patients.Update(patient);
+                        }
+                    }
+
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+                    user.Email = model.Email;
+                    user.Role = model.Role;
+
+                    _context.Users.Update(user);
+                    _context.SaveChanges();
+
+                    TempData["Success"] = "User updated successfully!";
+                    return RedirectToAction(nameof(Users));
+                }
+            }
+
+            SetUserInfo();
+            ViewBag.HeaderTitle = "Edit User";
+            ViewBag.ActivePage = "Users";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteUser(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+            var user = _context.Users.Find(id);
+            if (user != null)
+            {
+                // Check if user is deleting themselves
+                if (user.Email == HttpContext.Session.GetString("UserEmail"))
+                {
+                    TempData["Error"] = "You cannot delete your own account!";
+                    return RedirectToAction(nameof(Users));
+                }
+
+                // Delete associated records
+                if (user.Role == "Doctor")
+                {
+                    var doctor = _context.Doctors.FirstOrDefault(d => d.Email == user.Email);
+                    if (doctor != null) _context.Doctors.Remove(doctor);
+                }
+                else if (user.Role == "Patient")
+                {
+                    var patient = _context.Patients.FirstOrDefault(p => p.Email == user.Email);
+                    if (patient != null) _context.Patients.Remove(patient);
+                }
+
+                _context.Users.Remove(user);
+                _context.SaveChanges();
+                TempData["Success"] = "User deleted successfully!";
+            }
+
+            return RedirectToAction(nameof(Users));
+        }
+
         public IActionResult Reports()
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
@@ -258,7 +415,29 @@ namespace CareFleet.Controllers
                 ViewBag.UserName = $"{user.FirstName} {user.LastName}".Trim();
                 ViewBag.FirstName = user.FirstName;
                 ViewBag.LastName = user.LastName;
+                ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.ReceiverEmail == userEmail && !n.IsRead);
             }
+        }
+
+        /// <summary>Sends a notification to every admin user in the system.</summary>
+        private void NotifyAllAdmins(string message)
+        {
+            var adminEmails = _context.Users
+                .Where(u => u.Role == "Admin")
+                .Select(u => u.Email)
+                .ToList();
+
+            foreach (var email in adminEmails)
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    ReceiverEmail = email,
+                    Message = message,
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                });
+            }
+            _context.SaveChanges();
         }
     }
 }

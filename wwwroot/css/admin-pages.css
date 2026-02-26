@@ -6,12 +6,14 @@
     --admin-accent: #D2C1B6;
     --admin-bg: #F9F3EF;
     --admin-white: #ffffff;
-    --admin-text: #2d3748;
-    --admin-text-light: #718096;
+    --admin-text: #1a202c;
+    --admin-text-light: #64748b;
     --admin-border: #e2e8f0;
-    --admin-success: #48bb78;
-    --admin-error: #f56565;
-    --admin-warning: #ed8936;
+    --admin-success: #10b981;
+    --admin-error: #ef4444;
+    --admin-warning: #f59e0b;
+    --admin-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --admin-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 /* Page Header */
@@ -19,84 +21,92 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
     border-bottom: 1px solid var(--admin-border);
 }
 
 .page-header h3 {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 26px;
+    font-weight: 800;
     color: var(--admin-primary);
     margin: 0;
+    letter-spacing: -0.02em;
 }
 
 /* Buttons */
 .btn-primary-small {
-    background: var(--admin-secondary);
+    background: var(--admin-primary);
     color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     border: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary-small:hover {
-    background: var(--admin-primary);
+    background: var(--admin-secondary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(27, 60, 83, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     color: white;
 }
 
 /* Form Styling */
 .form-container {
-    background: var(--admin-white);
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--admin-shadow-lg);
+    max-width: 900px;
     margin: 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .form-label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 600;
-    color: var(--admin-text);
+    color: var(--admin-primary);
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--admin-border);
-    border-radius: 8px;
+    padding: 14px 18px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
     font-size: 15px;
-    transition: all 0.3s ease;
-    background: #f8fafc;
+    transition: all 0.2s ease;
+    background: #fdfdfd;
+    color: var(--admin-text);
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--admin-secondary);
-    box-shadow: 0 0 0 3px rgba(69, 104, 130, 0.1);
+    box-shadow: 0 0 0 4px rgba(69, 104, 130, 0.1);
     background: var(--admin-white);
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 25px;
 }
 
 /* Table Management */

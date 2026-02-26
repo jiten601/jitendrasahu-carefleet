@@ -39,6 +39,7 @@ namespace CareFleet.Controllers
                     ViewBag.UserName = $"{user.FirstName} {user.LastName}".Trim();
                     ViewBag.FirstName = user.FirstName;
                     ViewBag.LastName = user.LastName;
+                    ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.ReceiverEmail == userEmail && !n.IsRead);
                 }
             }
         }
@@ -104,6 +105,26 @@ namespace CareFleet.Controllers
                 doctor.CreatedAt = DateTime.Now;
                 _context.Doctors.Add(doctor);
                 _context.SaveChanges();
+
+                // If admin added this doctor, notify all admins
+                if (HttpContext.Session.GetString("UserRole") == "Admin")
+                {
+                    var adminEmails = _context.Users
+                        .Where(u => u.Role == "Admin")
+                        .Select(u => u.Email).ToList();
+                    foreach (var email in adminEmails)
+                    {
+                        _context.Notifications.Add(new Notification
+                        {
+                            ReceiverEmail = email,
+                            Message = $"New doctor added: Dr. {doctor.FirstName} {doctor.LastName} ({doctor.Email}).",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                    if (adminEmails.Any()) _context.SaveChanges();
+                }
+
                 TempData["Success"] = "Doctor added successfully!";
                 if (HttpContext.Session.GetString("UserRole") == "Admin")
                 {
@@ -179,7 +200,24 @@ namespace CareFleet.Controllers
 
                 doctor.UpdatedAt = DateTime.Now;
                 _context.Update(doctor);
+
+                // Synchronize with ApplicationUser table
+                var user = _context.Users.FirstOrDefault(u => u.Email == doctor.Email);
+                if (user != null)
+                {
+                    user.FirstName = doctor.FirstName;
+                    user.LastName = doctor.LastName;
+                    _context.Users.Update(user);
+                }
+
                 _context.SaveChanges();
+
+                // Update Session if the logged-in doctor is editing their own profile
+                if (HttpContext.Session.GetString("UserEmail") == doctor.Email)
+                {
+                    HttpContext.Session.SetString("UserName", $"{doctor.FirstName} {doctor.LastName}");
+                }
+
                 TempData["Success"] = "Profile updated successfully!";
                 
                 var role = HttpContext.Session.GetString("UserRole");
@@ -243,7 +281,14 @@ namespace CareFleet.Controllers
                 .Take(5)
                 .ToList();
 
+            var recentActivity = _context.Set<Appointment>()
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
+                .OrderByDescending(a => a.AppointmentDate)
+                .Take(5)
+                .ToList();
+
             ViewBag.UpcomingAppointments = upcomingAppointments;
+            ViewBag.RecentActivity = recentActivity;
             
             // Statistics
             // Statistics - Filtered by Doctor
@@ -270,6 +315,27 @@ namespace CareFleet.Controllers
             ViewBag.ActivePage = "Dashboard";
 
             return View();
+        }
+
+        // GET: Doctor/Activity
+        public IActionResult Activity()
+        {
+            if (!IsDoctor()) return RedirectToAction("Login", "Account");
+
+            SetUserInfo();
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            // Get all recent appointments for this doctor
+            var appointments = _context.Set<Appointment>()
+                .Where(a => (a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName)))
+                .OrderByDescending(a => a.AppointmentDate)
+                .ToList();
+
+            ViewBag.HeaderTitle = "Recent Patient Activity";
+            ViewBag.ActivePage = "Activity";
+
+            return View(appointments);
         }
 
         public IActionResult Appointments(string searchString)
@@ -430,6 +496,17 @@ namespace CareFleet.Controllers
 
                 _context.Messages.Add(message);
                 await _context.SaveChangesAsync();
+
+                // Notify the patient they received a new message
+                var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                _context.Notifications.Add(new Notification
+                {
+                    ReceiverEmail = receiverEmail,
+                    Message = $"{doctorName} sent you a message.",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Messages), new { receiverEmail = receiverEmail });
@@ -530,6 +607,24 @@ namespace CareFleet.Controllers
 
                 _context.MedicalRecords.Add(record);
                 await _context.SaveChangesAsync();
+
+                // Create notification for patient
+                var patient = _context.Patients.Find(record.PatientId);
+                var doctor = GetLoggedInDoctor();
+                if (patient != null && doctor != null)
+                {
+                    var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
+                    var notification = new Notification
+                    {
+                        ReceiverEmail = patient.Email,
+                        Message = $"A new medical record '{record.DocumentName}' has been uploaded for you by {doctorName}.",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.Notifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                }
+
                 TempData["Success"] = "Medical record uploaded successfully!";
                 return RedirectToAction(nameof(MedicalRecords));
             }
@@ -716,9 +811,8 @@ namespace CareFleet.Controllers
                     // Create notification for patient
                     var notification = new Notification
                     {
-                        PatientId = patient.Id,
+                        ReceiverEmail = patient.Email,
                         Message = $"Your appointment with {doctorName} on {appointment.AppointmentDate:MMM dd} has been updated to: {status}.",
-                        CreatedAt = DateTime.Now,
                         IsRead = false
                     };
 

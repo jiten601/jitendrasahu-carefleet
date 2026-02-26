@@ -1,6 +1,7 @@
 using CareFleet.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace CareFleet.Controllers
                     var patient = _context.Patients.FirstOrDefault(p => p.Email == userEmail);
                     if (patient != null)
                     {
-                        ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.PatientId == patient.Id && !n.IsRead);
+                        ViewBag.UnreadNotifications = _context.Notifications.Count(n => n.ReceiverEmail == userEmail && !n.IsRead);
                     }
                 }
             }
@@ -93,6 +94,23 @@ namespace CareFleet.Controllers
                 patient.CreatedAt = DateTime.Now;
                 _context.Patients.Add(patient);
                 _context.SaveChanges();
+
+                // Notify all admins about the new patient
+                var adminEmails = _context.Users
+                    .Where(u => u.Role == "Admin")
+                    .Select(u => u.Email).ToList();
+                foreach (var email in adminEmails)
+                {
+                    _context.Notifications.Add(new Notification
+                    {
+                        ReceiverEmail = email,
+                        Message = $"New patient added: {patient.FirstName} {patient.LastName} ({patient.Email}).",
+                        IsRead = false,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+                if (adminEmails.Any()) _context.SaveChanges();
+
                 TempData["Success"] = "Patient added successfully!";
                 return RedirectToAction(nameof(Index));
             }
@@ -150,7 +168,24 @@ namespace CareFleet.Controllers
                 try
                 {
                     _context.Update(patient);
+
+                    // Synchronize with ApplicationUser table
+                    var user = _context.Users.FirstOrDefault(u => u.Email == patient.Email);
+                    if (user != null)
+                    {
+                        user.FirstName = patient.FirstName;
+                        user.LastName = patient.LastName;
+                        _context.Users.Update(user);
+                    }
+
                     _context.SaveChanges();
+
+                    // Update Session if the logged-in patient is editing their own profile
+                    if (HttpContext.Session.GetString("UserEmail") == patient.Email)
+                    {
+                        HttpContext.Session.SetString("UserName", $"{patient.FirstName} {patient.LastName}");
+                    }
+
                     TempData["Success"] = "Profile updated successfully!";
                 }
                 catch (DbUpdateConcurrencyException)
@@ -189,12 +224,13 @@ namespace CareFleet.Controllers
             var patient = GetLoggedInPatient();
             if (patient == null) return RedirectToAction("Logout", "Account");
 
-            // Get upcoming appointment
             var firstName = (string)ViewBag.FirstName;
             var lastName = (string)ViewBag.LastName;
             var fullName = $"{firstName} {lastName}".Trim();
+            var email = patient.Email;
 
-            var upcomingAppointment = _context.Set<Appointment>()
+            // 1. Get upcoming appointment
+            var upcomingAppointment = _context.Appointments
                 .AsEnumerable()
                 .Where(a => a.PatientName != null && 
                            (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
@@ -205,8 +241,77 @@ namespace CareFleet.Controllers
                 .FirstOrDefault();
 
             ViewBag.UpcomingAppointment = upcomingAppointment;
+
+            // 2. Fetch Recent Activities (similar to Profile)
+            var activities = new List<PatientActivity>();
+
+            // Appointments
+            var recentAppointments = _context.Appointments
+                .AsEnumerable()
+                .Where(a => a.PatientName != null && 
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(3)
+                .Select(a => new PatientActivity
+                {
+                    Title = $"Appointment {a.Status}",
+                    Subtitle = $"Dr. {a.DoctorName}",
+                    Date = a.CreatedAt,
+                    Icon = a.Status == "Cancelled" ? "fas fa-calendar-times" : "fas fa-calendar-check",
+                    Type = "Appointment"
+                });
+            activities.AddRange(recentAppointments);
+
+            // Medical Records
+            var recentRecords = _context.MedicalRecords
+                .Where(r => r.PatientId == patient.Id)
+                .OrderByDescending(r => r.DateIssued)
+                .Take(2)
+                .Select(r => new PatientActivity
+                {
+                    Title = "Medical Record Added",
+                    Subtitle = r.DocumentName,
+                    Date = r.DateIssued,
+                    Icon = "fas fa-file-medical",
+                    Type = "MedicalRecord"
+                });
+            activities.AddRange(recentRecords);
+
+            // Messages
+            var recentMessages = _context.Messages
+                .Where(m => m.SenderEmail == email || m.ReceiverEmail == email)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(3)
+                .ToList()
+                .Select(m => new PatientActivity
+                {
+                    Title = m.SenderEmail == email ? "Message Sent" : "Message Received",
+                    Subtitle = m.Content.Length > 30 ? m.Content.Substring(0, 27) + "..." : m.Content,
+                    Date = m.Timestamp,
+                    Icon = m.SenderEmail == email ? "fas fa-paper-plane" : "fas fa-envelope-open-text",
+                    Type = "Message"
+                });
+            activities.AddRange(recentMessages);
+
+            ViewBag.RecentActivities = activities.OrderByDescending(a => a.Date).Take(5).ToList();
+
+            // 3. Health Tips
+            var healthTips = new List<HealthTip>
+            {
+                new HealthTip { Title = "Stay Hydrated", Content = "Drinking 8 glasses of water daily boosts immunity.", Icon = "fas fa-tint", ColorClass = "text-primary" },
+                new HealthTip { Title = "Daily Exercise", Content = "A 30-minute walk significantly improves heart health.", Icon = "fas fa-walking", ColorClass = "text-success" },
+                new HealthTip { Title = "Sleep Well", Content = "Quality sleep (7-8 hours) is essential for recovery.", Icon = "fas fa-bed", ColorClass = "text-info" },
+                new HealthTip { Title = "Healthy Diet", Content = "Incorporate green vegetables for better digestion.", Icon = "fas fa-apple-alt", ColorClass = "text-danger" }
+            };
+
+            // Randomize and take 2
+            var random = new Random();
+            ViewBag.HealthTips = healthTips.OrderBy(x => random.Next()).Take(2).ToList();
+
             ViewBag.ActivePage = "Dashboard";
-            ViewBag.HeaderTitle = $"Welcome, {ViewBag.FirstName} {ViewBag.LastName}!";
+            ViewBag.HeaderTitle = $"Welcome, {firstName} {lastName}!";
 
             return View();
         }
@@ -356,6 +461,17 @@ namespace CareFleet.Controllers
 
                 _context.Messages.Add(message);
                 await _context.SaveChangesAsync();
+
+                // Notify the doctor they received a new message from patient
+                var patientFullName = $"{patient.FirstName} {patient.LastName}";
+                _context.Notifications.Add(new Notification
+                {
+                    ReceiverEmail = receiverEmail,
+                    Message = $"{patientFullName} sent you a message.",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Messages), new { receiverEmail = receiverEmail });
@@ -384,6 +500,88 @@ namespace CareFleet.Controllers
             return View("~/Views/Patient/Settings.cshtml", patient);
         }
 
+        public IActionResult ActivityHistory()
+        {
+            if (!IsPatient()) return RedirectToAction("Login", "Account");
+            SetUserInfo();
+
+            var patient = GetLoggedInPatient();
+            if (patient == null) return RedirectToAction("Logout", "Account");
+
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
+            var email = patient.Email;
+
+            // Fetch activities (top 50)
+            var activities = new List<PatientActivity>();
+
+            // Account
+            activities.Add(new PatientActivity
+            {
+                Title = "Account Created",
+                Subtitle = "CareFleet Registration",
+                Date = patient.CreatedAt,
+                Icon = "fas fa-user-plus",
+                Type = "Account"
+            });
+
+            // Appointments
+            var recentAppointments = _context.Appointments
+                .AsEnumerable()
+                .Where(a => a.PatientName != null && 
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(20)
+                .Select(a => new PatientActivity
+                {
+                    Title = $"Appointment {a.Status}",
+                    Subtitle = $"With Dr. {a.DoctorName} - {a.Reason}",
+                    Date = a.CreatedAt,
+                    Icon = a.Status == "Cancelled" ? "fas fa-calendar-times" : "fas fa-calendar-check",
+                    Type = "Appointment"
+                });
+            activities.AddRange(recentAppointments);
+
+            // Medical Records
+            var recentRecords = _context.MedicalRecords
+                .Where(r => r.PatientId == patient.Id)
+                .OrderByDescending(r => r.DateIssued)
+                .Take(20)
+                .Select(r => new PatientActivity
+                {
+                    Title = "Medical Record Added",
+                    Subtitle = $"{r.DocumentName} ({r.Category})",
+                    Date = r.DateIssued,
+                    Icon = "fas fa-file-medical",
+                    Type = "MedicalRecord"
+                });
+            activities.AddRange(recentRecords);
+
+            // Messages
+            var recentMessages = _context.Messages
+                .Where(m => m.SenderEmail == email || m.ReceiverEmail == email)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(20)
+                .ToList()
+                .Select(m => new PatientActivity
+                {
+                    Title = m.SenderEmail == email ? "Message Sent" : "Message Received",
+                    Subtitle = m.Content.Length > 100 ? m.Content.Substring(0, 97) + "..." : m.Content,
+                    Date = m.Timestamp,
+                    Icon = m.SenderEmail == email ? "fas fa-paper-plane" : "fas fa-envelope-open-text",
+                    Type = "Message"
+                });
+            activities.AddRange(recentMessages);
+
+            ViewBag.AllActivities = activities.OrderByDescending(a => a.Date).Take(100).ToList();
+            ViewBag.ActivePage = "Dashboard";
+            ViewBag.HeaderTitle = "Activity History";
+            return View(patient);
+        }
+
         public IActionResult Profile()
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
@@ -392,12 +590,94 @@ namespace CareFleet.Controllers
             var patient = GetLoggedInPatient();
             if (patient == null) return RedirectToAction("Logout", "Account");
 
-            // Get dynamic stats
-            var userName = (string)ViewBag.UserName;
-            var appointments = _context.Set<Appointment>().ToList();
-            ViewBag.AppointmentCount = appointments.Count(a => a.PatientName == userName);
-            ViewBag.RecordCount = 3; // Static for now as per the existing view design, but manageable from controller
+            var firstName = (string)ViewBag.FirstName;
+            var lastName = (string)ViewBag.LastName;
+            var fullName = $"{firstName} {lastName}".Trim();
+            var email = patient.Email;
 
+            // Get dynamic stats
+            var appointmentCount = _context.Appointments
+                .AsEnumerable()
+                .Count(a => a.PatientName != null && 
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
+            
+            var recordCount = _context.MedicalRecords.Count(r => r.PatientId == patient.Id);
+            
+            ViewBag.AppointmentCount = appointmentCount;
+            ViewBag.RecordCount = recordCount;
+
+            // Fetch Recent Activities
+            var activities = new List<PatientActivity>();
+
+            // 1. Account Creation (Base activity)
+            activities.Add(new PatientActivity
+            {
+                Title = "Account Created",
+                Subtitle = "CareFleet Registration",
+                Date = patient.CreatedAt,
+                Icon = "fas fa-user-plus",
+                Type = "Account"
+            });
+
+            // 2. Appointments
+            var recentAppointments = _context.Appointments
+                .AsEnumerable()
+                .Where(a => a.PatientName != null && 
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(5)
+                .Select(a => new PatientActivity
+                {
+                    Title = $"Appointment {a.Status}",
+                    Subtitle = $"With Dr. {a.DoctorName} - {a.Reason}",
+                    Date = a.CreatedAt,
+                    Icon = a.Status == "Cancelled" ? "fas fa-calendar-times" : "fas fa-calendar-check",
+                    Type = "Appointment"
+                });
+            activities.AddRange(recentAppointments);
+
+            // 3. Medical Records
+            var recentRecords = _context.MedicalRecords
+                .Where(r => r.PatientId == patient.Id)
+                .OrderByDescending(r => r.DateIssued)
+                .Take(5)
+                .Select(r => new PatientActivity
+                {
+                    Title = "Medical Record Added",
+                    Subtitle = $"{r.DocumentName} ({r.Category})",
+                    Date = r.DateIssued,
+                    Icon = "fas fa-file-medical",
+                    Type = "MedicalRecord"
+                });
+            activities.AddRange(recentRecords);
+
+            // 4. Messages (Sent/Received)
+            var recentMessages = _context.Messages
+                .Where(m => m.SenderEmail == email || m.ReceiverEmail == email)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(5)
+                .ToList()
+                .Select(m => new PatientActivity
+                {
+                    Title = m.SenderEmail == email ? "Message Sent" : "Message Received",
+                    Subtitle = m.Content.Length > 50 ? m.Content.Substring(0, 47) + "..." : m.Content,
+                    Date = m.Timestamp,
+                    Icon = m.SenderEmail == email ? "fas fa-paper-plane" : "fas fa-envelope-open-text",
+                    Type = "Message"
+                });
+            activities.AddRange(recentMessages);
+
+            // Sort and take top 10
+            var finalActivities = activities
+                .OrderByDescending(a => a.Date)
+                .Take(10)
+                .ToList();
+
+            ViewBag.RecentActivities = finalActivities;
             ViewBag.HeaderTitle = "My Profile";
             ViewBag.ActivePage = "Profile";
             ViewBag.UserEmail = patient.Email;
@@ -526,18 +806,60 @@ namespace CareFleet.Controllers
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             
-            // Placeholder: In a real app, this would fetch the file path from DB and return File()
-            TempData["Success"] = "Your medical record is being prepared for download. This feature is coming soon!";
-            return RedirectToAction(nameof(MedicalRecords));
+            var patient = GetLoggedInPatient();
+            if (patient == null) return Unauthorized();
+
+            var record = _context.MedicalRecords.FirstOrDefault(r => r.Id == id && r.PatientId == patient.Id);
+            if (record == null) return NotFound();
+
+            if (string.IsNullOrEmpty(record.FilePath))
+            {
+                TempData["Error"] = "File path is not specified for this record.";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", record.FilePath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath))
+            {
+                TempData["Error"] = "State: The physical file could not be found on the server.";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            var contentType = "application/octet-stream";
+            return File(System.IO.File.OpenRead(filePath), contentType, record.DocumentName + Path.GetExtension(record.FilePath));
         }
 
         public IActionResult ViewRecord(int id)
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             
-            // Placeholder: In a real app, this would open a PDF viewer or redirect to a details page
-            TempData["Info"] = "Viewing record... This feature is coming soon!";
-            return RedirectToAction(nameof(MedicalRecords));
+            var patient = GetLoggedInPatient();
+            if (patient == null) return Unauthorized();
+
+            var record = _context.MedicalRecords.FirstOrDefault(r => r.Id == id && r.PatientId == patient.Id);
+            if (record == null) return NotFound();
+
+            if (string.IsNullOrEmpty(record.FilePath))
+            {
+                TempData["Error"] = "File path is not specified for this record.";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", record.FilePath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath))
+            {
+                TempData["Error"] = "State: The physical file could not be found on the server.";
+                return RedirectToAction(nameof(MedicalRecords));
+            }
+
+            // For viewing, we try to determine a useful content type
+            var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(filePath, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            return File(System.IO.File.OpenRead(filePath), contentType);
         }
     }
 }

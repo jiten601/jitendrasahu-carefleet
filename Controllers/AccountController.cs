@@ -183,6 +183,28 @@ namespace CareFleet.Controllers
 
             _context.SaveChanges();
 
+            // Notify all admins about the new registration
+            var adminEmails = _context.Users
+                .Where(u => u.Role == "Admin")
+                .Select(u => u.Email)
+                .ToList();
+
+            var roleLabel = model.Role == "Doctor" ? "Doctor" : model.Role == "Patient" ? "Patient" : "User";
+            var fullName = $"{model.FirstName} {model.LastName}".Trim();
+            var adminMessage = $"New {roleLabel} registered: {fullName} ({model.Email}).";
+
+            foreach (var adminEmail in adminEmails)
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    ReceiverEmail = adminEmail,
+                    Message = adminMessage,
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                });
+            }
+            if (adminEmails.Any()) _context.SaveChanges();
+
             _emailService.Send(
                 model.Email,
                 "CareFleet Email Verification OTP",

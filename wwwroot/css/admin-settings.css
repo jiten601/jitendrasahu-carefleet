@@ -1,0 +1,190 @@
+/* Admin Settings Specific Styling */
+
+/* Tabs System */
+.premium-tabs {
+    display: flex;
+    gap: 12px;
+    background: rgba(241, 245, 249, 0.8);
+    padding: 8px;
+    border-radius: 14px;
+    border: 1px solid var(--admin-border);
+    margin-bottom: 40px;
+}
+
+.nav-link-premium {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--admin-text-light);
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.nav-link-premium i {
+    font-size: 16px;
+}
+
+.nav-link-premium.active {
+    background: var(--admin-white);
+    color: var(--admin-primary);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+.nav-link-premium:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--admin-text);
+}
+
+/* Tab Content */
+.tab-pane-premium {
+    display: none;
+    animation: fadeInAdmin 0.4s ease-out;
+}
+
+.tab-pane-premium.active {
+    display: block;
+}
+
+/* Premium Card */
+.premium-card {
+    background: var(--admin-white);
+    border-radius: 24px;
+    border: 1px solid var(--admin-border);
+    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.card-header-premium {
+    padding: 30px 40px;
+    border-bottom: 1px solid var(--admin-border);
+    background: linear-gradient(to right, #ffffff, #f9fafb);
+}
+
+.card-header-premium h5 {
+    color: var(--admin-primary);
+    font-weight: 700;
+}
+
+.card-body-premium {
+    padding: 40px;
+}
+
+/* Header Profile Badge */
+.profile-badge-premium {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    background: var(--admin-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge-text .small {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Icon Box for Security Section */
+.icon-box-premium {
+    transition: transform 0.3s ease;
+}
+
+.icon-box-premium:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Form Controls Refinement */
+.admin-settings-page .form-control {
+    border-width: 2px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background-color: #fdfdfd;
+    transition: all 0.3s ease;
+}
+
+.admin-settings-page .form-control:focus {
+    background-color: #ffffff;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 4px rgba(27, 60, 83, 0.05);
+}
+
+.admin-settings-page .form-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--admin-text-light);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Form Section Headings */
+.settings-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--admin-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.text-center .settings-section-title {
+    text-align: center;
+}
+
+/* Animations */
+@keyframes fadeInAdmin {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .premium-tabs {
+        flex-direction: column;
+    }
+
+    .profile-badge-premium {
+        display: none;
+    }
+
+    .card-header-premium,
+    .card-body-premium {
+        padding: 30px 20px;
+    }
+}

@@ -66,3 +66,50 @@
 .provider-info .fw-medium {
     color: #334155;
 }
+
+/* Action Buttons */
+.btn-action-light {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #64748b;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-action-light:hover {
+    background: #547792;
+    border-color: #547792;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(84, 119, 146, 0.35);
+}
+
+.btn-premium-light {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-premium-light:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action-light i,
+.btn-action-light:hover i {
+    pointer-events: none;
+}
