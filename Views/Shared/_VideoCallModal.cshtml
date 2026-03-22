@@ -1,10 +1,14 @@
 @* Shared Video Call Modal *@
-<div id="videoCallModal" class="video-call-modal">
+<div id="videoCallModal" class="video-call-modal" style="display: none;">
     <div class="video-call-container">
-        <div class="video-bg-placeholder"></div>
+        <!-- Remote Video (Full Screen) -->
+        <video id="remoteVideo" autoplay playsinline class="remote-video-el" style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
         
+        <!-- Placeholder when no video -->
+        <div class="video-bg-placeholder" id="videoPlaceholder"></div>
+        
+        <!-- Local Video (PiP) -->
         <div class="my-video-pip">
-            <i class="fas fa-user"></i>
             <video id="localVideo" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
         </div>
 
@@ -18,7 +22,8 @@
                 <div id="callTimer" style="display: none; font-size: 20px; font-weight: 500; margin-top: 10px;">00:00</div>
             </div>
 
-            <div class="call-actions">
+            <!-- Outgoing/Active Call Actions -->
+            <div class="call-actions" id="activeCallActions">
                 <button class="btn-call-action" onclick="toggleMute()" title="Mute">
                     <i class="fas fa-microphone" id="muteIcon"></i>
                 </button>
@@ -29,39 +34,207 @@
                     <i class="fas fa-phone-slash"></i>
                 </button>
             </div>
+
+            <!-- Incoming Call Actions -->
+            <div class="call-actions" id="incomingCallActions" style="display: none;">
+                <button class="btn-call-action bg-success" onclick="acceptIncomingCall()" title="Accept Call">
+                    <i class="fas fa-phone"></i>
+                </button>
+                <button class="btn-call-action btn-end-call" onclick="rejectIncomingCall()" title="Reject Call">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Sound Effects -->
+<audio id="ringtone" loop src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3"></audio>
+<audio id="dialtone" loop src="https://assets.mixkit.co/active_storage/sfx/1358/1358-preview.mp3"></audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
     let timerInterval;
     let seconds = 0;
     let localStream;
+    let peerConnection;
+    let signalRConnection;
+    let currentTargetEmail;
+    let isCaller = false;
 
-    async function startVideoCall(name, initials) {
+    const iceServers = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+    };
+
+    // Initialize SignalR
+    async function initSignalR() {
+        signalRConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/videoCallHub")
+            .withAutomaticReconnect()
+            .build();
+
+        signalRConnection.on("IncomingCall", (callerEmail, callerName, callerInitials) => {
+            handleIncomingCall(callerEmail, callerName, callerInitials);
+        });
+
+        signalRConnection.on("CallAccepted", (targetConnectionId) => {
+            handleCallAccepted();
+        });
+
+        signalRConnection.on("CallRejected", () => {
+            stopAudio('dialtone');
+            document.getElementById('callStatusText').innerText = 'Call Rejected';
+            setTimeout(endCall, 2000);
+        });
+
+        signalRConnection.on("CallEnded", () => {
+            endCall();
+        });
+
+        signalRConnection.on("ReceiveSignal", async (signal) => {
+            const data = JSON.parse(signal);
+            console.log("WebRTC Signal Received:", Object.keys(data)[0]);
+            if (data.offer) {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                await signalRConnection.invoke("SendSignal", currentTargetEmail, JSON.stringify({ answer }));
+            } else if (data.answer) {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            } else if (data.candidate) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        });
+
+        try {
+            await signalRConnection.start();
+            console.log("SignalR Connected.");
+        } catch (err) {
+            console.error("SignalR Connection Error: ", err);
+        }
+    }
+
+    // Start an Outgoing Call
+    async function startVideoCall(targetEmail, name, initials) {
+        currentTargetEmail = targetEmail;
+        isCaller = true;
+        
         document.getElementById('callName').innerText = name;
-        document.getElementById('callInitials').innerText = initials || 'HP';
+        document.getElementById('callInitials').innerText = initials || 'P';
         document.getElementById('videoCallModal').style.display = 'block';
         document.getElementById('callStatusText').innerText = 'Calling...';
-        document.getElementById('callStatusText').classList.add('pulse-animation');
+        document.getElementById('activeCallActions').style.display = 'flex';
+        document.getElementById('incomingCallActions').style.display = 'none';
         
+        playAudio('dialtone');
+
         try {
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             document.getElementById('localVideo').srcObject = localStream;
-        } catch (err) {
-            console.error("Error accessing media devices.", err);
-        }
+            
+            await initPeerConnection();
+            
+            // Notify target via SignalR
+            const callerName = "@Context.Session.GetString("UserName")";
+            const callerInitials = "@(Context.Session.GetString("UserName")?.Substring(0,1))";
+            await signalRConnection.invoke("StartCall", targetEmail, callerName, callerInitials);
 
-        // Simulate connection after 3 seconds
-        setTimeout(() => {
-            document.getElementById('callStatusText').innerText = 'Connected';
-            document.getElementById('callStatusText').classList.remove('pulse-animation');
-            document.getElementById('callStatusText').style.color = '#10b981';
-            startTimer();
-        }, 3000);
+        } catch (err) {
+            console.error("Error starting video call.", err);
+            document.getElementById('callStatusText').innerText = 'Media Access Denied';
+            setTimeout(endCall, 3000);
+        }
+    }
+
+    // Handle Incoming Call Notification
+    function handleIncomingCall(callerEmail, callerName, callerInitials) {
+        currentTargetEmail = callerEmail;
+        isCaller = false;
+
+        document.getElementById('callName').innerText = callerName;
+        document.getElementById('callInitials').innerText = callerInitials;
+        document.getElementById('videoCallModal').style.display = 'block';
+        document.getElementById('callStatusText').innerText = 'Incoming Call...';
+        document.getElementById('activeCallActions').style.display = 'none';
+        document.getElementById('incomingCallActions').style.display = 'flex';
+        
+        playAudio('ringtone');
+    }
+
+    async function acceptIncomingCall() {
+        stopAudio('ringtone');
+        document.getElementById('incomingCallActions').style.display = 'none';
+        document.getElementById('activeCallActions').style.display = 'flex';
+        document.getElementById('callStatusText').innerText = 'Connecting...';
+
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+            
+            await initPeerConnection();
+            await signalRConnection.invoke("AcceptCall", currentTargetEmail);
+            
+            // Create and send offer
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            await signalRConnection.invoke("SendSignal", currentTargetEmail, JSON.stringify({ offer }));
+
+        } catch (err) {
+            console.error("Error accepting call.", err);
+            endCall();
+        }
+    }
+
+    async function rejectIncomingCall() {
+        stopAudio('ringtone');
+        await signalRConnection.invoke("RejectCall", currentTargetEmail);
+        endCall();
+    }
+
+    async function handleCallAccepted() {
+        stopAudio('dialtone');
+        document.getElementById('callStatusText').innerText = 'Connected';
+        document.getElementById('callStatusText').classList.remove('pulse-animation');
+        document.getElementById('callStatusText').style.color = '#10b981';
+        startTimer();
+    }
+
+    async function initPeerConnection() {
+        console.log("Initializing WebRTC PeerConnection...");
+        peerConnection = new RTCPeerConnection(iceServers);
+
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+
+        peerConnection.ontrack = (event) => {
+            console.log("WebRTC: Remote track received.");
+            const remoteVideo = document.getElementById('remoteVideo');
+            remoteVideo.srcObject = event.streams[0];
+            remoteVideo.style.display = 'block';
+            document.getElementById('videoPlaceholder').style.display = 'none';
+        };
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log("WebRTC: New ICE candidate generated.");
+                signalRConnection.invoke("SendSignal", currentTargetEmail, JSON.stringify({ candidate: event.candidate }));
+            }
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+            console.log("WebRTC: Connection state changed to:", peerConnection.connectionState);
+            if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
+                endCall();
+            }
+        };
     }
 
     function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
         seconds = 0;
         document.getElementById('callTimer').style.display = 'block';
         timerInterval = setInterval(() => {
@@ -73,13 +246,45 @@
         }, 1000);
     }
 
-    function endCall() {
+    async function endCall() {
         document.getElementById('videoCallModal').style.display = 'none';
         clearInterval(timerInterval);
+        
+        stopAudio('ringtone');
+        stopAudio('dialtone');
+
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
         }
+
+        if (peerConnection) {
+            peerConnection.close();
+            peerConnection = null;
+        }
+
+        if (signalRConnection && currentTargetEmail) {
+            await signalRConnection.invoke("HangUp", currentTargetEmail);
+        }
+
         document.getElementById('callTimer').style.display = 'none';
+        document.getElementById('remoteVideo').style.display = 'none';
+        document.getElementById('videoPlaceholder').style.display = 'block';
+        document.getElementById('localVideo').srcObject = null;
+        currentTargetEmail = null;
+    }
+
+    function playAudio(id) {
+        const audio = document.getElementById(id);
+        if (audio) audio.play().catch(e => console.log("Audio play failed", e));
+    }
+
+    function stopAudio(id) {
+        const audio = document.getElementById(id);
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
     }
 
     function toggleMute() {
@@ -99,4 +304,7 @@
             icon.className = videoTrack.enabled ? 'fas fa-video' : 'fas fa-video-slash text-danger';
         }
     }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initSignalR);
 </script>

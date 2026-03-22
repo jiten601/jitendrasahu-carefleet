@@ -1,0 +1,252 @@
+/* prescription-details.css */
+
+.prescription-paper {
+    max-width: 1100px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 30px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.rx-header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+    padding: 4rem;
+    color: white;
+    position: relative;
+}
+
+.rx-content {
+    padding: 5rem;
+}
+
+.rx-seal {
+    position: absolute;
+    top: 2rem;
+    right: 4rem;
+    opacity: 0.05;
+    font-size: 12rem;
+    color: white;
+    z-index: 1;
+}
+
+.tracking-tight {
+    letter-spacing: -1.5px;
+}
+
+.rx-logo-circle {
+    width: 60px;
+    height: 60px;
+    background: var(--warm-accent);
+    color: var(--primary-dark);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.rx-symbol-box {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    font-family: 'Outfit', sans-serif;
+    line-height: 1;
+    padding-bottom: 5px;
+    border-bottom: 4px solid var(--primary-blue);
+}
+
+.custom-rx-table td {
+    padding: 2rem 0;
+}
+
+.duration-tag {
+    background: #f1f5f9;
+    padding: 8px 15px;
+    border-radius: 12px;
+    font-weight: 800;
+    color: #475569;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+
+.digital-sign-font {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    color: #1e293b;
+    opacity: 0.8;
+}
+
+.signature-line {
+    width: 200px;
+    height: 2px;
+    background: #e2e8f0;
+    margin-bottom: 10px;
+}
+
+.refill-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e2e8f0;
+}
+
+.refill-indicator.has-refills {
+    background: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+/* Print Optimization for Professional A4 Report */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 5mm;
+        /* Smaller margins to fit everything */
+    }
+
+    /* Global Reset to force full width */
+    html,
+    body {
+        width: 210mm !important;
+        /* Force A4 width */
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Hide Web UI Elements completely */
+    .premium-header-card,
+    .btn,
+    .btn-premium-light,
+    .d-md-none,
+    .rx-seal,
+    .header-bg-pattern,
+    aside,
+    nav,
+    .navbar,
+    footer,
+    button,
+    #sidebar,
+    .sidebar {
+        display: none !important;
+    }
+
+    /* Override any parent containers that might be narrowing the content */
+    .container,
+    .container-fluid,
+    main,
+    .main-content,
+    .dashboard-container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    /* The Prescription Paper Container */
+    .prescription-paper {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .prescription-paper,
+    .prescription-paper * {
+        visibility: visible !important;
+    }
+
+    /* Header Fixes */
+    .rx-header {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        padding: 2rem 3rem !important;
+        border-bottom: 2px solid #547792 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+
+    .brand-name {
+        font-size: 2.2rem !important;
+        color: #0f172a !important;
+    }
+
+    .sub-brand {
+        color: #64748b !important;
+    }
+
+    .date-badge-print div {
+        background: white !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #000 !important;
+        padding: 1rem !important;
+    }
+
+    /* Content distribution */
+    .rx-content {
+        padding: 2rem 3rem !important;
+    }
+
+    /* Adjust grids for wide layout */
+    .row {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 1rem !important;
+    }
+
+    .col-md-6 {
+        flex: 1 !important;
+        width: 50% !important;
+    }
+
+    /* Table Adjustments */
+    .custom-rx-table {
+        width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    .custom-rx-table td {
+        padding: 0.75rem 0.5rem !important;
+        /* Reduced padding to help fit on page */
+    }
+
+    /* Signature and Footer */
+    .rx-footer-section {
+        margin-top: 2rem !important;
+        padding-top: 1.5rem !important;
+    }
+
+    .signature-line {
+        background: #000 !important;
+        width: 180px !important;
+    }
+
+    /* Footer Info */
+    .prescription-paper>div:last-child {
+        background: #f8fafc !important;
+        padding: 1rem !important;
+        border-top: 1px solid #e2e8f0 !important;
+        margin-top: 1rem;
+    }
+
+    /* Ensure exactly one page */
+    .prescription-paper {
+        page-break-after: avoid;
+    }
+}

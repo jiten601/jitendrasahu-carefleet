@@ -1,0 +1,431 @@
+@model CareFleet.Models.Prescription
+@{
+    ViewData["Title"] = "Create Prescription";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    var patient = ViewBag.Patient as CareFleet.Models.Patient;
+    var appointment = ViewBag.Appointment as CareFleet.Models.Appointment;
+    ViewBag.HideHeader = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/prescription.css" asp-append-version="true" />
+    <style>
+        .step-pill {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+    </style>
+}
+
+<div class="container-fluid py-4 prescription-container">
+    <!-- Premium Header -->
+    <div class="premium-header-card mb-5">
+        <div class="header-card-content">
+            <div class="header-info">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="rx-badge me-2">Session Active</span>
+                    <h1 class="fw-800 text-white mb-0">@ViewBag.HeaderTitle</h1>
+                </div>
+                <p class="text-white opacity-75 mb-0">
+                    <i class="fas fa-microscope me-1"></i> 
+                    @if (patient != null)
+                    {
+                        <span>Patient: <strong>@patient.FirstName @patient.LastName</strong></span>
+                        @if (appointment != null)
+                        {
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-calendar-alt me-1"></i> <span>Date: @appointment.AppointmentDate.ToString("MMM dd, yyyy")</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Select a patient below to start the prescription.</span>
+                    }
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("MyPrescriptions", "Prescription")" class="btn-premium-light">
+                    <i class="fas fa-chevron-left me-2"></i>View History
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <datalist id="medicationsList">
+        @foreach (var med in ViewBag.CommonMeds)
+        {
+            <option value="@med"></option>
+        }
+    </datalist>
+
+    <form id="prescriptionForm">
+        @Html.AntiForgeryToken()
+        @if (patient != null)
+        {
+            <input type="hidden" name="patientId" id="patientIdHidden" value="@patient.Id" />
+        }
+        else
+        {
+            <input type="hidden" name="patientId" id="patientIdHidden" value="" />
+        }
+        <input type="hidden" name="doctorId" value="@ViewBag.Doctor.Id" />
+        <input type="hidden" name="appointmentId" value="@appointment?.Id" />
+
+        <div class="row g-4">
+            <!-- Left Side: Medication List -->
+            <div class="col-lg-8">
+                <div class="prescription-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="step-pill" style="background: #547792">1</div>
+                            <h5 class="fw-800 mb-0">Medication Details</h5>
+                        </div>
+                        <button type="button" class="btn-add-medicine" onclick="addMedicineRow()">
+                            <i class="fas fa-plus-circle me-2"></i>Add Medicine
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle" id="medicineTable">
+                            <thead>
+                                <tr class="text-secondary small fw-bold text-uppercase ls-1">
+                                    <th style="width: 25%">Medicine Name</th>
+                                    <th style="width: 15%">Dosage</th>
+                                    <th style="width: 20%">Frequency</th>
+                                    <th style="width: 20%">Duration/Notes</th>
+                                    <th style="width: 10%">Refills</th>
+                                    <th style="width: 10%">Expiry</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicineBody">
+                                <tr class="medicine-row medicine-row-new">
+                                    <td>
+                                        <div class="validation-container">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0 rounded-start-4"><i class="fas fa-pills text-primary"></i></span>
+                                                <input type="text" name="items[0].MedicineName" class="medicine-input form-control rounded-end-4 border-start-0" placeholder="e.g. Paracetamol" list="medicationsList" required />
+                                            </div>
+                                            <div class="invalid-feedback-custom">Medicine name is required</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="validation-container">
+                                            <input type="text" name="items[0].Dosage" class="medicine-input form-control rounded-4" placeholder="500mg" required />
+                                            <div class="invalid-feedback-custom">Dosage is required</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="validation-container">
+                                            <select name="items[0].Frequency" class="medicine-input form-select rounded-4" required>
+                                                <option value="">Select</option>
+                                                <option value="Once Daily">OD (Once)</option>
+                                                <option value="Twice Daily">BD (Twice)</option>
+                                                <option value="Thrice Daily">TID (Thrice)</option>
+                                                <option value="Four Times Daily">QID (Four)</option>
+                                                <option value="As Needed">PRN (Needed)</option>
+                                            </select>
+                                            <div class="invalid-feedback-custom">Select frequency</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="validation-container">
+                                            <input type="text" name="items[0].Duration" class="medicine-input form-control rounded-4 mb-1" placeholder="5 Days" required />
+                                            <div class="invalid-feedback-custom">Duration is required</div>
+                                        </div>
+                                        <input type="text" name="items[0].Instructions" class="medicine-input form-control rounded-4 small" placeholder="Instructions" />
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[0].Refills" class="medicine-input form-control rounded-4" min="0" value="0" />
+                                    </td>
+                                    <td>
+                                        <input type="date" name="items[0].ExpiryDate" class="medicine-input form-control rounded-4 px-2" value="@DateTime.Now.AddMonths(6).ToString("yyyy-MM-dd")" />
+                                    </td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-link text-danger p-0" onclick="removeMedicineRow(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="prescription-card p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="step-pill" style="background: #547792">2</div>
+                        <h5 class="fw-800 mb-0">Clinical Notes & Advice</h5>
+                    </div>
+                    <textarea name="notes" class="medicine-input form-control rounded-4" rows="5" placeholder="Enter diagnosis summary, dietary advice, or follow-up instructions here..."></textarea>
+                </div>
+            </div>
+
+            <!-- Right Side: Patient Info & Submit -->
+            <div class="col-lg-4">
+                <div class="patient-summary-glass">
+                    <h5 class="fw-800 mb-4 border-bottom pb-2">Patient Profile</h5>
+                    
+                    @if (patient == null)
+                    {
+                        <div class="mb-4">
+                            <label class="info-label mb-2">Select Patient</label>
+                            <select id="patientSelector" class="form-select rounded-4 p-3 border-0 bg-white shadow-sm fw-bold" onchange="updatePatientId(this)">
+                                <option value="">-- Choose Patient --</option>
+                                @if (ViewBag.Patients != null)
+                                {
+                                    foreach (var p in ViewBag.Patients as List<CareFleet.Models.Patient>)
+                                    {
+                                        <option value="@p.Id" data-name="@p.FirstName @p.LastName" data-blood="@p.BloodGroup" data-history="@p.MedicalHistory" data-age="@(DateTime.Now.Year - p.DateOfBirth.Year)" data-gender="@p.Gender">
+                                            @p.FirstName @p.LastName
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    }
+
+                    <div id="patientInfoSection" class="@(patient == null ? "d-none" : "")">
+                        <div class="d-flex align-items-center p-3 rounded-4 mb-4" style="background: rgba(84, 119, 146, 0.05);">
+                            <div id="patientAvatar" class="avatar-lg bg-primary-dark text-white fw-800 rounded-4 me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                @(patient != null ? patient.FirstName[0].ToString() + patient.LastName[0].ToString() : "??")
+                            </div>
+                            <div>
+                                <h6 class="fw-800 mb-0" id="patientNameDisplay">@patient?.FirstName @patient?.LastName</h6>
+                                <p class="text-muted small mb-0">ID: <span id="patientIdDisplay">#P-@patient?.Id</span></p>
+                                <span class="badge status-pill-info mt-1" id="patientStatsDisplay">@patient?.Gender, @(DateTime.Now.Year - (patient?.DateOfBirth.Year ?? DateTime.Now.Year))Y</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="p-3 rounded-4 border bg-white text-center">
+                                    <p class="small text-secondary fw-bold text-uppercase mb-1">Blood Group</p>
+                                    <span class="fw-800 text-danger" id="patientBloodDisplay">@patient?.BloodGroup</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded-4 border bg-white text-center">
+                                    <p class="small text-secondary fw-bold text-uppercase mb-1">Total Rx</p>
+                                    <span class="fw-800">New</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-4 border bg-white mb-4">
+                            <p class="small text-secondary fw-bold text-uppercase mb-1">Medical Conditions</p>
+                            <p class="small mb-2 text-dark" id="patientHistoryDisplay">@(string.IsNullOrEmpty(patient?.MedicalHistory) ? "No history recorded." : patient.MedicalHistory)</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-800 rounded-4 shadow-lg border-0" 
+                            style="background: linear-gradient(135deg, #1e293b 0%, #547792 100%);">
+                        <i class="fas fa-check-circle me-2"></i>Sign & Issue Digital Rx
+                    </button>
+                    
+                    <p class="text-center small text-muted mt-3 mb-0">
+                        <i class="fas fa-shield-alt me-1"></i> This document will be digitally signed.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function reindexRows() {
+            const rows = document.querySelectorAll('#medicineBody tr');
+            rows.forEach((row, index) => {
+                row.querySelectorAll('.medicine-input').forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        input.setAttribute('name', name.replace(/\[\d+\]/, `[${index}]`));
+                    }
+                });
+            });
+            medicineCount = rows.length;
+        }
+
+        function addMedicineRow() {
+            const tbody = document.getElementById('medicineBody');
+            const rowCount = tbody.querySelectorAll('tr').length;
+            const newRow = document.createElement('tr');
+            newRow.className = 'medicine-row medicine-row-new';
+            newRow.innerHTML = `
+                <td>
+                    <div class="validation-container">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 rounded-start-4"><i class="fas fa-pills text-primary"></i></span>
+                            <input type="text" name="items[${rowCount}].MedicineName" class="medicine-input form-control rounded-end-4 border-start-0" placeholder="e.g. Paracetamol" list="medicationsList" required />
+                        </div>
+                        <div class="invalid-feedback-custom">Medicine name is required</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="validation-container">
+                        <input type="text" name="items[${rowCount}].Dosage" class="medicine-input form-control rounded-4" placeholder="500mg" required />
+                        <div class="invalid-feedback-custom">Dosage is required</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="validation-container">
+                        <select name="items[${rowCount}].Frequency" class="medicine-input form-select rounded-4" required>
+                            <option value="">Select</option>
+                            <option value="Once Daily">OD (Once)</option>
+                            <option value="Twice Daily">BD (Twice)</option>
+                            <option value="Thrice Daily">TID (Thrice)</option>
+                            <option value="Four Times Daily">QID (Four)</option>
+                            <option value="As Needed">PRN (Needed)</option>
+                        </select>
+                        <div class="invalid-feedback-custom">Select frequency</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="validation-container">
+                        <input type="text" name="items[${rowCount}].Duration" class="medicine-input form-control rounded-4 mb-1" placeholder="5 Days" required />
+                        <div class="invalid-feedback-custom">Duration is required</div>
+                    </div>
+                    <input type="text" name="items[${rowCount}].Instructions" class="medicine-input form-control rounded-4 small" placeholder="Instructions" />
+                </td>
+                <td>
+                    <input type="number" name="items[${rowCount}].Refills" class="medicine-input form-control rounded-4" min="0" value="0" />
+                </td>
+                <td>
+                    <input type="date" name="items[${rowCount}].ExpiryDate" class="medicine-input form-control rounded-4 px-2" value="${new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0]}" />
+                </td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-link text-danger p-0" onclick="removeMedicineRow(this)">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+            reindexRows();
+        }
+
+        function removeMedicineRow(btn) {
+            const tbody = document.getElementById('medicineBody');
+            const rows = tbody.querySelectorAll('.medicine-row');
+            if (rows.length > 1) {
+                const row = btn.closest('tr');
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    row.remove();
+                    reindexRows();
+                }, 300);
+            } else {
+                Swal.fire({
+                    title: 'Minimal Requirement',
+                    text: 'A prescription must contain at least one medication.',
+                    icon: 'warning',
+                    confirmButtonColor: '#547792'
+                });
+            }
+        }
+
+        function updatePatientId(select) {
+            const hdn = document.getElementById('patientIdHidden');
+            const section = document.getElementById('patientInfoSection');
+            const opt = select.options[select.selectedIndex];
+            
+            if (select.value) {
+                hdn.value = select.value;
+                section.classList.remove('d-none');
+                
+                // Update display
+                document.getElementById('patientNameDisplay').textContent = opt.dataset.name;
+                document.getElementById('patientIdDisplay').textContent = '#P-' + select.value;
+                document.getElementById('patientStatsDisplay').textContent = opt.dataset.gender + ', ' + opt.dataset.age + 'Y';
+                document.getElementById('patientBloodDisplay').textContent = opt.dataset.blood || 'N/A';
+                document.getElementById('patientHistoryDisplay').textContent = opt.dataset.history || 'No history recorded.';
+                
+                const initials = opt.dataset.name.split(' ').map(n => n[0]).join('');
+                document.getElementById('patientAvatar').textContent = initials;
+            } else {
+                hdn.value = '';
+                section.classList.add('d-none');
+            }
+        }
+
+        document.getElementById('prescriptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!document.getElementById('patientIdHidden').value) {
+                Swal.fire({
+                    title: 'Patient Required',
+                    text: 'Please select a patient before issuing the prescription.',
+                    icon: 'warning',
+                    confirmButtonColor: '#547792'
+                });
+                return;
+            }
+
+            const formData = new FormData(this);
+            
+            Swal.fire({
+                title: 'Finalize Prescription?',
+                text: "This will issue a digitally signed Rx to the patient portal. Please verify all dosages before confirming.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#547792',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Sign & Issue'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Issuing...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    fetch('@Url.Action("Create", "Prescription")', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Rx Issued!',
+                                text: 'The prescription has been successfully sent to the patient.',
+                                icon: 'success',
+                                confirmButtonColor: '#547792'
+                            }).then(() => {
+                                window.location.href = data.redirectUrl;
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                    });
+                }
+            });
+        });
+
+        // Clear error on input
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('medicine-input')) {
+                const container = e.target.closest('.validation-container');
+                if (container && e.target.value.trim()) {
+                    container.classList.remove('has-error');
+                }
+            }
+        });
+    </script>
+}

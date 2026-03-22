@@ -2,14 +2,17 @@ using CareFleet.Models;
 using CareFleet.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using CareFleet.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 // Email service
 builder.Services.AddTransient<EmailService>();
+builder.Services.AddHttpContextAccessor();
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -147,5 +150,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}"
 );
+app.MapHub<VideoCallHub>("/videoCallHub");
 
 app.Run();

@@ -64,6 +64,12 @@ namespace CareFleet.Controllers
                 return role == "Doctor" ? "/Doctor/Appointments" : "/Patient/Appointments";
             }
 
+            // Prescription notifications
+            if (msg.Contains("prescription"))
+            {
+                return role == "Doctor" ? "/Prescription/MyPrescriptions" : "/Prescription/MyPrescriptions";
+            }
+
             // Default to dashboard
             return role == "Doctor" ? "/Doctor/Dashboard" : "/Patient/Dashboard";
         }

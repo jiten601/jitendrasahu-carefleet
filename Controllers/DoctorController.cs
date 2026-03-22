@@ -298,18 +298,23 @@ namespace CareFleet.Controllers
                 .Select(a => a.PatientName)
                 .Distinct()
                 .ToList();
-                
-            ViewBag.TotalPatients = patientNames.Count;
-            ViewBag.ActivePatients = patientNames.Count; // Assuming Active = Total for now
-
-            // 2. New Patients This Month: Count patients created this month who are associated with this doctor
+            // Quick Stats
+            ViewBag.TotalPatients = _context.Patients.Count();
+            ViewBag.ActivePatients = _context.Appointments
+                .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName) && a.Status == "Confirmed")
+                .Select(a => a.PatientName)
+                .Distinct()
+                .Count();
+            ViewBag.NewPatientsThisMonth = _context.Patients.Count(p => p.CreatedAt.Month == DateTime.Now.Month && p.CreatedAt.Year == DateTime.Now.Year);
+            
+            // New Module Stats
+            ViewBag.TotalPrescriptions = _context.Prescriptions.Count(p => p.DoctorId == doctor.Id);
+            ViewBag.TotalInvoices = _context.Invoices.Count(i => i.Appointment != null && i.Appointment.DoctorName.Contains(doctor.FirstName) && i.Appointment.DoctorName.Contains(doctor.LastName));
+            ViewBag.PendingInvoicesAmount = _context.Invoices
+                .Where(i => i.Appointment != null && i.Appointment.DoctorName.Contains(doctor.FirstName) && i.Appointment.DoctorName.Contains(doctor.LastName) && i.Status == "Unpaid")
+                .Sum(i => (decimal?)i.TotalAmount) ?? 0;
             // Note: Ideally, we'd check created date of first appointment, but using Patient.CreatedAt for simplicity
             // mixed with association check.
-            ViewBag.NewPatientsThisMonth = _context.Patients
-                .AsEnumerable()
-                .Count(p => p.CreatedAt.Month == DateTime.Now.Month && 
-                           p.CreatedAt.Year == DateTime.Now.Year && 
-                           patientNames.Contains($"{p.FirstName} {p.LastName}"));
 
             ViewBag.HeaderTitle = $"Welcome, Dr. {doctor.FirstName} {doctor.LastName}";
             ViewBag.ActivePage = "Dashboard";
@@ -510,6 +515,39 @@ namespace CareFleet.Controllers
             }
 
             return RedirectToAction(nameof(Messages), new { receiverEmail = receiverEmail });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMessage(int id)
+        {
+            if (!IsDoctor()) return Unauthorized();
+            var doctor = GetLoggedInDoctor();
+            if (doctor == null) return Unauthorized();
+
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound();
+
+            // Ensure the doctor is part of this conversation
+            if (message.SenderEmail != doctor.Email && message.ReceiverEmail != doctor.Email)
+            {
+                return Unauthorized();
+            }
+
+            // If it has an attachment, delete it from the server
+            if (!string.IsNullOrEmpty(message.AttachmentPath))
+            {
+                string filePath = Path.Combine(_hostEnvironment.WebRootPath, message.AttachmentPath.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            _context.Messages.Remove(message);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
         }
 
         // Helper class for Union
@@ -782,7 +820,7 @@ namespace CareFleet.Controllers
         }
         // POST: Doctor/UpdateAppointmentStatus
         [HttpPost]
-        public IActionResult UpdateAppointmentStatus(int appointmentId, string status)
+        public async Task<IActionResult> UpdateAppointmentStatus(int appointmentId, string status)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
 
@@ -819,7 +857,15 @@ namespace CareFleet.Controllers
                     _context.Notifications.Add(notification);
                 }
                 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+
+                // Generate Invoice if status is Completed
+                if (status == "Completed" && patient != null)
+                {
+                    // Create invoice with standard fee using centralized helper
+                    await BillingController.GenerateInvoice(_context, patient.Id, appointment.Id, 50.00m);
+                }
+
                 TempData["Success"] = $"Appointment status updated to {status}!";
             }
             else
@@ -830,7 +876,7 @@ namespace CareFleet.Controllers
             return RedirectToAction(nameof(Appointments));
         }
 
-        public IActionResult AppointmentDetails(int id)
+        public async Task<IActionResult> AppointmentDetails(int id)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
@@ -838,7 +884,7 @@ namespace CareFleet.Controllers
             var doctor = GetLoggedInDoctor();
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
-            var appointment = _context.Set<Appointment>().FirstOrDefault(a => a.Id == id);
+            var appointment = await _context.Set<Appointment>().FirstOrDefaultAsync(a => a.Id == id);
             
             if (appointment == null) return NotFound();
 
@@ -854,7 +900,14 @@ namespace CareFleet.Controllers
 
             ViewBag.ActivePage = "Appointments";
             ViewBag.HeaderTitle = "Appointment Details";
-            return View("~/Views/Patient/AppointmentDetails.cshtml", appointment);
+
+            // Get related prescriptions for this appointment
+            ViewBag.Prescriptions = await _context.Prescriptions
+                .Where(p => p.AppointmentId == id)
+                .OrderByDescending(p => p.DateCreated)
+                .ToListAsync();
+
+            return View("~/Views/Doctor/AppointmentDetails.cshtml", appointment);
         }
     }
 }

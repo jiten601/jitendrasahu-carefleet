@@ -46,9 +46,17 @@
                     <i class="fas fa-file-medical"></i>
                     <span>Medical Records</span>
                 </a>
+                <a href="@Url.Action("MyPrescriptions", "Prescription")" class="nav-item @(activePage == "Prescriptions" ? "active" : "")">
+                    <i class="fas fa-file-prescription"></i>
+                    <span>My Prescriptions</span>
+                </a>
                 <a href="@Url.Action("Messages", "Patient")" class="nav-item @(activePage == "Messages" ? "active" : "")">
                     <i class="fas fa-envelope"></i>
                     <span>Messages</span>
+                </a>
+                <a href="@Url.Action("MyInvoices", "Billing")" class="nav-item @(activePage == "Payments" ? "active" : "")">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Payments</span>
                 </a>
                 <a href="@Url.Action("Settings", "Patient")" class="nav-item @(activePage == "Settings" ? "active" : "")">
                     <i class="fas fa-cog"></i>
@@ -225,6 +233,7 @@
             }
         });
     </script>
+    <partial name="_VideoCallModal" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

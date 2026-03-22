@@ -12,6 +12,7 @@ namespace CareFleet.Models
         public string Address { get; set; } = string.Empty;
         public string BloodGroup { get; set; } = string.Empty;
         public string MedicalHistory { get; set; } = string.Empty;
+        public string? Allergies { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
     }

@@ -477,6 +477,39 @@ namespace CareFleet.Controllers
             return RedirectToAction(nameof(Messages), new { receiverEmail = receiverEmail });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMessage(int id)
+        {
+            if (!IsPatient()) return Unauthorized();
+            var patient = GetLoggedInPatient();
+            if (patient == null) return Unauthorized();
+
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound();
+
+            // Ensure the patient is part of this conversation
+            if (message.SenderEmail != patient.Email && message.ReceiverEmail != patient.Email)
+            {
+                return Unauthorized();
+            }
+
+            // If it has an attachment, delete it from the server
+            if (!string.IsNullOrEmpty(message.AttachmentPath))
+            {
+                string filePath = Path.Combine(_hostEnvironment.WebRootPath, message.AttachmentPath.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            _context.Messages.Remove(message);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
+        }
+
         // Helper class for Union
         private class DoctorComparer : System.Collections.Generic.IEqualityComparer<Doctor>
         {
@@ -729,9 +762,9 @@ namespace CareFleet.Controllers
             var fullName = $"{firstName} {lastName}".Trim();
 
             var appointment = _context.Set<Appointment>().Find(id);
+            if (appointment == null) return NotFound();
             
-            bool isOwnProperty = appointment != null && 
-                                (appointment.PatientName != null && 
+            bool isOwnProperty = (appointment.PatientName != null && 
                                  (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
                                   (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
                                    appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
@@ -758,9 +791,9 @@ namespace CareFleet.Controllers
             var fullName = $"{firstName} {lastName}".Trim();
 
             var appointment = _context.Set<Appointment>().Find(id);
+            if (appointment == null) return NotFound();
 
-            bool isOwnProperty = appointment != null && 
-                                (appointment.PatientName != null && 
+            bool isOwnProperty = (appointment.PatientName != null && 
                                  (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
                                   (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
                                    appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));

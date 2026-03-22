@@ -1,0 +1,189 @@
+@model CareFleet.Models.Prescription
+@{
+    ViewData["Title"] = "Prescription Details";
+    var userRole = Context.Session.GetString("UserRole");
+    Layout = userRole == "Patient" ? "~/Views/Shared/_PatientLayout.cshtml" : "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.HideHeader = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/prescription.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/prescription-details.css" asp-append-version="true" />
+}
+
+<div class="container-fluid py-4 fade-in">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-5">
+        <div class="header-card-content">
+            <div class="header-info">
+                <div class="d-flex align-items-center mb-2">
+                    <h1 class="fw-800 text-white mb-0">Prescription Details</h1>
+                </div>
+                <p class="text-white opacity-75 mb-0">
+                    <i class="fas fa-hashtag me-1"></i> ID: <strong>RX-@Model.Id.ToString("D6")</strong>
+                    <span class="mx-2">|</span>
+                    <i class="fas fa-calendar-alt me-1"></i> Issued: @Model.DateCreated.ToString("MMMM dd, yyyy")
+                </p>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.print()" class="btn-premium-light me-2">
+                    <i class="fas fa-print me-2"></i>Print Rx
+                </button>
+                <a href="@Url.Action("MyPrescriptions", "Prescription")" class="btn-premium-light">
+                    <i class="fas fa-list me-2"></i>History
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="prescription-paper">
+        <!-- Letterhead -->
+        <div class="rx-header">
+            <div class="rx-seal"><i class="fas fa-hand-holding-medical"></i></div>
+            <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+                <div class="d-flex align-items-center">
+                    <div class="rx-logo-circle me-3">
+                        <i class="fas fa-notes-medical"></i>
+                    </div>
+                    <div>
+                        <h1 class="fw-800 mb-0 tracking-tight brand-name" style="font-family: 'Outfit', sans-serif; color: var(--warm-accent);">CAREFLEET</h1>
+                        <p class="opacity-75 mb-0 x-small text-uppercase ls-2 fw-bold sub-brand" style="color: white;">Advanced Telehealth Network</p>
+                    </div>
+                </div>
+                <div class="date-badge-print">
+                    <div class="d-inline-block text-start p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
+                        <p class="x-small text-uppercase fw-bold opacity-50 mb-1">Issue Date</p>
+                        <p class="fw-800 mb-0">@Model.DateCreated.ToString("MMM dd, yyyy")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rx-content">
+            <!-- Professional Details Grid -->
+            <div class="row mb-5 g-4">
+                <div class="col-md-6">
+                    <div class="p-4 rounded-4 border-dashed border-2">
+                        <label class="text-secondary x-small fw-800 text-uppercase mb-3 d-block tracking-widest">Medical Practitioner</label>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-md bg-primary-subtle text-primary fw-800 rounded-4 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                @(Model.Doctor?.FirstName[0])@(Model.Doctor?.LastName[0])
+                            </div>
+                            <div>
+                                <h5 class="fw-800 mb-0">Dr. @Model.Doctor?.FirstName @Model.Doctor?.LastName</h5>
+                                <p class="text-primary small fw-bold mb-0">@Model.Doctor?.Specialization</p>
+                                <p class="text-muted x-small mb-0">License: #MD-@Model.DoctorId-CF</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4 rounded-4 border-dashed border-2">
+                        <label class="text-secondary x-small fw-800 text-uppercase mb-3 d-block tracking-widest">Patient Information</label>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-md bg-info-subtle text-info fw-800 rounded-4 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                @(Model.Patient?.FirstName[0])@(Model.Patient?.LastName[0])
+                            </div>
+                            <div>
+                                <h5 class="fw-800 mb-0">@Model.Patient?.FirstName @Model.Patient?.LastName</h5>
+                                <p class="text-muted small mb-0">DOB: @Model.Patient?.DateOfBirth.ToString("MMM dd, yyyy") (@(DateTime.Now.Year - (Model.Patient?.DateOfBirth.Year ?? DateTime.Now.Year)) Yrs)</p>
+                                <p class="text-muted x-small mb-0">Ref ID: #P-@Model.PatientId</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rx Symbol & Items -->
+            <div class="rx-body-section mb-0">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="rx-symbol-box">Rx</div>
+                    <div class="flex-grow-1 ms-4">
+                        <h4 class="fw-800 mb-1 text-dark">Prescribed Medications</h4>
+                        <div class="h-1px bg-gradient-fade" style="height: 2px; background: linear-gradient(to right, #547792, transparent);"></div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle custom-rx-table">
+                        <thead>
+                            <tr class="text-secondary x-small fw-800 text-uppercase tracking-widest border-bottom">
+                                <th class="ps-0 py-3" style="width: 45%;">Medicine & Instructions</th>
+                                <th class="py-3">Frequency</th>
+                                <th class="py-3 text-end pe-0">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr class="border-bottom">
+                                    <td class="ps-0 py-4">
+                                        <div class="fw-800 text-dark mb-1 fs-5">@item.MedicineName</div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-light text-dark border rounded-pill x-small px-2">@item.Dosage</span>
+                                            <p class="small text-muted mb-0 italic">"@item.Instructions"</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill-info fw-bold">
+                                            <i class="fas fa-redo-alt me-1 x-small"></i> @item.Frequency
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-0">
+                                        <div class="duration-tag">@item.Duration</div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Notes & Authentication -->
+            <div class="row pt-5 g-5 border-top border-2 border-light align-items-end rx-footer-section">
+                <div class="col-md-7">
+                    <div class="p-4 rounded-4 bg-light border-0">
+                        <label class="text-secondary x-small fw-800 text-uppercase mb-3 d-block tracking-widest">Clinical Advice & Notes</label>
+                        <p class="text-dark small lh-lg mb-0 font-italic">
+                            @(string.IsNullOrEmpty(Model.Notes) ? "Routine clinical follow-up for current condition. Maintain prescribed dosage and contact the clinic if any adverse reactions occur." : Model.Notes)
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-5 text-md-end">
+                    <div class="signature-block">
+                        <div class="digital-sign-font mb-2">
+                            Dr. @(Model.Doctor?.FirstName[0]). @(Model.Doctor?.LastName)
+                        </div>
+                        <div class="signature-line mx-auto ms-md-auto me-md-0"></div>
+                        <p class="x-small text-uppercase fw-800 text-secondary mb-1 ls-1">Authorized Digital Signature</p>
+                        <div class="d-flex align-items-center justify-content-center justify-content-md-end gap-2">
+                            <span class="badge bg-success-subtle text-success border border-success border-opacity-10 x-small px-2">
+                                <i class="fas fa-shield-alt me-1"></i>Secure Verified
+                            </span>
+                            <span class="x-small text-muted font-monospace">TS: @Model.DateCreated.ToString("yyyyMMdd-HHmm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="bg-light p-4 text-center border-top">
+            <div class="d-flex justify-content-center gap-4 mb-2">
+                <span class="x-small text-muted"><i class="fas fa-globe me-1"></i> www.carefleet.com</span>
+                <span class="x-small text-muted"><i class="fas fa-phone-alt me-1"></i> 24/7 Support Active</span>
+            </div>
+            <p class="x-small text-secondary mb-0 opacity-50">This document is a certified digital record of CareFleet Health Systems. Authenticity can be verified via the Record ID.</p>
+        </div>
+    </div>
+
+    <!-- Hidden floating action for mobile -->
+    <div class="d-md-none position-fixed bottom-0 start-0 w-100 p-3 bg-white border-top shadow-lg" style="z-index: 1000;">
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary flex-grow-1 rounded-pill py-3 fw-800" style="background: #547792; border: none;">
+                <i class="fas fa-print me-2"></i>Print Rx
+            </button>
+        </div>
+    </div>
+</div>

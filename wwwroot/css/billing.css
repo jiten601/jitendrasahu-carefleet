@@ -1,0 +1,702 @@
+/* Global Billing Styling */
+:root {
+    --billing-primary: #547792;
+    --billing-dark: #1e293b;
+    --billing-success: #10b981;
+    --billing-danger: #ef4444;
+    --billing-warning: #f59e0b;
+    --billing-light: #f8fafc;
+    --billing-muted: #64748b;
+    --billing-glass: rgba(255, 255, 255, 0.7);
+    --billing-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+}
+
+.fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Typography Utilities */
+.fw-600 {
+    font-weight: 600 !important;
+}
+
+.fw-700 {
+    font-weight: 700 !important;
+}
+
+.fw-800 {
+    font-weight: 800 !important;
+}
+
+.fw-900 {
+    font-weight: 900 !important;
+}
+
+.v-small {
+    font-size: 0.85rem !important;
+}
+
+.x-small {
+    font-size: 0.75rem !important;
+}
+
+.ls-1 {
+    letter-spacing: 1px !important;
+}
+
+.ls-n1 {
+    letter-spacing: -1px !important;
+}
+
+.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.rounded-5 {
+    border-radius: 1.5rem !important;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Premium Header Card Extension */
+.premium-header-card {
+    background: linear-gradient(135deg, var(--billing-dark) 0%, var(--billing-primary) 100%);
+    border-radius: 30px;
+    padding: 3.5rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-card-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-bg-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 20%),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66 3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-71c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm63 0c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    z-index: 1;
+}
+
+/* Stats Cards */
+.billing-stats-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.75rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.billing-stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    transition: all 0.3s;
+}
+
+.billing-stats-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.billing-stats-card:hover::before {
+    background: var(--billing-primary);
+}
+
+.header-icon-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: #f1f5f9;
+    color: var(--billing-primary);
+    transition: all 0.3s;
+}
+
+.billing-stats-card:hover .header-icon-box {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+/* Table Management */
+.invoice-table-container {
+    background: white;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.invoice-row {
+    transition: all 0.3s;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.invoice-row td {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+
+.invoice-row:hover {
+    background: #f8fafc;
+    transform: scale(1.002);
+}
+
+.avatar-sm-premium {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: var(--billing-primary);
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Status Badges */
+/* Status Badges */
+.payment-status-badge {
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.payment-status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-paid {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.status-unpaid {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.status-partially-paid {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+/* Transaction Ledger (Phase 2 - From Scratch) */
+.ledger-header-wrapper {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+}
+
+.ledger-filter-hub {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-pills-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.filter-pill {
+    padding: 0.75rem 1.75rem;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    color: var(--billing-dark);
+    font-size: 0.85rem;
+    font-weight: 800;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.filter-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+}
+
+.filter-pill.active {
+    background: var(--billing-dark);
+    color: white;
+    border-color: var(--billing-dark);
+    box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2);
+}
+
+/* Ported from patient-profile.css for consistent header design */
+.header-breadcrumb {
+    font-size: 0.85rem;
+}
+
+.header-avatar-circle {
+    width: 80px;
+    height: 80px;
+    background: white;
+    color: #1e293b; /* Fallback for --billing-dark if not defined globally */
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.info-badge-light {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+.hvr-opacity {
+    transition: opacity 0.3s ease;
+}
+
+.hvr-opacity:hover {
+    opacity: 1 !important;
+}
+
+.bill-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-width: 80px;
+    justify-content: center;
+}
+
+.bill-badge-paid {
+    background: #10b981;
+    color: white;
+}
+
+.bill-badge-unpaid {
+    background: #f59e0b;
+    color: white;
+}
+
+.ledger-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.ledger-row-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.ledger-row-card::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(to right, transparent, rgba(var(--billing-primary-rgb), 0.02));
+    transition: width 0.4s;
+}
+
+.ledger-row-card:hover {
+    transform: translateX(10px);
+    box-shadow: 15px 20px 60px rgba(0, 0, 0, 0.06);
+    border-color: rgba(var(--billing-primary-rgb), 0.1);
+}
+
+.ledger-row-card:hover::after {
+    width: 200px;
+}
+
+.card-accent-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    transition: width 0.3s;
+}
+
+.ledger-row-card:hover .card-accent-bar {
+    width: 8px;
+}
+
+.accent-paid {
+    background: #10b981;
+}
+
+.accent-unpaid {
+    background: #ef4444;
+}
+
+.accent-partial {
+    background: #f59e0b;
+}
+
+.ledger-patient-vcard {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.vcard-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: #f8fafc;
+    color: var(--billing-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ledger-data-section {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.data-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 1px;
+    margin-bottom: 0.35rem;
+}
+
+.data-value {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--billing-dark);
+}
+
+.ledger-amount-pill {
+    background: #f8fafc;
+    padding: 0.75rem 1.5rem;
+    border-radius: 16px;
+    text-align: right;
+    min-width: 140px;
+}
+
+.amount-value {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--billing-dark);
+    display: block;
+}
+
+.ledger-row-actions {
+    margin-left: 2.5rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-ledger-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+}
+
+.btn-ledger-circle:hover {
+    background: var(--billing-dark);
+    color: white;
+    border-color: var(--billing-dark);
+    transform: scale(1.1) rotate(15deg);
+}
+
+.status-pending {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+/* Invoice Paper Styling */
+.invoice-paper {
+    background: #fff;
+    border-radius: 40px;
+    box-shadow: 0 50px 120px rgba(0, 0, 0, 0.15);
+    max-width: 1000px;
+    margin: 3rem auto;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.invoice-paper-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 10rem;
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.02);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 0;
+}
+
+.invoice-hero {
+    background: linear-gradient(135deg, var(--billing-dark) 0%, var(--billing-primary) 100%);
+    padding: 5rem 4rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.invoice-hero::after {
+    content: '';
+    position: absolute;
+    right: -50px;
+    bottom: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.invoice-body {
+    padding: 5rem 4rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Action Buttons Refresh */
+.btn-premium-primary {
+    background: linear-gradient(135deg, var(--billing-dark) 0%, var(--billing-primary) 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 1rem 2.5rem;
+    border-radius: 100px;
+    font-weight: 800;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 15px 35px rgba(30, 41, 59, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+}
+
+.btn-premium-primary:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(30, 41, 59, 0.3);
+}
+
+.btn-premium-secondary {
+    background: white !important;
+    color: var(--billing-dark) !important;
+    border: 2px solid #e2e8f0 !important;
+    padding: 1rem 2.5rem;
+    border-radius: 100px;
+    font-weight: 800;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+}
+
+.btn-premium-secondary:hover {
+    border-color: var(--billing-dark) !important;
+    background: var(--billing-dark) !important;
+    color: white !important;
+}
+
+/* Print Specifics Optimization */
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .invoice-paper {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .invoice-hero {
+        padding: 3rem !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .invoice-body {
+        padding: 3rem !important;
+    }
+
+    .btn,
+    .header-actions,
+    .premium-header-card,
+    aside,
+    header {
+        display: none !important;
+    }
+
+    .invoice-paper-watermark {
+        display: block !important;
+    }
+}
+
+/* Premium UI Components */
+.search-box-modern {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+.search-box-modern i {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.search-box-modern input {
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+    font-size: 14px;
+    width: 200px;
+    font-weight: 500;
+}
+
+.search-box-modern input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.search-box-modern:focus-within {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+.btn-premium-tab {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    padding: 10px 25px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.btn-premium-tab:hover {
+    background: #f8fafc;
+    color: var(--billing-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.btn-premium-tab.active {
+    background: var(--billing-dark);
+    color: white;
+    border-color: var(--billing-dark);
+    box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2);
+}

@@ -1,0 +1,332 @@
+@model CareFleet.Models.Invoice
+@using CareFleet.Models
+@{
+    ViewData["Title"] = "Invoice Details";
+    var userRole = Context.Session.GetString("UserRole");
+    // Layout logic: Patients use PatientLayout, Doctors and Admins use their respective layouts
+    if (userRole == "Patient") {
+        Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    } else if (userRole == "Admin") {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    } else {
+        Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    }
+    ViewBag.HideHeader = true;
+    ViewBag.ActivePage = "Billing";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/billing.css" asp-append-version="true" />
+}
+
+<div class="container-fluid px-md-6 py-2 fade-in">
+    <!-- Premium Header -->
+    <div class="premium-header-card mb-5">
+        <div class="header-card-content">
+            <div class="header-info">
+                @{
+                    var dashboardAction = userRole == "Admin" ? "Dashboard" : "Dashboard";
+                    var dashboardController = userRole == "Admin" ? "Admin" : (userRole == "Doctor" ? "Doctor" : "Patient");
+                    var historyActionName = userRole == "Patient" ? "MyInvoices" : "AllInvoices";
+                }
+                <div class="header-breadcrumb mb-3">
+                    <a href="@Url.Action(dashboardAction, dashboardController)" class="text-white text-decoration-none opacity-75 hvr-opacity">Dashboard</a>
+                    <i class="fas fa-chevron-right mx-2 small opacity-50 text-white"></i>
+                    <a href="@Url.Action(historyActionName, "Billing")" class="text-white text-decoration-none opacity-75 hvr-opacity">Billing</a>
+                    <i class="fas fa-chevron-right mx-2 small opacity-50 text-white"></i>
+                    <span class="text-white fw-bold">Statement #@Model.Id.ToString("D5")</span>
+                </div>
+                <h1 class="fw-800 text-white mb-2">Financial Statement</h1>
+                <p class="text-white opacity-75 mb-0">Detailed audit for Invoice #INV-@Model.Id.ToString("D6") issued on @Model.DateGenerated.ToString("MMM dd, yyyy").</p>
+            </div>
+            <div class="header-actions">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-none d-lg-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-2 border border-white border-opacity-25 me-2">
+                        <i class="fas fa-shield-check text-success me-2"></i>
+                        <span class="text-white small fw-bold text-uppercase">PCI-DSS Secure</span>
+                    </div>
+                    <button onclick="window.print()" class="btn-premium-light shadow-sm">
+                        <i class="fas fa-print me-2"></i>Print
+                    </button>
+                    <a href="@Url.Action(historyActionName, "Billing")" class="btn-premium-light shadow-sm">
+                        <i class="fas fa-history me-2"></i>Ledger
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="invoice-paper" id="printableInvoice">
+        <div class="invoice-paper-watermark">CAREFLEET</div>
+        
+        <!-- Hero Section -->
+        <div class="invoice-hero">
+            <div class="row align-items-center position-relative z-1">
+                <div class="col-md-7">
+                    <h2 class="fw-800 mb-2 text-white ls-n1">CareFleet Medical</h2>
+                    <p class="text-white opacity-75 mb-0 small text-uppercase fw-800 ls-2">Official Financial Statement</p>
+                </div>
+                <div class="col-md-5 text-md-end mt-4 mt-md-0">
+                    @{
+                        var statusTagClass = Model.Status == "Paid" ? "status-paid" : "status-unpaid";
+                    }
+                    <div class="payment-status-badge @statusTagClass fs-5 mb-3 px-4 py-2">@Model.Status</div>
+                    <p class="mb-0 text-white opacity-75 fw-700">Digital ID: @Guid.NewGuid().ToString().Substring(0, 13).ToUpper()</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-body">
+            <!-- Billing Info -->
+            <div class="row mb-5 pb-5 border-bottom g-4">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="header-icon-box me-3 bg-light">
+                            <i class="fas fa-user-tag"></i>
+                        </div>
+                        <h5 class="fw-900 mb-0 text-dark text-uppercase ls-1">Billed Recipient</h5>
+                    </div>
+                    <div class="ps-1">
+                        <h4 class="fw-900 mb-1 text-dark">@Model.Patient?.FirstName @Model.Patient?.LastName</h4>
+                        <p class="text-muted fw-600 mb-1"><i class="fas fa-envelope me-2 opacity-50"></i>@Model.Patient?.Email</p>
+                        <p class="text-muted fw-600 mb-0"><i class="fas fa-phone me-2 opacity-50"></i>@Model.Patient?.PhoneNumber</p>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end mb-4">
+                        <h5 class="fw-900 mb-0 text-dark text-uppercase ls-1 me-3">Statement Data</h5>
+                        <div class="header-icon-box bg-light">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                    </div>
+                    <div class="pe-1">
+                        <p class="mb-2 text-dark"><span class="text-muted fw-700 me-2">Date Generated:</span> <span class="fw-900">@Model.DateGenerated.ToString("MMM dd, yyyy")</span></p>
+                        <p class="mb-2 text-dark"><span class="text-muted fw-700 me-2">Due Date:</span> <span class="fw-900 text-primary">@(Model.DueDate?.ToString("MMM dd, yyyy") ?? "Upon Receipt")</span></p>
+                        <p class="mb-0 text-dark small opacity-75 fw-800">Appointment ID: #APPT-@Model.AppointmentId</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ledger -->
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-2 border-primary-subtle" style="width: fit-content;">
+                    <i class="fas fa-briefcase-medical me-3 text-primary fs-4"></i>
+                    <h5 class="fw-900 mb-0 text-dark text-uppercase ls-1">Professional Services</h5>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle">
+                        <thead>
+                            <tr class="text-secondary v-small fw-900 text-uppercase ls-2 border-bottom">
+                                <th class="ps-0 py-3" style="width: 60%;">Description</th>
+                                <th class="py-3 text-center">Unit</th>
+                                <th class="py-3 text-end pe-0">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-bottom">
+                                <td class="ps-0 py-4">
+                                    <div class="fw-900 text-dark mb-1 fs-5">Tele-Consultation Segment</div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary-subtle text-primary x-small px-3 py-1 rounded-pill fw-800">Advanced Assessment</span>
+                                        <p class="v-small text-muted mb-0 italic fw-600">Issued by Clinical Dept. - Dr. @Model.Appointment?.DoctorName</p>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-900 text-dark">01</td>
+                                <td class="text-end pe-0">
+                                    <div class="fw-900 text-dark fs-5">
+                                        Rs @Model.TotalAmount.ToString("N2")
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-end pt-5 text-muted v-small fw-900 text-uppercase ls-1">Subtotal Value:</td>
+                                <td class="text-end pt-5 pe-0 fw-900 text-dark">
+                                    Rs @((Model.TotalAmount + Model.DiscountAmount - Model.TaxAmount).ToString("N2"))
+                                </td>
+                            </tr>
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-end text-success v-small fw-900 text-uppercase ls-1">Adjustments / Discounts:</td>
+                                    <td class="text-end pe-0 text-success fw-900">-Rs @Model.DiscountAmount.ToString("N2")</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td colspan="2" class="text-end text-muted v-small fw-900 text-uppercase ls-1">Assessed Tax (@(Model.TaxRate * 100)%):</td>
+                                <td class="text-end pe-0 fw-900 text-dark">+Rs @Model.TaxAmount.ToString("N2")</td>
+                            </tr>
+                            <tr class="border-top-0">
+                                <td colspan="3" class="pt-4">
+                                    <div class="p-4 rounded-4 bg-light d-flex justify-content-between align-items-center shadow-sm">
+                                        <span class="fw-900 text-dark text-uppercase ls-1">Total Due (@Model.Currency)</span>
+                                        <span class="fw-900 text-primary fs-2">Rs @Model.TotalAmount.ToString("N2")</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @if (Model.Payments.Any())
+                            {
+                                var totalPaid = ((IEnumerable<Payment>)Model.Payments).Where(p => !p.IsRefunded).Sum(p => p.Amount);
+                                
+                                <tr class="border-top-0">
+                                    <td colspan="3" class="pt-2">
+                                        <div class="p-3 d-flex justify-content-between align-items-center text-success border-bottom">
+                                            <span class="fw-800 v-small text-uppercase ls-1">Cumulative Payments Received</span>
+                                            <span class="fw-900 fs-5">-Rs @totalPaid.ToString("N2")</span>
+                                        </div>
+                                        <div class="p-3 d-flex justify-content-between align-items-center text-danger">
+                                            <span class="fw-800 v-small text-uppercase ls-1">Remaining Balance Record</span>
+                                            <span class="fw-900 fs-4">Rs @((Model.TotalAmount - totalPaid).ToString("N2"))</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Note Footer -->
+            <div class="p-4 rounded-4 border border-dashed bg-white text-center shadow-sm">
+                <p class="small text-muted mb-0 fw-600"><i class="fas fa-shield-halved me-2 text-primary"></i>This is a system-generated secure document. Verification of this statement is available via the Appointment ID referenced above.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center mt-5 d-flex justify-content-center gap-3">
+        <button onclick="window.print()" class="btn-premium-secondary">
+            <i class="fas fa-print"></i>Download PDF
+        </button>
+        
+        @if (Model.Status != "Paid" && userRole == "Patient")
+        {
+            <button class="btn-premium-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                <i class="fas fa-shield-alt"></i>Proceed to Secure Checkout
+            </button>
+        }
+        
+        @if (userRole == "Doctor" || userRole == "Admin")
+        {
+            @foreach (var payment in ((IEnumerable<Payment>)Model.Payments).Where(p => !p.IsRefunded))
+            {
+                <button onclick="processRefund(@payment.Id)" class="btn-premium-danger">
+                    <i class="fas fa-undo"></i>Refund Transaction #@payment.Id
+                </button>
+            }
+            <a href="@Url.Action("AllInvoices", "Billing")" class="btn-premium-secondary text-decoration-none">
+                <i class="fas fa-arrow-left"></i>Return to Ledger
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Modal logic (Simplified for simulation as before) -->
+<div class="modal fade payment-modal-premium" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-800">Secure Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-4">Select your preferred payment gateway to complete the transaction.</p>
+                <form id="paymentForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="invoiceId" value="@Model.Id" />
+                    <input type="hidden" name="amount" value="@(Model.TotalAmount - ((IEnumerable<Payment>)Model.Payments).Sum(p => p.Amount))" />
+                    <input type="hidden" name="method" id="selectedMethod" value="Visa/Mastercard" />
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <button type="button" class="btn btn-outline-primary p-3 rounded-4 text-start d-flex justify-content-between align-items-center active" onclick="selectMethod('Visa/Mastercard')">
+                            <span><i class="fab fa-cc-visa me-3"></i>Visa / Mastercard</span>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary p-3 rounded-4 text-start d-flex justify-content-between align-items-center" onclick="selectMethod('Stripe')">
+                            <span><i class="fab fa-stripe me-3"></i>Stripe Checkout</span>
+                            <i class="fas fa-chevron-right opacity-50 small"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-4 fw-800 shadow-lg border-0" 
+                            style="background: #1e293b;">
+                        Authorize Payment of Rs @((Model.TotalAmount - ((IEnumerable<Payment>)Model.Payments).Sum(p => p.Amount)).ToString("N2"))
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function selectMethod(method) {
+            document.getElementById('selectedMethod').value = method;
+        }
+
+        function processRefund(paymentId) {
+            Swal.fire({
+                title: 'Confirm Refund',
+                text: 'Are you sure you want to refund this transaction? This action is irreversible.',
+                input: 'text',
+                inputPlaceholder: 'Reason for refund...',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, Issue Refund'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData();
+                    formData.append('paymentId', paymentId);
+                    formData.append('reason', result.value || 'Doctor requested refund');
+                    
+                    fetch('@Url.Action("Refund", "Billing")', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Refunded!', data.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Securing Connection',
+                text: 'Initializing encrypted gateway...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('@Url.Action("ProcessPayment", "Billing")', {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Your payment was processed successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#1e293b'
+                    }).then(() => window.location.reload());
+                }
+            });
+        });
+    </script>
+}

@@ -7,7 +7,7 @@
 
 <div class="doctor-dashboard-page fade-in">
     <!-- Premium Header Card -->
-    <div class="premium-header-card mb-4">
+    <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
                 <h2 class="fw-800 text-white mb-2">Welcome Back, Dr. @ViewBag.FirstName!</h2>
@@ -41,27 +41,27 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="dashboard-card stat-card-green clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'">
+            <div class="dashboard-card stat-card-green clickable-card" onclick="location.href='@Url.Action("MyPrescriptions", "Prescription")'">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="text-secondary small fw-bold text-uppercase mb-1">Active Patients</p>
-                        <h4 class="fw-800 mb-0">@ViewBag.ActivePatients</h4>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Issued Rx</p>
+                        <h4 class="fw-800 mb-0">@ViewBag.TotalPrescriptions</h4>
                     </div>
                     <div class="stat-icon-wrapper green">
-                        <i class="fas fa-clipboard-check"></i>
+                        <i class="fas fa-file-prescription"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="dashboard-card stat-card-yellow clickable-card" onclick="location.href='@Url.Action("Patients", "Doctor")'">
+            <div class="dashboard-card stat-card-yellow clickable-card" onclick="location.href='@Url.Action("AllInvoices", "Billing")'">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="text-secondary small fw-bold text-uppercase mb-1">New This Month</p>
-                        <h4 class="fw-800 mb-0">@ViewBag.NewPatientsThisMonth</h4>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Pending Fees</p>
+                        <h4 class="fw-800 mb-0">$@ViewBag.PendingInvoicesAmount.ToString("N0")</h4>
                     </div>
                     <div class="stat-icon-wrapper yellow">
-                        <i class="fas fa-user-plus"></i>
+                        <i class="fas fa-wallet"></i>
                     </div>
                 </div>
             </div>
