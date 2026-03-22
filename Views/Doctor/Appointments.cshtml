@@ -5,6 +5,7 @@
     ViewBag.ActivePage = "Appointments";
     ViewBag.HideHeader = true;
 }
+@Html.AntiForgeryToken()
 
 <!-- Premium Header Card -->
 <div class="doctor-appointments-page fade-in">
@@ -159,12 +160,23 @@
                                                     {
                                                         <li>
                                                             <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
-                                                                <input type="hidden" name="appointmentId" value="@item.Id" />
-                                                                <input type="hidden" name="status" value="@status" />
-                                                                <button type="submit" class="dropdown-item py-2">@status</button>
+                                                                  <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                                  <input type="hidden" name="status" value="@status" />
+                                                                  <button type="submit" class="dropdown-item py-2">@status</button>
                                                             </form>
                                                         </li>
                                                     }
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a href="@Url.Action("Create", "Prescription", new { appointmentId = item.Id })" class="dropdown-item py-2 text-primary fw-bold">
+                                                            <i class="fas fa-file-prescription me-2"></i>Issue Prescription
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="javascript:void(0)" onclick="createManualBill(@item.Id)" class="dropdown-item py-2 text-dark fw-bold">
+                                                            <i class="fas fa-file-invoice-dollar me-2"></i>Create Bill
+                                                        </a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -229,5 +241,54 @@
                 });
             });
         });
+
+        function createManualBill(appointmentId) {
+            Swal.fire({
+                title: 'Generate Invoice?',
+                text: "This will create a standard consultation bill for this patient.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#547792',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Generate Bill'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Generating...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Get antiforgery token from any form on the page
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append('appointmentId', appointmentId);
+                    formData.append('__RequestVerificationToken', token);
+                    
+                    fetch('@Url.Action("CreateAppointmentInvoice", "Billing")', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Notice', data.message, 'info');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                    });
+                }
+            });
+        }
     </script>
 }

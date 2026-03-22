@@ -1,0 +1,135 @@
+@model IEnumerable<CareFleet.Models.Invoice>
+@{
+    ViewData["Title"] = "My Payments";
+    Layout = "~/Views/Shared/_PatientLayout.cshtml";
+    ViewBag.ActivePage = "Payments";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/billing.css" asp-append-version="true" />
+}
+
+<div class="container-fluid px-md-6 py-2 fade-in">
+    <!-- Premium Header -->
+    <div class="premium-header-card mb-5">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="fw-800 text-white mb-2">Financial Overview</h1>
+                <p class="text-white opacity-75 mb-0">Manage your consultation fees, invoices, and payment history securely.</p>
+            </div>
+            <div class="header-actions">
+                <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-2 border border-white border-opacity-25">
+                    <i class="fas fa-shield-check text-success me-2"></i>
+                    <span class="text-white small fw-bold text-uppercase">PCI-DSS Compliant</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="billing-stats-card p-4 border-start border-danger border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Outstanding Balance</p>
+                        <h2 class="fw-900 mb-0 text-danger">Rs @Model.Where(i => i.Status == "Unpaid").Sum(i => i.TotalAmount).ToString("N2")</h2>
+                    </div>
+                    <div class="header-icon-box bg-danger-subtle text-danger">
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="billing-stats-card p-4 border-start border-success border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-secondary small fw-bold text-uppercase mb-1">Total Paid to Date</p>
+                        <h2 class="fw-900 mb-0 text-success">Rs @Model.Where(i => i.Status == "Paid").Sum(i => i.TotalAmount).ToString("N2")</h2>
+                    </div>
+                    <div class="header-icon-box bg-success-subtle text-success">
+                        <i class="fas fa-check-double text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Ledger -->
+    <div class="invoice-table-container">
+        <div class="p-4 border-bottom">
+            <h5 class="fw-800 mb-0">Transaction History</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr class="text-secondary small fw-bold text-uppercase ls-1 bg-light">
+                        <th class="ps-4 py-3">Invoice Ref</th>
+                        <th class="py-3">Date</th>
+                        <th class="py-3">Consultation With</th>
+                        <th class="py-3">Amount</th>
+                        <th class="py-3">Status</th>
+                        <th class="pe-4 py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr class="invoice-row">
+                                <td class="ps-4">
+                                    <div class="fw-800 text-dark">INV-@item.Id.ToString("D5")</div>
+                                </td>
+                                <td>@item.DateGenerated.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="fw-bold text-dark mb-0">@item.Appointment?.DoctorName</div>
+                                    <div class="x-small text-muted">Tele-Consultation</div>
+                                </td>
+                                <td>
+                                    <div class="fw-800 text-dark">@(item.Currency == "USD" ? "Rs " : item.Currency + " ")@item.TotalAmount.ToString("N2")</div>
+                                </td>
+                                <td>
+                                    @{
+                                        var statusClass = item.Status switch {
+                                            "Paid" => "status-paid",
+                                            "Unpaid" => "status-unpaid",
+                                            _ => "status-pending"
+                                        };
+                                    }
+                                    <span class="payment-status-badge @statusClass">@item.Status</span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <a href="@Url.Action("Details", "Billing", new { id = item.Id })" class="btn @(item.Status == "Unpaid" ? "btn-primary rounded-pill px-3 shadow-sm" : "btn-action-light")" style="@(item.Status == "Unpaid" ? "background:#547792; border:none;" : "")">
+                                        @if (item.Status == "Unpaid")
+                                        {
+                                            <span>Pay Now</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-file-invoice"></i>
+                                        }
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="opacity-10 mb-3">
+                                    <i class="fas fa-receipt" style="font-size: 5rem;"></i>
+                                </div>
+                                <h5 class="fw-bold text-muted">No Billing Records Found</h5>
+                                <p class="text-muted small">Your consultation invoices will appear here once they are generated.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

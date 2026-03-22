@@ -50,6 +50,14 @@
                     <i class="fas fa-file-medical"></i>
                     <span>Medical Records</span>
                 </a>
+                <a href="@Url.Action("MyPrescriptions", "Prescription")" class="nav-item @(activePage == "Prescriptions" ? "active" : "")">
+                    <i class="fas fa-prescription"></i>
+                    <span>Prescriptions</span>
+                </a>
+                <a href="@Url.Action("AllInvoices", "Billing")" class="nav-item @(activePage == "Billing" ? "active" : "")">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Billing</span>
+                </a>
                 <a href="@Url.Action("Settings", "Doctor")" class="nav-item @(activePage == "Settings" ? "active" : "")">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
@@ -193,14 +201,33 @@
                             return;
                         }
                         
-                        list.innerHTML = data.map(item => `
+                    list.innerHTML = data.map(item => {
+                        let icon = 'fa-bell';
+                        let iconClass = 'bg-primary-subtle text-primary';
+                        const msg = item.message.toLowerCase();
+                        
+                        if (msg.includes('message')) { icon = 'fa-envelope'; iconClass = 'bg-info-subtle text-info'; }
+                        else if (msg.includes('appointment')) { icon = 'fa-calendar-check'; iconClass = 'bg-success-subtle text-success'; }
+                        else if (msg.includes('medical record') || msg.includes('record')) { icon = 'fa-file-medical'; iconClass = 'bg-warning-subtle text-warning'; }
+                        else if (msg.includes('invoice') || msg.includes('payment')) { icon = 'fa-file-invoice-dollar'; iconClass = 'bg-danger-subtle text-danger'; }
+
+                        return `
                             <div class="notification-item ${item.isRead ? '' : 'unread'}"
-                                 style="cursor:pointer;"
                                  onclick="handleNotificationClick(${item.id}, '${item.targetUrl}', event)">
-                                <div class="notification-content text-dark">${item.message}</div>
-                                <div class="notification-time">${item.createdAt}</div>
+                                <div class="d-flex gap-3 align-items-start">
+                                    <div class="header-icon-box ${iconClass}" style="width:36px; height:36px; min-width:36px;">
+                                        <i class="fas ${icon}" style="font-size: 14px;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="notification-content text-dark mb-1">${item.message}</div>
+                                        <div class="notification-time text-muted x-small">
+                                            <i class="far fa-clock me-1"></i>${item.createdAt}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        `).join('');
+                        `;
+                    }).join('');
                     });
 
                     // Update badge count live
@@ -280,6 +307,7 @@
             }
         });
     </script>
+    <partial name="_VideoCallModal" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

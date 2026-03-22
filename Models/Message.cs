@@ -24,9 +24,5 @@ namespace CareFleet.Models
 
         public string? AttachmentPath { get; set; }
         public string? AttachmentName { get; set; }
-        
-        // Optional: navigation properties can be tricky without shared base user or specific FKs
-        // For simplicity and robustness across different user tables, we use Email as the primary identifier 
-        // which matches how the current controllers identify logged-in users.
     }
 }

@@ -291,12 +291,12 @@ h6 {
 .premium-header-card {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%) !important;
   border-radius: 20px;
-  padding: 3rem !important;
+  padding: 35px !important;
   position: relative;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(27, 60, 83, 0.15);
   border: none !important;
-  margin-bottom: 25px;
+  margin-bottom: 30px !important;
 }
 
 .header-card-content {

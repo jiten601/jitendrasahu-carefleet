@@ -17,6 +17,10 @@ namespace CareFleet.Models
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Prescription> Prescriptions { get; set; }
+        public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -78,6 +82,35 @@ namespace CareFleet.Models
             {
                 entity.ToTable("Notifications");
                 entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<Prescription>(entity =>
+            {
+                entity.ToTable("Prescriptions");
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Doctor).WithMany().HasForeignKey(e => e.DoctorId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Patient).WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PrescriptionItem>(entity =>
+            {
+                entity.ToTable("PrescriptionItems");
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Prescription).WithMany(p => p.Items).HasForeignKey(e => e.PrescriptionId);
+            });
+
+            modelBuilder.Entity<Invoice>(entity =>
+            {
+                entity.ToTable("Invoices");
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Patient).WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.ToTable("Payments");
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Invoice).WithMany(i => i.Payments).HasForeignKey(e => e.InvoiceId);
             });
         }
     }

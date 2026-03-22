@@ -100,9 +100,6 @@
                                             <a href="@Url.Action("DownloadRecord", "Patient", new { id = record.Id })" class="btn-action-light" title="Download">
                                                 <i class="fas fa-download"></i>
                                             </a>
-                                            <button class="btn-action-light" title="Share" onclick="shareRecord('@record.DocumentName')">
-                                                <i class="fas fa-share-alt"></i>
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -188,11 +185,6 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        };
-        
-        // Share functionality
-        window.shareRecord = function(name) {
-            alert(`Sharing options for "${name}" will be available soon! Secure sharing is currently being implemented.`);
         };
     });
 </script>

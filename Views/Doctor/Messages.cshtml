@@ -8,6 +8,7 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/messaging.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/video-call.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 }
 
 
@@ -106,7 +107,7 @@
                     </div>
                     <div class="header-tools d-flex gap-2">
 
-                        <button class="btn-tool" onclick="startVideoCall('@ViewBag.SelectedContactName', '@(ViewBag.SelectedContactName != null ? ViewBag.SelectedContactName.Substring(0, 1) : "P")')" title="Video Call">
+                        <button class="btn-tool" onclick="startVideoCall('@ViewBag.SelectedContactEmail', '@ViewBag.SelectedContactName', '@(ViewBag.SelectedContactName != null ? ViewBag.SelectedContactName.Substring(0, 1) : "P")')" title="Video Call">
                             <i class="fas fa-video"></i>
                         </button>
                         <button class="btn-tool" onclick="location.href='@Url.Action("Patients", "Doctor")'" title="Patient Info">
@@ -123,7 +124,10 @@
                             bool isOutgoing = msg.SenderEmail == Context.Session.GetString("UserEmail");
                             <div class="message-group">
                                 <div class="message-item @(isOutgoing ? "outgoing" : "incoming")">
-                                    <div class="message-bubble shadow-sm">
+                                    <div class="message-bubble shadow-sm position-relative">
+                                        <button class="btn-delete-msg" onclick="deleteMessage(@msg.Id, this)" title="Delete message">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                         @if (!string.IsNullOrEmpty(msg.Content))
                                         {
                                             <div class="message-text">@msg.Content</div>
@@ -187,7 +191,6 @@
         </div>
     </div>
 </div>
-<partial name="_VideoCallModal" />
 <br>
 
 <script>
@@ -232,5 +235,61 @@
         input.value = '';
         display.style.display = 'none';
         document.getElementById('messageContent').required = true;
+    }
+
+    function deleteMessage(messageId, btn) {
+        Swal.fire({
+            title: 'Delete Message?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            background: '#ffffff',
+            borderRadius: '16px',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                fetch('@Url.Action("DeleteMessage", "Doctor")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: `id=${messageId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const messageGroup = btn.closest('.message-group');
+                        messageGroup.classList.add('fade-out');
+                        setTimeout(() => messageGroup.remove(), 300);
+                        
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'Your message has been removed.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            borderRadius: '16px'
+                        });
+                    } else {
+                        Swal.fire('Error!', 'Failed to delete message.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Error!', 'An error occurred while deleting.', 'error');
+                });
+            }
+        });
     }
 </script>

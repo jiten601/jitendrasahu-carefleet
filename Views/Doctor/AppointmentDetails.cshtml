@@ -1,0 +1,285 @@
+@model CareFleet.Models.Appointment
+@{
+    ViewData["Title"] = "Appointment Details";
+    Layout = "~/Views/Shared/_DoctorLayout.cshtml";
+    ViewBag.ActivePage = "Appointments";
+    ViewBag.HeaderTitle = "Appointment Record";
+    ViewBag.HideHeader = true;
+    var prescriptions = ViewBag.Prescriptions as List<CareFleet.Models.Prescription>;
+}
+@Html.AntiForgeryToken()
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/appointment-details.css" asp-append-version="true" />
+    <style>
+        .doctor-details-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .doctor-details-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 40px;
+            color: white;
+            position: relative;
+        }
+        .status-badge-lg {
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info-label {
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .section-title {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i {
+            color: #547792;
+        }
+        .prescription-mini-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #547792;
+            margin-bottom: 15px;
+        }
+        .action-sidebar {
+            background: #f1f5f9;
+            height: 100%;
+            padding: 30px;
+            border-left: 1px solid #e2e8f0;
+        }
+    </style>
+}
+
+<div class="container-fluid py-4 fade-in">
+    <!-- Premium Header -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 me-3 fw-bold">ID: #@Model.Id</span>
+                    <h1 class="fw-800 text-white mb-0">Consultation Details</h1>
+                </div>
+                <p class="text-white opacity-75 mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>Scheduled for: <strong>@Model.AppointmentDate.ToString("MMMM dd, yyyy") at @Model.TimeSlot</strong>
+                </p>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Appointments", "Doctor")" class="btn-premium-light">
+                    <i class="fas fa-chevron-left me-2"></i>Back to Schedule
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <div class="doctor-details-card">
+        <div class="row g-0">
+            <!-- Main Content Area -->
+            <div class="col-lg-8 p-5">
+                <div class="row mb-5">
+                    <div class="col-md-6 mb-4">
+                        <span class="info-label">Patient Name</span>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold me-3">
+                                @(Model.PatientName?.Substring(0, 1) ?? "P")
+                            </div>
+                            <span class="info-value">@Model.PatientName</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4 text-md-end">
+                        <span class="info-label">Status</span>
+                        @{
+                            var statusClass = Model.Status switch
+                            {
+                                "Confirmed" => "bg-success text-white",
+                                "Pending" => "bg-warning text-dark",
+                                "Completed" => "bg-info text-white",
+                                "Cancelled" => "bg-danger text-white",
+                                _ => "bg-secondary text-white"
+                            };
+                        }
+                        <span class="status-badge-lg @statusClass">@Model.Status</span>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <div class="section-title">
+                        <i class="fas fa-comment-medical"></i>
+                        Consultation Reason
+                    </div>
+                    <p class="text-secondary lead">@Model.Reason</p>
+                </div>
+
+                <hr class="my-5 opacity-10">
+
+                <div class="mb-0">
+                    <div class="section-title d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-prescription"></i>
+                            Prescriptions Issued
+                        </div>
+                        @if (Model.Status == "Confirmed" || Model.Status == "Completed")
+                        {
+                            <a href="@Url.Action("Create", "Prescription", new { appointmentId = Model.Id })" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="fas fa-plus me-1"></i>New RX
+                            </a>
+                        }
+                    </div>
+
+                    @if (prescriptions != null && prescriptions.Any())
+                    {
+                        foreach (var rx in prescriptions)
+                        {
+                            <div class="prescription-mini-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0">Record #@rx.Id</h6>
+                                    <span class="small text-muted">@rx.DateCreated.ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <p class="small text-secondary mb-3">@rx.Notes</p>
+                                <div class="d-flex gap-2">
+                                    <a href="@Url.Action("Details", "Prescription", new { id = rx.Id })" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold">
+                                        View Full Rx
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 bg-light rounded-4 border-dashed">
+                            <p class="text-muted mb-0 small">No prescriptions have been issued for this appointment yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Action Sidebar -->
+            <div class="col-lg-4">
+                <div class="action-sidebar">
+                    <h5 class="fw-800 mb-4">Manage Status</h5>
+                    
+                    <form asp-action="UpdateAppointmentStatus" method="post">
+                        <input type="hidden" name="appointmentId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="info-label">Quick Update</label>
+                            <select name="status" class="form-select rounded-3 border-0 shadow-sm py-2">
+                                <option value="Pending" selected="@(Model.Status == "Pending")">Pending</option>
+                                <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
+                                <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
+                                <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-3 mb-2" style="background: #547792; border: none;">
+                            Update Status
+                        </button>
+                    </form>
+
+                    <button type="button" onclick="createManualBill(@Model.Id)" class="btn btn-outline-dark w-100 py-2 fw-bold rounded-3 mb-4">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Create Manual Bill
+                    </button>
+
+                    <hr class="my-4">
+
+                    <h5 class="fw-800 mb-3">Patient Insights</h5>
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Patients", "Doctor", new { searchString = Model.PatientName })" class="btn btn-light text-start py-3 px-4 rounded-3 border-0 shadow-sm mb-2">
+                            <i class="fas fa-user-circle me-2 text-primary"></i>
+                            <span class="fw-bold">Medical History</span>
+                        </a>
+                        <a href="@Url.Action("Messages", "Doctor")" class="btn btn-light text-start py-3 px-4 rounded-3 border-0 shadow-sm">
+                            <i class="fas fa-comment-alt me-2 text-success"></i>
+                            <span class="fw-bold">Contact Patient</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-5 p-4 rounded-4 bg-white shadow-sm">
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Updating status to <strong>Completed</strong> will automatically generate an invoice for the consultation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function createManualBill(appointmentId) {
+            Swal.fire({
+                title: 'Generate Invoice?',
+                text: "This will create a standard consultation bill for this patient.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#547792',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Generate Bill'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Generating...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const formData = new FormData();
+                    formData.append('appointmentId', appointmentId);
+                    
+                    fetch('@Url.Action("CreateAppointmentInvoice", "Billing")', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Notice', data.message, 'info');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                    });
+                }
+            });
+        }
+    </script>
+}
