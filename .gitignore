@@ -1,7 +1,7 @@
-# Visual Studio cache and temporary files
+# Visual Studio cache
 .vs/
 
-# Build output
+# Build folders
 bin/
 obj/
 
@@ -10,5 +10,8 @@ obj/
 *.suo
 *.sln.docstates
 
-# Copilot specific (extra safety)
+# Copilot cache (extra safety)
 **/.vs/**/CopilotIndices/
+
+# Logs and temp
+*.log
