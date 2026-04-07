@@ -1,0 +1,163 @@
+@model CareFleet.Models.ExternalLoginViewModel
+@{
+    ViewData["Title"] = "Complete Profile";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareFleet - Complete Profile</title>
+    <link rel="stylesheet" href="~/css/auth.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 800px;">
+            <div class="logo-container" style="text-align: center; margin-bottom: 20px;">
+                <img src="~/images/FinalLogo.png" alt="CareFleet Logo" style="max-width: 200px; height: auto;" />
+            </div>
+
+            <h2 class="register-title">Almost there! Complete Your Profile</h2>
+            <p style="text-align: center; color: #475569; margin-bottom: 30px;">
+                We've got your info from Google. Now, just tell us a bit more about yourself.
+            </p>
+
+            <form asp-action="CompleteProfile" method="post" class="auth-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Email" />
+                <input type="hidden" asp-for="FirstName" />
+                <input type="hidden" asp-for="LastName" />
+
+                <!-- Readonly Info -->
+                <div class="form-group" style="grid-column: 1 / -1; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Signed in as</div>
+                        <div style="font-weight: 600; font-size: 1.1rem; color: #0f172a;">@Model.FirstName @Model.LastName</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.8rem; color: #64748b;">Email</div>
+                        <div style="font-weight: 500; color: #0ea5e9;">@Model.Email</div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label asp-for="Role">I am a...</label>
+                    <select asp-for="Role" id="Role" required>
+                        <option value="" disabled selected style="color: black;">Select your role</option>
+                        <option value="Patient">Patient</option>
+                        <option value="Doctor">Doctor</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <!-- Shared Phone Number -->
+                <div id="sharedPhone" class="form-group" style="display:none; grid-column: 1 / -1;">
+                    <label asp-for="PhoneNumber">Phone Number</label>
+                    <input asp-for="PhoneNumber" id="PhoneNumber" placeholder="Enter your phone number" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <!-- Patient Specific -->
+                <div id="patientFields" style="display: none; grid-column: 1 / -1; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label asp-for="DateOfBirth">Date of Birth</label>
+                        <input asp-for="DateOfBirth" type="date" class="patient-req" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Gender">Gender</label>
+                        <select asp-for="Gender" class="patient-req">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="BloodGroup">Blood Group</label>
+                        <select asp-for="BloodGroup" class="patient-req">
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option><option value="A-">A-</option>
+                            <option value="B+">B+</option><option value="B-">B-</option>
+                            <option value="O+">O+</option><option value="O-">O-</option>
+                            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Address">Address</label>
+                        <input asp-for="Address" placeholder="Full Address" class="patient-req" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="MedicalHistory">Medical History</label>
+                        <textarea asp-for="MedicalHistory" placeholder="Any relevant past medical history" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Allergies">Allergies (Optional)</label>
+                        <textarea asp-for="Allergies" placeholder="List any allergies" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- Doctor Specific -->
+                <div id="doctorFields" style="display: none; grid-column: 1 / -1; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label asp-for="Specialization">Specialization</label>
+                        <select asp-for="Specialization" class="doctor-req">
+                            <option value="">Select Specialization</option>
+                            <option value="General Physician">General Physician</option>
+                            <option value="Cardiologist">Cardiologist</option>
+                            <option value="Dermatologist">Dermatologist</option>
+                            <option value="Neurologist">Neurologist</option>
+                            <option value="Orthopedic">Orthopedic</option>
+                            <option value="Pediatrician">Pediatrician</option>
+                            <option value="Surgeon">Surgeon</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LicenseNumber">License Number</label>
+                        <input asp-for="LicenseNumber" placeholder="MDL-XXXXXX" class="doctor-req" />
+                    </div>
+                </div>
+
+                <div style="grid-column: 1 / -1; margin-top: 20px;">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="error-message" style="margin-bottom: 15px;">@ViewBag.Error</div>
+                    }
+                    <button type="submit" class="btn-primary" style="width: 100%;">Complete Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const roleSelect = document.getElementById('Role');
+        const phoneSection = document.getElementById('sharedPhone');
+        const patientFields = document.getElementById('patientFields');
+        const doctorFields = document.getElementById('doctorFields');
+        const patientReqs = document.querySelectorAll('.patient-req');
+        const doctorReqs = document.querySelectorAll('.doctor-req');
+        const phoneInput = document.getElementById('PhoneNumber');
+
+        roleSelect.addEventListener('change', function() {
+            const role = this.value;
+            phoneSection.style.display = 'block';
+            phoneInput.setAttribute('required', 'required');
+
+            if (role === 'Patient') {
+                patientFields.style.display = 'grid';
+                doctorFields.style.display = 'none';
+                patientReqs.forEach(el => el.setAttribute('required', 'required'));
+                doctorReqs.forEach(el => el.removeAttribute('required'));
+            } else {
+                patientFields.style.display = 'none';
+                doctorFields.style.display = 'grid';
+                doctorReqs.forEach(el => el.setAttribute('required', 'required'));
+                patientReqs.forEach(el => el.removeAttribute('required'));
+            }
+        });
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CareFleet")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97efc60ac5e496beaed1b142ceeb933684d63913")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8eb52965f8b2614858a0be8061d25e3f63fb3612")]
 [assembly: System.Reflection.AssemblyProductAttribute("CareFleet")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CareFleet")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
