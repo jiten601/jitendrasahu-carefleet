@@ -1,0 +1,178 @@
+/* Premium Admin Forms Styling */
+
+.premium-form-container {
+    padding: 20px 0;
+    max-width: 1000px;
+    margin: 0 auto;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.premium-glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 24px;
+    padding: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+}
+
+.form-section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1B3C53;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(27, 60, 83, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.premium-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #456882;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.input-group-premium {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-group-premium i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+/* Fix icon alignment for textareas / multi-line inputs */
+.input-group-premium.align-items-start i {
+    top: 22px !important;
+    transform: none !important;
+}
+
+.premium-input {
+    width: 100%;
+    padding: 14px 20px 14px 50px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    font-size: 1rem;
+    color: #1B3C53;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+textarea.premium-input {
+    resize: none !important;
+    min-height: 120px;
+}
+
+.premium-input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: #456882;
+    box-shadow: 0 8px 25px rgba(69, 104, 130, 0.1);
+    transform: translateY(-2px);
+}
+
+.premium-input:focus + i {
+    color: #1B3C53;
+}
+
+/* Custom Select Styling */
+select.premium-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23456882' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    background-size: 18px;
+}
+
+/* Validation Styling */
+.validation-message {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ef4444;
+    margin-top: 6px;
+    margin-left: 10px;
+    display: block;
+}
+
+/* Action Buttons */
+.form-actions-premium {
+    display: flex;
+    gap: 15px;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.btn-premium-save {
+    background: linear-gradient(135deg, #1B3C53 0%, #456882 100%);
+    color: white;
+    border: none;
+    padding: 16px 35px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 20px rgba(27, 60, 83, 0.2);
+}
+
+.btn-premium-save:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(27, 60, 83, 0.3);
+}
+
+.btn-premium-cancel {
+    background: #ffffff;
+    color: #64748b;
+    border: 1.5px solid #e2e8f0;
+    padding: 16px 35px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-premium-cancel:hover {
+    background: #f8fafc;
+    color: #1B3C53;
+    border-color: #cbd5e1;
+}
+
+@media (max-width: 768px) {
+    .premium-glass-card {
+        padding: 25px;
+    }
+    
+    .form-actions-premium {
+        flex-direction: column;
+    }
+    
+    .btn-premium-save, .btn-premium-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+}

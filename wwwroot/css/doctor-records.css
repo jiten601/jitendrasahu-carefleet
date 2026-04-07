@@ -1,0 +1,68 @@
+/* Doctor Medical Records Premium Styling */
+
+.doctor-records-page .glass-stat-badge {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.doctor-records-page .stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.doctor-records-page .stat-value {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+/* Category Icon Styles */
+.category-icon-box {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(27, 60, 83, 0.05);
+    color: #1B3C53;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.doctor-record-row:hover .category-icon-box {
+    background: #1B3C53;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Header Customizations */
+.doctor-records-page .premium-header-card {
+    background: linear-gradient(135deg, #1B3C53 0%, #3a506b 100%) !important;
+}
+
+/* Row Animation */
+.doctor-record-row {
+    transition: all 0.3s ease;
+}
+
+.doctor-record-row:hover {
+    background: rgba(27, 60, 83, 0.02) !important;
+}
+
+.truncate-text {
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
