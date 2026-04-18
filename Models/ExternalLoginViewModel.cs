@@ -31,5 +31,6 @@ namespace CareFleet.Models
         // --- Doctor Specific ---
         public string? Specialization { get; set; }
         public string? LicenseNumber { get; set; }
+        public string GoogleId { get; internal set; }
     }
 }

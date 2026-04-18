@@ -253,14 +253,13 @@
                         }
                     });
 
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                     const formData = new FormData();
                     formData.append('appointmentId', appointmentId);
+                    formData.append('__RequestVerificationToken', token);
                     
                     fetch('@Url.Action("CreateAppointmentInvoice", "Billing")', {
                         method: 'POST',
-                        headers: {
-                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                        },
                         body: formData
                     })
                     .then(response => response.json())

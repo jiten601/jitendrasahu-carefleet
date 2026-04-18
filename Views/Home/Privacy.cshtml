@@ -1,6 +1,138 @@
-﻿@{
+@{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "_Layout";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/privacy.css" asp-append-version="true" />
+}
+
+<div class="fade-in">
+
+    @* ========== HERO HEADER ========== *@
+    <div class="privacy-hero container mt-3">
+        <div class="row align-items-center position-relative z-3 px-lg-5 px-3 py-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="badge-premium mb-3 text-white">
+                    <i class="fas fa-shield-halved me-2"></i>Privacy & Security
+                </div>
+                <h1 class="hero-title-v2 mb-4">Your Data, <span style="color:#6ee7b7;">Your Rights.</span></h1>
+                <p class="hero-subtitle-v2 mx-auto" style="max-width:640px; opacity:0.9;">
+                    At CareFleet, privacy is not a policy it's a promise. Every feature we build starts with your security in mind.
+                </p>
+                <div class="d-flex justify-content-center gap-2 mt-4 flex-wrap">
+                    <span class="privacy-hero-badge"><i class="fas fa-lock me-2"></i>HIPAA Compliant</span>
+                    <span class="privacy-hero-badge"><i class="fas fa-credit-card me-2"></i>PCI-DSS Certified</span>
+                    <span class="privacy-hero-badge"><i class="fas fa-shield-check me-2"></i>End-to-End Encrypted</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    @* ========== MAIN CONTENT ========== *@
+    <div class="premium-section-wrapper">
+        <div class="container" style="max-width: 960px;">
+
+         
+            @* Intro *@
+            <div class="text-center mb-5">
+                <h2 class="fw-800" style="color:var(--primary-dark); font-family:'Outfit',sans-serif; font-size:2rem;">Your Privacy matters more</h2>
+                <p class="privacy-intro-text">
+                    We believe your personal and medical information belongs strictly to you. This policy is written simply and transparently so you completely understand how we protect your trust.
+                </p>
+            </div>
+
+            @* Section Grid *@
+            <div class="row g-4 mb-5">
+
+                <div class="col-md-6">
+                    <div class="privacy-card">
+                        <div class="privacy-card-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 class="privacy-card-title">Our Security Promise</h3>
+                        <p class="privacy-card-text">We use state-of-the-art AES-256 encryption to protect your data. Messages to your doctor and medical files are scrambled into an unreadable format that only authorized professionals can unlock.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="privacy-card">
+                        <div class="privacy-card-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3 class="privacy-card-title">Medical Records</h3>
+                        <p class="privacy-card-text">Your health records are strictly confidential and HIPAA-compliant. Your medical history is never shared with anyone outside your care team without your explicit, written permission.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="privacy-card">
+                        <div class="privacy-card-icon">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                        </div>
+                        <h3 class="privacy-card-title">Safe Finances</h3>
+                        <p class="privacy-card-text">Financial details are processed exclusively via PCI-certified payment networks. We never store raw credit card data or banking credentials on our servers — ever.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="privacy-card">
+                        <div class="privacy-card-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3 class="privacy-card-title">We Never Sell Your Data</h3>
+                        <p class="privacy-card-text">This is a core pillar of our service: <strong>We categorically do not sell your personal, medical, or contact information</strong> to advertisers or data brokers. Period.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="privacy-card">
+                        <div class="privacy-card-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="privacy-card-title">Minimal Data Collection</h3>
+                        <p class="privacy-card-text">We only collect information strictly necessary for your healthcare experience. No tracking pixels, no behavioral ad profiling, and no unnecessary third-party sharing.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="privacy-card">
+                        <div class="privacy-card-icon">
+                            <i class="fas fa-rotate-right"></i>
+                        </div>
+                        <h3 class="privacy-card-title">Your Right to Access</h3>
+                        <p class="privacy-card-text">You have the right to request a full copy of all data we hold about you, and to request its permanent deletion at any time. We always respond within 30 days.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    @* Contact Section *@
+        <div class="container" style="max-width: 960px;">
+            <div class="privacy-contact-card">
+                <div class="row align-items-center">
+                    <div class="col-lg-7 mb-4 mb-lg-0">
+                        <h3 class="privacy-contact-title"><i class="fas fa-paper-plane me-3"></i>Have a Privacy Concern?</h3>
+                        <p class="privacy-contact-text">Our dedicated Security Team is available to investigate your questions and resolve any concerns about your data.</p>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="privacy-contact-info">
+                            <div class="privacy-contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>jitenshah601@gmail.com</span>
+                            </div>
+                            <div class="privacy-contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+977 9814302810</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>

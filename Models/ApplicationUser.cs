@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using System;
 
 namespace CareFleet.Models
@@ -10,13 +11,15 @@ namespace CareFleet.Models
         public string LastName { get; set; } = string.Empty;
 
         public string Email { get; set; }
-        public string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
 
         public bool IsEmailConfirmed { get; set; }
 
         public string? EmailOtp { get; set; }
         public DateTime? OtpExpiryTime { get; set; }
         public string Role { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
     }
 }
 

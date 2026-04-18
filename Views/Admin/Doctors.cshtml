@@ -3,101 +3,265 @@
     ViewData["Title"] = "Doctors Management";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Doctors";
-    ViewBag.HeaderTitle = "Doctors Management";
+    ViewBag.HeaderTitle = "System Doctors";
     ViewBag.HideHeader = true;
 }
 
-@section Scripts {
-    <link rel="stylesheet" href="~/css/admin-pages.css" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
 }
 
-<div class="fade-in">
+<div class="premium-admin-container">
     <!-- Premium Header Card -->
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-bold text-white mb-2">Doctors Management</h1>
+                <h1 class="header-title-main">Doctors Management</h1>
+                <p class="header-subtitle"><i class="fas fa-stethoscope me-2"></i> Manage medical professionals and their system profiles</p>
+
+                <div style="margin-top: 30px !important;" class="d-flex gap-3">
+                    <div class="glass-stat-badge">
+                        <span class="stat-label">Total Doctors</span>
+                        <span class="stat-value">@ViewBag.TotalDoctors</span>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
                 <a href="@Url.Action("AddDoctor", "Admin")" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-user-md me-2"></i>Add New Doctor
+                    <i class="fas fa-user-md me-2"></i> Add New Doctor
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
+    <!-- Search & Filter Bar -->
+    <form method="get" asp-action="Doctors" id="filterForm">
+        <div class="search-filter-section">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" id="doctorSearch" placeholder="Search by name, specialization, or license..." class="premium-search-input">
+            </div>
+            <div class="filter-actions">
+                <select name="statusFilter" id="statusFilter" class="btn-filter" style="outline: none; cursor: pointer;" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">Active Only</option>
+                    <option value="Inactive" selected="@(ViewBag.StatusFilter == "Inactive")">Pending Approval Only</option>
+                </select>
+                <a href="@Url.Action("Doctors")" class="btn-filter text-decoration-none" title="Reset Filters">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+            </div>
+        </div>
+    </form>
 
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Doctor Name</th>
-                <th>Specialization</th>
-                <th>Contact info</th>
-                <th>License No.</th>
-                <th>Status</th>
-                <th>Registered</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Any())
-            {
-                @foreach (var doctor in Model)
+    <div class="table-glass-wrapper">
+        <table class="premium-table" id="doctorsTable">
+            <thead>
+                <tr>
+                    <th>Doctor Identity</th>
+                    <th>Specialization</th>
+                    <th>Contact info</th>
+                    <th>License No.</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var doctor in Model)
+                    {
+                        var initials = "";
+                        if (!string.IsNullOrEmpty(doctor.FirstName) && !string.IsNullOrEmpty(doctor.LastName))
+                        {
+                            initials = (doctor.FirstName.Substring(0, 1) + doctor.LastName.Substring(0, 1)).ToUpper();
+                        }
+                        else
+                        {
+                            initials = "Dr";
+                        }
+
+                        <tr data-status="@(doctor.IsActive ? "Active" : "Inactive")">
+                            <td>
+                                <div class="patient-identity">
+                                    <div class="doctor-avatar">@initials</div>
+                                    <div class="patient-info">
+                                        <span class="patient-name">Dr. @doctor.FirstName @doctor.LastName</span>
+                                        <span class="patient-id">Joined: @doctor.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="history-badge" style="background: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8;">
+                                    @doctor.Specialization
+                                </span>
+                            </td>
+                            <td>
+                                <div class="email-pill" title="@doctor.Email">
+                                    <i class="far fa-envelope me-2"></i> @doctor.Email
+                                </div>
+                                <span class="data-sublabel mt-2"><i class="fas fa-phone"></i> @doctor.PhoneNumber</span>
+                            </td>
+                            <td>
+                                <code style="padding: 4px 8px; background: #F7FAFC; border-radius: 6px; border: 1px solid #E2E8F0; color: #4A5568; font-family: 'JetBrains Mono', Courier, monospace;">@doctor.LicenseNumber</code>
+                            </td>
+                            <td>
+                                <span class="status-pill @(doctor.IsActive ? "active" : "pending")">
+                                    @(doctor.IsActive ? "Active" : "Pending Approval")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="premium-action-group">
+                                    <a href="@Url.Action("Edit", "Doctor", new { id = doctor.Id })" class="btn-action-premium edit" title="Edit Profile">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <form asp-action="ToggleStatus" asp-controller="Doctor" method="post" class="status-toggle-form" style="display: inline;">
+                                        <input type="hidden" name="id" value="@doctor.Id" />
+                                        <button type="submit" class="btn-action-premium view" title="@(doctor.IsActive ? "Deactivate" : "Approve Doctor")">
+                                            <i class="fas fa-@(doctor.IsActive ? "toggle-on" : "user-check")" @(doctor.IsActive ? "" : "style=\"color: #D97706;\"")></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="Delete" asp-controller="Doctor" method="post" style="display: inline;" onsubmit="return confirm('Permanently remove this doctor? This action is irreversible.');">
+                                        <input type="hidden" name="id" value="@doctor.Id" />
+                                        <button type="submit" class="btn-action-premium delete" title="Remove Doctor">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>
-                            <div style="font-weight: 600; color: #1B3C53;">Dr. @doctor.FirstName @doctor.LastName</div>
-                            <div style="font-size: 12px; color: #718096;">@doctor.Email</div>
-                        </td>
-                        <td>@doctor.Specialization</td>
-                        <td>@doctor.PhoneNumber</td>
-                        <td><code>@doctor.LicenseNumber</code></td>
-                        <td>
-                            @if (doctor.IsActive)
-                            {
-                                <span class="status-badge active">Active</span>
-                            }
-                            else
-                            {
-                                <span class="status-badge inactive">Inactive</span>
-                            }
-                        </td>
-                        <td>@doctor.CreatedAt.ToString("MMM dd, yyyy")</td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="@Url.Action("Edit", "Doctor", new { id = doctor.Id })" class="btn-icon edit" title="Edit Profile">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form asp-action="ToggleStatus" asp-controller="Doctor" method="post" style="display: inline;">
-                                    <input type="hidden" name="id" value="@doctor.Id" />
-                                    <button type="submit" class="btn-icon" title="@(doctor.IsActive ? "Deactivate" : "Activate")">
-                                        <i class="fas fa-@(doctor.IsActive ? "toggle-on" : "toggle-off")" style="color: @(doctor.IsActive ? "#48bb78" : "#718096");"></i>
-                                    </button>
-                                </form>
-                                <form asp-action="Delete" asp-controller="Doctor" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this doctor?');">
-                                    <input type="hidden" name="id" value="@doctor.Id" />
-                                    <button type="submit" class="btn-icon delete" title="Remove Doctor">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                        <td colspan="6" style="text-align: center; padding: 80px;">
+                            <div class="empty-state">
+                                <i class="fas fa-user-md mb-4" style="font-size: 4rem; color: #cbd5e1; opacity: 0.5;"></i>
+                                <h3 style="color: #64748b; font-family: 'Outfit', sans-serif;">No doctors found</h3>
+                                <p style="color: #94a3b8;">There are no doctors matching your criteria.</p>
+                                <a href="@Url.Action("Doctors")" class="btn btn-primary mt-3">Clear Filters</a>
                             </div>
                         </td>
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px; color: #718096;">
-                        <i class="fas fa-user-md" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
-                        No doctors found in the system.
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+
+        <!-- Premium Pagination -->
+        @if (ViewBag.TotalItems > 0)
+        {
+            <div class="premium-pagination-container">
+                <div class="pagination-info">
+                    @{
+                        int start = (ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1;
+                        int end = Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems);
+                    }
+                    Showing <span class="text-dark fw-bold">@start</span> to <span class="text-dark fw-bold">@end</span> of <span class="text-dark fw-bold">@ViewBag.TotalItems</span> doctors
+                </div>
+                
+                <div class="pagination-controls">
+                    <a href="@Url.Action("Doctors", new { page = ViewBag.CurrentPage - 1, searchTerm = ViewBag.SearchTerm, statusFilter = ViewBag.StatusFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage <= 1 ? "disabled" : "")" title="Previous Page">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                            {
+                                <a href="@Url.Action("Doctors", new { page = i, searchTerm = ViewBag.SearchTerm, statusFilter = ViewBag.StatusFilter })" 
+                                   class="page-link-premium @(ViewBag.CurrentPage == i ? "active" : "")">@i</a>
+                            }
+                            else if (i == ViewBag.CurrentPage - 3 || i == ViewBag.CurrentPage + 3)
+                            {
+                                <span class="px-2 text-muted">...</span>
+                            }
+                        }
+                    }
+                    else if (ViewBag.TotalPages == 1)
+                    {
+                        <a href="#" class="page-link-premium active">1</a>
+                    }
+
+                    <a href="@Url.Action("Doctors", new { page = ViewBag.CurrentPage + 1, searchTerm = ViewBag.SearchTerm, statusFilter = ViewBag.StatusFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")" title="Next Page">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('doctorSearch');
+            const filterForm = document.getElementById('filterForm');
+            
+            let typingTimer;
+            const doneTypingInterval = 800;
+
+            searchInput?.addEventListener('keyup', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    filterForm.submit();
+                }, doneTypingInterval);
+            });
+
+            searchInput?.addEventListener('keydown', function() {
+                clearTimeout(typingTimer);
+            });
+
+            // AJAX Status Toggle Logic
+            const toggleForms = document.querySelectorAll('.status-toggle-form');
+            toggleForms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const url = this.action;
+                    const formData = new FormData(this);
+                    const btn = this.querySelector('button');
+                    const icon = btn.querySelector('i');
+                    const row = this.closest('tr');
+                    const statusPill = row.querySelector('.status-pill');
+
+                    btn.style.opacity = '0.5';
+                    btn.style.pointerEvents = 'none';
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            const isActive = data.isActive;
+                            icon.className = isActive ? 'fas fa-toggle-on' : 'fas fa-user-check';
+                            icon.style.color = isActive ? '' : '#D97706';
+                            btn.title = isActive ? 'Deactivate' : 'Approve Doctor';
+                            statusPill.className = `status-pill ${isActive ? 'active' : 'pending'}`;
+                            statusPill.textContent = isActive ? 'Active' : 'Pending Approval';
+                            row.dataset.status = isActive ? 'Active' : 'Inactive';
+                        }
+                    } catch (error) {
+                        console.error('Toggle failed:', error);
+                    } finally {
+                        btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                    }
+                });
+            });
+        });
+    </script>
+}

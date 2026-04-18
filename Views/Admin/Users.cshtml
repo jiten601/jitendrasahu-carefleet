@@ -6,68 +6,224 @@
     ViewBag.HideHeader = true;
 }
 
-<div class="fade-in">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('userSearch');
+            const filterForm = document.getElementById('filterForm');
+            
+            let typingTimer;
+            const doneTypingInterval = 800; // wait for 800ms after typing
+
+            searchInput?.addEventListener('keyup', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    filterForm.submit();
+                }, doneTypingInterval);
+            });
+
+            searchInput?.addEventListener('keydown', function() {
+                clearTimeout(typingTimer);
+            });
+        });
+    </script>
+}
+
+<div class="premium-admin-container">
     <!-- Premium Header Card -->
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-bold text-white mb-2">User Management</h1>
+                <h1 class="header-title-main">User Management</h1>
+                <p class="header-subtitle"><i class="fas fa-users-cog me-2"></i> Control access and manage system-wide user accounts</p>
+                
+                <div style="margin-top: 30px !important;" class="d-flex gap-3">
+                    <div class="glass-stat-badge">
+                        <span class="stat-label">Total Users</span>
+                        <span class="stat-value">@ViewBag.TotalUsers</span>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
                 <a href="@Url.Action("Register", "Account")" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-user-plus me-2"></i>Add New User
+                    <i class="fas fa-user-plus me-2"></i> Register New User
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
+    <!-- Search & Filter Bar -->
+    <form method="get" asp-action="Users" id="filterForm">
+        <div class="search-filter-section">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" id="userSearch" placeholder="Search by name, email, or role..." class="premium-search-input">
+            </div>
+            <div class="filter-actions">
+                <select name="roleFilter" id="roleFilter" class="btn-filter" style="outline: none; cursor: pointer;" onchange="this.form.submit()">
+                    <option value="">All Roles</option>
+                    <option value="Admin" selected="@(ViewBag.RoleFilter == "Admin")">Admin</option>
+                    <option value="Doctor" selected="@(ViewBag.RoleFilter == "Doctor")">Doctor</option>
+                    <option value="Patient" selected="@(ViewBag.RoleFilter == "Patient")">Patient</option>
+                </select>
+                <a href="@Url.Action("Users")" class="btn-filter text-decoration-none" title="Reset Filters">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+            </div>
+        </div>
+    </form>
 
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Email Confirmed</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
+    <div class="table-glass-wrapper">
+        <table class="premium-table" id="usersTable">
+            <thead>
                 <tr>
-                    <td>@user.FirstName @user.LastName</td>
-                    <td>@user.Email</td>
-                    <td>
-                        <span class="status-badge active" style="background-color: @(user.Role == "Admin" ? "#ffd700" : (user.Role == "Doctor" ? "#add8e6" : "#f0f0f0")); color: #333;">
-                            @user.Role
-                        </span>
-                    </td>
-                    <td>
-                        <i class="fas @(user.IsEmailConfirmed ? "fa-check-circle text-success" : "fa-times-circle text-danger")"></i>
-                        @(user.IsEmailConfirmed ? "Yes" : "No")
-                    </td>
-                    <td class="action-buttons">
-                        <a href="@Url.Action("EditUser", "Admin", new { id = user.Id })" class="btn-edit" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        @if (user.Email != Context.Session.GetString("UserEmail"))
-                        {
-                            <form asp-action="DeleteUser" asp-controller="Admin" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user? This will also delete their associated data.');">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@user.Id" />
-                                <button type="submit" class="btn-delete" title="Delete" style="border:none; padding: 8px 12px; border-radius: 8px;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        }
-                    </td>
+                    <th>User Identity</th>
+                    <th>Email Address</th>
+                    <th>Account Role</th>
+                    <th>Verification</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    var initials = "";
+                    if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
+                    {
+                        initials = (user.FirstName.Substring(0, 1) + user.LastName.Substring(0, 1)).ToUpper();
+                    }
+                    else if (!string.IsNullOrEmpty(user.FirstName))
+                    {
+                        initials = user.FirstName.Substring(0, Math.Min(2, user.FirstName.Length)).ToUpper();
+                    }
+                    else
+                    {
+                        initials = "U";
+                    }
+
+                    var avatarClass = user.Role == "Admin" ? "admin-avatar" : (user.Role == "Doctor" ? "doctor-avatar" : "patient-avatar");
+
+                    <tr data-role="@user.Role">
+                        <td>
+                            <div class="patient-identity">
+                                <div class="@avatarClass" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">
+                                    @initials
+                                </div>
+                                <div class="patient-info">
+                                    <span class="patient-name">@user.FirstName @user.LastName</span>
+                                    <span class="patient-id">UID: @user.Id.ToString("D5")</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="email-pill" title="@user.Email">
+                                <i class="far fa-envelope me-2"></i>
+                                @user.Email
+                            </div>
+                        </td>
+                        <td>
+                            <span class="role-badge @user.Role.ToLower()">@user.Role</span>
+                        </td>
+                        <td>
+                            @if (user.IsEmailConfirmed)
+                            {
+                                <span class="confirm-pill yes">
+                                    <i class="fas fa-check-circle"></i> Confirmed
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="confirm-pill no">
+                                    <i class="fas fa-times-circle"></i> Unverified
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            <div class="premium-action-group">
+                                <a href="@Url.Action("EditUser", "Admin", new { id = user.Id })" class="btn-action-premium edit" title="Edit User">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                @if (user.Email != Context.Session.GetString("UserEmail"))
+                                {
+                                    <form asp-action="DeleteUser" asp-controller="Admin" method="post" style="display:inline;" onsubmit="return confirm('Permanently delete this user? This cannot be undone.');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button type="submit" class="btn-action-premium delete" title="Delete User">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="no-data-info">
+                                <i class="fas fa-user-slash fa-3x mb-3 text-muted"></i>
+                                <p class="text-muted">No users found matching your criteria.</p>
+                                <a href="@Url.Action("Users")" class="btn-premium-light btn-sm mt-2 text-decoration-none">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Premium Pagination -->
+        @if (ViewBag.TotalItems > 0)
+        {
+            <div class="premium-pagination-container">
+                <div class="pagination-info">
+                    @{
+                        int start = (ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1;
+                        int end = Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems);
+                    }
+                    Showing <span class="text-dark fw-bold">@start</span> to <span class="text-dark fw-bold">@end</span> of <span class="text-dark fw-bold">@ViewBag.TotalItems</span> users
+                </div>
+                
+                <div class="pagination-controls">
+                    <a href="@Url.Action("Users", new { page = ViewBag.CurrentPage - 1, searchTerm = ViewBag.SearchTerm, roleFilter = ViewBag.RoleFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage <= 1 ? "disabled" : "")" title="Previous Page">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                            {
+                                <a href="@Url.Action("Users", new { page = i, searchTerm = ViewBag.SearchTerm, roleFilter = ViewBag.RoleFilter })" 
+                                   class="page-link-premium @(ViewBag.CurrentPage == i ? "active" : "")">@i</a>
+                            }
+                            else if (i == ViewBag.CurrentPage - 3 || i == ViewBag.CurrentPage + 3)
+                            {
+                                <span class="px-2 text-muted">...</span>
+                            }
+                        }
+                    }
+                    else if (ViewBag.TotalPages == 1)
+                    {
+                        <a href="#" class="page-link-premium active">1</a>
+                    }
+
+                    <a href="@Url.Action("Users", new { page = ViewBag.CurrentPage + 1, searchTerm = ViewBag.SearchTerm, roleFilter = ViewBag.RoleFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")" title="Next Page">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
 </div>
-</div>
+
 

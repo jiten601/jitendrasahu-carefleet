@@ -22,6 +22,31 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.glass-stat-badge {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    min-width: 180px;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
 .header-card-content {
     position: relative;
     z-index: 2;
@@ -125,7 +150,8 @@
     padding: 10px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.7);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .premium-table {
@@ -425,5 +451,50 @@
     
     .search-input-wrapper {
         max-width: none;
+    }
+
+    .header-title-main {
+        font-size: 1.8rem;
+    }
+
+    .premium-header-card {
+        padding: 25px;
+        border-radius: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .premium-table {
+        min-width: 800px;
+    }
+    
+    .search-filter-section {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .filter-actions {
+        flex-wrap: wrap;
+    }
+
+    .btn-filter {
+        flex: 1;
+        justify-content: center;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .premium-header-card {
+        text-align: center;
+    }
+    
+    .header-title-main {
+        font-size: 1.5rem;
+    }
+    
+    .header-subtitle {
+        font-size: 0.9rem;
     }
 }

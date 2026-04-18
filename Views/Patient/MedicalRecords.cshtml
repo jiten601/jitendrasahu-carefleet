@@ -4,122 +4,159 @@
     Layout = "~/Views/Shared/_PatientLayout.cshtml";
     ViewBag.ActivePage = "MedicalRecords";
     ViewBag.HeaderTitle = "Medical Records";
+    ViewBag.HideHeader = true; // Utilizing premium header card
 }
 
-<div class="medical-records-page fade-in">
-    <!-- Header Card -->
-    <div class="premium-header-card mb-4">
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/patient-medical-records.css" asp-append-version="true" />
+}
+
+<div class="premium-admin-container mt-2">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4" style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);">
         <div class="header-card-content">
             <div class="header-info">
-                <h2 class="fw-800 text-white mb-2">My Medical Records</h2>
-                <p class="text-white opacity-75 mb-0">Securely manage your clinical reports and health history.</p>
+                <h1 class="header-title-main">My Medical Records</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-file-medical-alt me-2"></i>
+                    Securely manage your clinical reports and health history.
+                </p>
+
+                <div class="d-flex gap-3 mt-4">
+                    <div class="premium-stat-card">
+                        <div class="stat-icon-wrapper docs">
+                            <i class="fas fa-file-medical-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Total Documents</span>
+                            <span class="stat-value">@(Model?.Count() ?? 0)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
-                <button class="btn-premium-light" onclick="exportAllRecords()">
-                    <i class="fas fa-file-pdf me-2"></i>Export All Records
+                <button onclick="exportAllRecords()" class="btn-premium-light border-0" style="background: white; color: var(--primary-dark); padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-file-csv"></i> Export Data
                 </button>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-    <!-- Main Content Card -->
-    <div class="dashboard-card border-0 shadow-sm overflow-hidden">
-        <div class="card-header-premium">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="header-icon-box">
-                        <i class="fas fa-file-medical-alt"></i>
-                    </span>
-                    <div>
-                        <h5 class="mb-0 fw-bold">Health Documents</h5>
-                        <small class="text-secondary">A central repository for your medical information</small>
-                    </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <div class="search-box-modern">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="recordSearch" placeholder="Search records...">
-                    </div>
-                    <select class="btn-filter-modern" id="categoryFilter">
-                        <option value="All Categories">All Categories</option>
-                        <option value="Laboratory">Laboratory</option>
-                        <option value="Radiology">Radiology</option>
-                        <option value="General Health">General Health</option>
-                    </select>
-                </div>
-            </div>
+    <!-- Search & Filter Bar -->
+    <div class="search-filter-section mb-4">
+        <div class="search-input-wrapper flex-grow-1">
+            <i class="fas fa-search"></i>
+            <input type="text" id="recordSearch" placeholder="Search document name..." class="premium-search-input">
         </div>
+        <div class="filter-actions d-flex gap-2">
+            <select class="btn-filter" id="categoryFilter" style="appearance: none; cursor: pointer;">
+                <option value="All Categories">All Categories</option>
+                <option value="Laboratory">Laboratory</option>
+                <option value="Radiology">Radiology</option>
+                <option value="General Health">General</option>
+            </select>
+            <button class="btn-filter" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt fw-bold"></i>
+            </button>
+        </div>
+    </div>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="activity-table-modern">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Document Name</th>
-                            <th>Category</th>
-                            <th>Date Issued</th>
-                            <th>Provider</th>
-                            <th class="text-end pe-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsTableBody">
-                        @if (Model != null && Model.Any())
+    <!-- Table Section -->
+    <div class="table-glass-wrapper shadow-lg overflow-visible mb-5">
+        <table class="table premium-table mb-0" id="recordsTable">
+            <thead>
+                <tr>
+                    <th class="ps-4">Document Name</th>
+                    <th>Medical Category</th>
+                    <th>Date Published</th>
+                    <th>Clinical Provider</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="recordsTableBody">
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var record in Model)
+                    {
+                        var iconClass = record.Category switch
                         {
-                            foreach (var record in Model)
-                            {
-                                <tr class="record-row" data-category="@record.Category" data-name="@record.DocumentName.ToLower()">
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="doc-icon-box @(record.Category == "Laboratory" ? "bg-soft-info" : record.Category == "Radiology" ? "bg-soft-warning" : "bg-soft-primary")">
-                                                <i class="fas @(record.Category == "Laboratory" ? "fa-vials" : record.Category == "Radiology" ? "fa-x-ray" : "fa-file-medical")"></i>
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold text-dark">@record.DocumentName</div>
-                                                <div class="x-small text-muted">@record.FileType Document • @(string.IsNullOrEmpty(record.FilePath) ? "N/A" : "Ready")</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge-modern bg-light">@record.Category</span>
-                                    </td>
-                                    <td>
-                                        <div class="date-text">@record.DateIssued.ToString("MMM dd, yyyy")</div>
-                                    </td>
-                                    <td>
-                                        <div class="provider-info">
-                                            <div class="fw-medium">@record.Provider</div>
-                                            <div class="x-small text-muted">Clinical Provider</div>
-                                        </div>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a href="@Url.Action("ViewRecord", "Patient", new { id = record.Id })" class="btn-action-light" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="@Url.Action("DownloadRecord", "Patient", new { id = record.Id })" class="btn-action-light" title="Download">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
+                            "Laboratory" => "fa-vials",
+                            "Radiology" => "fa-x-ray",
+                            _ => "fa-file-medical"
+                        };
+                        var themeColor = record.Category switch
                         {
-                            <tr>
-                                <td colspan="5" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-folder-open fa-3x mb-3 d-block"></i>
-                                        <p>No medical records found.</p>
+                            "Laboratory" => "rgba(59, 130, 246, 0.1)",
+                            "Radiology" => "rgba(245, 158, 11, 0.1)",
+                            _ => "rgba(84, 119, 146, 0.1)"
+                        };
+                        var iconTextColor = record.Category switch
+                        {
+                            "Laboratory" => "#3b82f6",
+                            "Radiology" => "#d97706",
+                            _ => "var(--primary-blue)"
+                        };
+
+                        <tr class="record-row" data-category="@record.Category" data-name="@record.DocumentName.ToLower()">
+                            <td class="ps-4">
+                                <div class="patient-identity">
+                                    <div class="patient-avatar" style="background: @themeColor; color: @iconTextColor; border-radius: 12px;">
+                                        <i class="fas @iconClass"></i>
                                     </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                                    <div class="patient-info">
+                                        <span class="patient-name fw-bold doc-name" style="color: var(--primary-dark);">@record.DocumentName</span>
+                                        <span class="patient-id" style="color: var(--text-secondary);">@record.FileType Document • @(string.IsNullOrEmpty(record.FilePath) ? "N/A" : "Ready")</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="spec-pill fw-bold doc-cat" style="background: rgba(84, 119, 146, 0.05); color: var(--primary-blue); border: 1px solid rgba(84, 119, 146, 0.1);">
+                                        @record.Category
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="data-label fw-bold doc-date" style="color: var(--primary-dark);">@record.DateIssued.ToString("MMM dd, yyyy")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="data-label fw-bold doc-provider" style="color: var(--primary-dark);">@record.Provider</span>
+                                    <span class="data-sublabel" style="color: var(--text-secondary);">Healthcare Team</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="@Url.Action("ViewRecord", "Patient", new { id = record.Id })" class="btn-action-premium view" title="View Report">
+                                        <i class="fas fa-eye text-primary"></i>
+                                    </a>
+                                    <a href="@Url.Action("DownloadRecord", "Patient", new { id = record.Id })" class="btn-action-premium edit" title="Download Document">
+                                        <i class="fas fa-download text-success"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-folder-open mb-4" style="font-size: 4.5rem; color: #cbd5e1; opacity: 0.4;"></i>
+                                <h3 style="color: var(--primary-dark); font-family: 'Outfit', sans-serif; font-weight: 700;">No Medical Records</h3>
+                                <p style="color: var(--text-secondary); font-weight: 500;">Your clinical file archive is currently empty.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -128,7 +165,6 @@
         const searchInput = document.getElementById('recordSearch');
         const filterSelect = document.getElementById('categoryFilter');
         const rows = document.querySelectorAll('.record-row');
-        const tableBody = document.getElementById('recordsTableBody');
 
         function filterRecords() {
             const searchTerm = searchInput.value.toLowerCase();
@@ -138,7 +174,7 @@
             rows.forEach(row => {
                 const name = row.dataset.name;
                 const category = row.dataset.category;
-                
+
                 const matchesSearch = name.includes(searchTerm);
                 const matchesCategory = selectedCategory === 'All Categories' || category === selectedCategory;
 
@@ -162,11 +198,11 @@
 
             rows.forEach(row => {
                 if (row.style.display !== 'none') {
-                    const documentName = row.querySelector('.fw-bold.text-dark').innerText;
-                    const category = row.querySelector('.badge-modern').innerText;
-                    const dateIssued = row.querySelector('.date-text').innerText;
-                    const provider = row.querySelector('.provider-info .fw-medium').innerText;
-                    
+                    const documentName = row.querySelector('.doc-name').innerText;
+                    const category = row.querySelector('.doc-cat').innerText;
+                    const dateIssued = row.querySelector('.doc-date').innerText;
+                    const provider = row.querySelector('.doc-provider').innerText;
+
                     csvData.push(`"${documentName}","${category}","${dateIssued}","${provider}"`);
                 }
             });
@@ -188,7 +224,3 @@
         };
     });
 </script>
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/patient-medical-records.css" asp-append-version="true" />
-}

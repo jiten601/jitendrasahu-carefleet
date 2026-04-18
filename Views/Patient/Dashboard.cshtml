@@ -11,7 +11,7 @@
                 <h1 class="fw-800 text-white mb-2"><i class="fas fa-home me-2"></i>Welcome Back, @ViewBag.FirstName!</h1>
                 @if (ViewBag.UpcomingAppointment != null)
                 {
-                    <p class="text-white opacity-75 mb-0">Your recovery progress is looking great. You have an appointment with Dr. @ViewBag.UpcomingAppointment.DoctorName on @ViewBag.UpcomingAppointment.AppointmentDate.ToString("MMM dd") at @ViewBag.UpcomingAppointment.AppointmentDate.ToString("hh:mm tt").</p>
+                    <p class="text-white opacity-75 mb-0">Your recovery progress is looking great. You have an appointment with Dr. @ViewBag.UpcomingAppointment.DoctorName on @ViewBag.UpcomingAppointment.AppointmentDate.ToString("MMM dd") at @ViewBag.UpcomingAppointment.TimeSlot.</p>
                 }
                 else
                 {

@@ -4,6 +4,10 @@
     var userRole = Context.Session.GetString("UserRole");
     Layout = userRole == "Patient" ? "~/Views/Shared/_PatientLayout.cshtml" : "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Appointments";
+    if (userRole == "Admin")
+    {
+        ViewBag.HideHeader = true;
+    }
     var doctors = ViewBag.Doctors as List<CareFleet.Models.Doctor>;
     var cancelUrl = userRole == "Patient" ? Url.Action("Appointments", "Patient") :
                     (userRole == "Admin" ? Url.Action("Appointments", "Admin") : Url.Action("Index"));
@@ -11,16 +15,18 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-forms.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/book-appointment.css" asp-append-version="true" />
 }
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const forSomeoneElse = document.getElementById('forSomeoneElse');
-            if (forSomeoneElse) {
-                forSomeoneElse.addEventListener('change', function() {
-                    const infoBox = document.getElementById('otherPatientInfo');
+            const checklist = document.getElementById('forSomeoneElse');
+            const infoBox = document.getElementById('otherPatientInfo');
+
+            if (checklist) {
+                checklist.addEventListener('change', function() {
                     if (this.checked) {
                         infoBox.style.display = 'block';
                     } else {
@@ -32,119 +38,170 @@
     </script>
 }
 
-<div class="fade-in">
+<div class="premium-admin-container">
     <!-- Premium Header Card -->
-    <div class="premium-header-card">
-        <div class="header-card-content">
+    <div class="premium-header-card mb-4" style="background: linear-gradient(135deg, #1B3C53 0%, #456882 100%); padding: 40px; border-radius: 24px; position: relative; overflow: hidden;">
+        <div class="header-card-content" style="position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center;">
             <div class="header-info">
-                <h1 class="fw-bold text-white mb-2">Schedule Appointment</h1>
-                <p class="text-white-50 mb-0">Book a consultation with our specialized doctors</p>
+                <h1 class="header-title-main" style="color: white; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.2rem; margin: 0;">Schedule Appointment</h1>
+                <p class="header-subtitle" style="color: rgba(255, 255, 255, 0.8); margin-top: 8px; font-size: 1.1rem;"><i class="fas fa-calendar-plus me-2"></i> Book a consultation with our medical professionals</p>
             </div>
             <div class="header-actions">
-                <a href="@cancelUrl" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                <a href="@cancelUrl" class="btn-premium-light" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); color: white; padding: 12px 24px; border-radius: 14px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;">
+                    <i class="fas fa-arrow-left"></i> Back to List
                 </a>
             </div>
         </div>
-        <div class="header-bg-pattern"></div>
+        <div class="header-bg-pattern" style="position: absolute; top: 0; right: 0; width: 40%; height: 100%; background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);"></div>
     </div>
 
-    <div class="form-container">
-        <form asp-action="Book" method="post">
+    <div class="premium-form-container">
+        <form asp-action="Book" method="post" class="premium-glass-card shadow-lg">
             @Html.AntiForgeryToken()
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" asp-for="DoctorName">
-                        <i class="fas fa-user-md"></i> Select Doctor <span class="required">*</span>
-                    </label>
-                    <select asp-for="DoctorName" class="form-control" required>
-                        <option value="">Choose a Doctor</option>
-                        @if (doctors != null)
-                        {
-                            @foreach (var doctor in doctors)
-                            {
-                                <option value="Dr. @doctor.FirstName @doctor.LastName">Dr. @doctor.FirstName @doctor.LastName (@doctor.Specialization)</option>
-                            }
-                        }
-                    </select>
-                    <span asp-validation-for="DoctorName" class="text-danger validation-error-small"></span>
-                </div>
+            <!-- Section 1: Consultation Details -->
+            <div class="form-section mb-5">
+                <h3 class="form-section-title">
+                    <i class="fas fa-stethoscope"></i> Consultation Details
+                </h3>
 
-                <div class="form-group">
-                    <label class="form-label" asp-for="AppointmentDate">
-                        <i class="fas fa-calendar-alt"></i> Appointment Date <span class="required">*</span>
-                    </label>
-                    <input asp-for="AppointmentDate" type="date" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                    <span asp-validation-for="AppointmentDate" class="text-danger validation-error-small"></span>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" asp-for="TimeSlot">
-                        <i class="fas fa-clock"></i> Preferred Time <span class="required">*</span>
-                    </label>
-                    <select asp-for="TimeSlot" class="form-control" required>
-                        <option value="">Select Time Slot</option>
-                        <option>09:00 AM</option>
-                        <option>10:00 AM</option>
-                        <option>11:00 AM</option>
-                        <option>01:00 PM</option>
-                        <option>02:00 PM</option>
-                        <option>03:00 PM</option>
-                        <option>04:00 PM</option>
-                    </select>
-                    <span asp-validation-for="TimeSlot" class="text-danger validation-error-small"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" asp-for="PatientName">
-                        <i class="fas fa-user"></i> Patient Name <small class="text-muted fw-normal">(Leave blank if for self)</small>
-                    </label>
-                    <input asp-for="PatientName" type="text" class="form-control"/>
-                    <span asp-validation-for="PatientName" class="text-danger validation-error-small"></span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" asp-for="Reason">
-                    <i class="fas fa-notes-medical"></i> Reason for Visit <span class="required">*</span>
-                </label>
-                <textarea asp-for="Reason" class="form-control" rows="2" required></textarea>
-                <span asp-validation-for="Reason" class="text-danger validation-error-small"></span>
-            </div>
-
-            <!-- Booking for someone else toggle -->
-            <div class="form-group toggle-container-premium">
-                <div class="toggle-header">
-                    <input asp-for="IsForSomeoneElse" type="checkbox" id="forSomeoneElse" class="toggle-checkbox">
-                    <label for="forSomeoneElse" class="toggle-label">Booking for someone else?</label>
-                </div>
-
-                <div id="otherPatientInfo" class="nested-info-box">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-user-circle"></i> Patient Full Name
-                            </label>
-                            <input asp-for="OtherPatientName" class="form-control" />
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="premium-label" asp-for="DoctorName">
+                            <i class="fas fa-user-md"></i> Medical Professional
+                        </label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-search-location"></i>
+                            <select asp-for="DoctorName" class="premium-input" required>
+                                <option value="">Select a Doctor</option>
+                                @if (doctors != null)
+                                {
+                                    @foreach (var doctor in doctors)
+                                    {
+                                        <option value="Dr. @doctor.FirstName @doctor.LastName">Dr. @doctor.FirstName @doctor.LastName (@doctor.Specialization)</option>
+                                    }
+                                }
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-birthday-cake"></i> Patient Date of Birth
-                            </label>
-                            <input asp-for="OtherPatientDOB" type="date" class="form-control" />
+                        <div class="fee-badge-container mt-2" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="badge" style="background: rgba(27, 60, 83, 0.1); color: #1B3C53; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; border: 1px solid rgba(27, 60, 83, 0.2);">
+                                <i class="fas fa-tag me-1"></i> Consultation Fee: Rs. 200
+                            </span>
+                        </div>
+                        <span asp-validation-for="DoctorName" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="AppointmentDate">
+                            <i class="fas fa-calendar-day"></i> Preferred Date
+                        </label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input asp-for="AppointmentDate" type="date" class="premium-input" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <span asp-validation-for="AppointmentDate" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="TimeSlot">
+                            <i class="fas fa-clock"></i> Preferred Time
+                        </label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-stopwatch"></i>
+                            <select asp-for="TimeSlot" class="premium-input" required>
+                                <option value="">Select Time Slot</option>
+                                <option>09:00 AM</option>
+                                <option>10:00 AM</option>
+                                <option>11:00 AM</option>
+                                <option>01:00 PM</option>
+                                <option>02:00 PM</option>
+                                <option>03:00 PM</option>
+                                <option>04:00 PM</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="TimeSlot" class="validation-message"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Patient Information -->
+            <div class="form-section mb-5">
+                <h3 class="form-section-title">
+                    <i class="fas fa-user-injured"></i> Patient Information
+                </h3>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="premium-label" asp-for="PatientName">
+                            <i class="fas fa-id-card"></i> Booking Name
+                        </label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-user"></i>
+                            <input asp-for="PatientName" type="text" class="premium-input" placeholder="Leave empty for self-booking" />
+                        </div>
+                        <span asp-validation-for="PatientName" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="toggle-container-premium">
+                            <div class="toggle-header" onclick="document.getElementById('forSomeoneElse').click()">
+                                <input asp-for="IsForSomeoneElse" type="checkbox" id="forSomeoneElse" class="toggle-checkbox" onclick="event.stopPropagation()">
+                                <label for="forSomeoneElse" class="toggle-label">Booking for someone else?</label>
+                            </div>
+
+                            <div id="otherPatientInfo" class="nested-info-box">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="premium-label">
+                                            <i class="fas fa-user-circle"></i> Other Patient Name
+                                        </label>
+                                        <div class="input-group-premium">
+                                            <i class="fas fa-pen-nib"></i>
+                                            <input asp-for="OtherPatientName" class="premium-input" placeholder="Full Name" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="premium-label">
+                                            <i class="fas fa-birthday-cake"></i> Other Patient DOB
+                                        </label>
+                                        <div class="input-group-premium">
+                                            <i class="fas fa-calendar-days"></i>
+                                            <input asp-for="OtherPatientDOB" type="date" class="premium-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="form-actions-modern">
-                <button type="submit" class="btn-primary-small fw-bold btn-confirm-booking" style="padding: 14px 40px; font-size: 16px;">
-                    <i class="fas fa-check-circle"></i> Confirm Booking
+            <!-- Section 3: Visit Details -->
+            <div class="form-section">
+                <h3 class="form-section-title">
+                    <i class="fas fa-notes-medical"></i> Visit Details
+                </h3>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <label class="premium-label" asp-for="Reason">
+                            <i class="fas fa-comment-medical"></i> Reason for Visit
+                        </label>
+                        <div class="input-group-premium align-items-start">
+                            <i class="fas fa-pen-nib"></i>
+                            <textarea asp-for="Reason" class="premium-input" rows="3" placeholder="Briefly describe the symptoms or reason for this consultation..." required></textarea>
+                        </div>
+                        <span asp-validation-for="Reason" class="validation-message"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-actions-premium">
+                <button type="submit" class="btn-premium-save">
+                    <i class="fas fa-calendar-check"></i> Complete Booking
                 </button>
-                <a href="@cancelUrl" class="btn-primary-small btn-cancel-booking" style="background: #f1f5f9; color: #475569; padding: 14px 40px; font-size: 16px; text-decoration: none; border: 1px solid #e2e8f0; box-shadow: none;">
+                <a href="@cancelUrl" class="btn-premium-cancel">
                     Cancel
                 </a>
             </div>

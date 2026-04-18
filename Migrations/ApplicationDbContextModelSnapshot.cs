@@ -30,6 +30,9 @@ namespace CareFleet.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -43,6 +46,10 @@ namespace CareFleet.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("GoogleId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("bit");
 
@@ -55,7 +62,6 @@ namespace CareFleet.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
@@ -68,7 +74,11 @@ namespace CareFleet.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.HasIndex("GoogleId")
+                        .IsUnique()
+                        .HasFilter("[GoogleId] IS NOT NULL");
+
+                    b.ToTable("Users", "dbo");
                 });
 
             modelBuilder.Entity("CareFleet.Models.Appointment", b =>
@@ -89,6 +99,15 @@ namespace CareFleet.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Fee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("Is1HourReminderSent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Is24HourReminderSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsForSomeoneElse")
                         .HasColumnType("bit");
 
@@ -96,6 +115,9 @@ namespace CareFleet.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("OtherPatientName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PatientEmail")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PatientName")

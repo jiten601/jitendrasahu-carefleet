@@ -10,9 +10,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 
+// ==================== AUTHENTICATION CONFIGURATION ====================
+
+var authBuilder = builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "CareFleetAuth";
+    options.DefaultChallengeScheme = "CareFleetAuth";
+})
+.AddCookie("CareFleetAuth", options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
+
 // Email service
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddHttpContextAccessor();
+
+// Background services
+builder.Services.AddHostedService<AppointmentReminderService>();
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -28,7 +45,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Session (note: 30 minutes)
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // session expires after 30 mins
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -73,29 +90,26 @@ app.UseSession();
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value?.ToLower() ?? "";
-    
-    // Skip session timeout check for login/register pages and static files
-    if (!path.StartsWith("/account/login") && 
-        !path.StartsWith("/account/register") && 
-        !path.StartsWith("/css") && 
-        !path.StartsWith("/js") && 
+
+    if (!path.StartsWith("/account/login") &&
+        !path.StartsWith("/account/register") &&
+        !path.StartsWith("/css") &&
+        !path.StartsWith("/js") &&
         !path.StartsWith("/images"))
     {
         var userEmail = context.Session.GetString("UserEmail");
         var sessionCreatedAt = context.Session.GetString("SessionCreatedAt");
 
-        // If user is logged in, check session age
         if (!string.IsNullOrEmpty(userEmail) && !string.IsNullOrEmpty(sessionCreatedAt))
         {
             if (DateTime.TryParse(sessionCreatedAt, out DateTime createdTime))
             {
                 var sessionAge = DateTime.Now - createdTime;
 
-                // If session is older than 30 minutes, clear it and redirect
                 if (sessionAge.TotalMinutes > 30)
                 {
                     context.Session.Clear();
-                    context.Response.Cookies.Delete("CareFleetAuth"); // Prevent auto-login from restoring session
+
                     context.Response.Redirect("/Account/Login");
                     return;
                 }
@@ -109,7 +123,6 @@ app.Use(async (context, next) =>
 // -------------------- AUTO LOGIN (REMEMBER ME) --------------------
 app.Use(async (context, next) =>
 {
-    // If session is empty
     if (string.IsNullOrEmpty(context.Session.GetString("UserEmail")))
     {
         var authCookie = context.Request.Cookies["CareFleetAuth"];
@@ -124,7 +137,6 @@ app.Use(async (context, next) =>
 
             if (user != null)
             {
-                // Restore session with timestamp
                 context.Session.SetString("UserEmail", user.Email);
                 context.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
                 context.Session.SetString("UserRole", user.Role);
@@ -132,7 +144,6 @@ app.Use(async (context, next) =>
             }
             else
             {
-                // Invalid cookie
                 context.Response.Cookies.Delete("CareFleetAuth");
             }
         }
@@ -141,6 +152,65 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// -------------------- AUTHENTICATION ENFORCEMENT --------------------
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value?.ToLower() ?? "";
+
+    // Public paths that do not require authentication
+    var publicPaths = new[] {
+        "/",
+        "/home",
+        "/home/index",
+        "/home/privacy",
+        "/home/about",
+        "/home/services",
+        "/home/error",
+        "/account/login",
+        "/account/register",
+        "/account/verifyotp",
+        "/account/forgotpassword",
+        "/account/resetpassword",
+        "/account/changepassword"
+    };
+
+    // Check if current path is public
+    bool isPublic = publicPaths.Any(p => path == p || path.StartsWith(p + "/"));
+
+    // Skip static files (extra safety, though UseStaticFiles usually handles these)
+    bool isStatic = path.StartsWith("/css") || 
+                    path.StartsWith("/js") || 
+                    path.StartsWith("/images") || 
+                    path.StartsWith("/lib") ||
+                    path.EndsWith(".css") ||
+                    path.EndsWith(".js") ||
+                    path.Contains(".styles.css");
+
+    if (!isPublic && !isStatic)
+    {
+        var userEmail = context.Session.GetString("UserEmail");
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            // Set LastVisitedPath so they can be redirected back after login
+            var returnUrl = context.Request.Path + context.Request.QueryString;
+            
+            // Avoid setting login/register paths as return URL
+            if (!path.Contains("/account/login") && !path.Contains("/account/register"))
+            {
+                context.Response.Cookies.Append("LastVisitedPath", returnUrl);
+            }
+            
+            context.Response.Redirect("/Account/Login");
+            return;
+        }
+    }
+
+    await next();
+});
+
+// Authentication
+app.UseAuthentication();
+
 // Authorization
 app.UseAuthorization();
 
@@ -148,8 +218,9 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}"
+    pattern: "{controller=Home}/{action=Index}/{id?}"
 );
+
 app.MapHub<VideoCallHub>("/videoCallHub");
 
 app.Run();

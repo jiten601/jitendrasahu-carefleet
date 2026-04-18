@@ -138,14 +138,17 @@ namespace CareFleet.Controllers
             return View(invoices);
         }
 
-        // POST: Billing/CreateAppointmentInvoice
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAppointmentInvoice(int appointmentId, decimal amount = 50.00m)
+        public async Task<IActionResult> CreateAppointmentInvoice(int appointmentId, decimal? amount = null)
         {
             var userRole = HttpContext.Session.GetString("UserRole");
-            if (userRole != "Doctor" && userRole != "Admin")
-                return Json(new { success = false, message = "Unauthorized" });
+            // Case-insensitive role check
+            if (!string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase) && 
+                !string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = false, message = "Unauthorized: Access Denied" });
+            }
 
             // Check if invoice already exists for this appointment
             var existingInvoice = await _context.Invoices.FirstOrDefaultAsync(i => i.AppointmentId == appointmentId);
@@ -154,16 +157,35 @@ namespace CareFleet.Controllers
                 return Json(new { success = false, message = "An invoice already exists for this appointment." });
             }
 
-            var appointment = await _context.Set<Appointment>().FindAsync(appointmentId);
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
             if (appointment == null) return Json(new { success = false, message = "Appointment not found." });
 
-            // Find patient by name
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => (p.FirstName + " " + p.LastName) == appointment.PatientName);
-            if (patient == null) return Json(new { success = false, message = "Patient record not found." });
+            // Use appointment fee if amount not provided
+            decimal finalAmount = amount ?? appointment.Fee;
+            if (finalAmount <= 0) finalAmount = 50.00m; // Fallback
+
+            // Find patient reliably using Email first
+            Patient patient = null;
+            if (!string.IsNullOrEmpty(appointment.PatientEmail))
+            {
+                patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == appointment.PatientEmail);
+            }
+
+            // Fallback to flexible name matching
+            if (patient == null && !string.IsNullOrEmpty(appointment.PatientName))
+            {
+                var normalizedName = appointment.PatientName.ToLower().Trim();
+                var allPatients = await _context.Patients.ToListAsync();
+                patient = allPatients.FirstOrDefault(p => 
+                    (p.FirstName + " " + p.LastName).ToLower().Contains(normalizedName) || 
+                    normalizedName.Contains((p.FirstName + " " + p.LastName).ToLower()));
+            }
+
+            if (patient == null) return Json(new { success = false, message = "Patient record not found. Please ensure the patient profile exists." });
 
             try
             {
-                await GenerateInvoice(_context, patient.Id, appointmentId, amount);
+                await GenerateInvoice(_context, patient.Id, appointmentId, finalAmount);
                 return Json(new { success = true, message = "Invoice generated successfully!" });
             }
             catch (Exception ex)

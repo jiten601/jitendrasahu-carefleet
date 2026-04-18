@@ -284,8 +284,7 @@
                                 <div>
                                     <p class="mb-0 fw-bold">Security Best Practices</p>
                                     <p class="mb-0 opacity-75">
-                                        Use a unique password of at least 12 characters and enable
-                                        two-factor authentication for extra protection.
+                                        Use a unique password of at least 12 characters to ensure maximum protection for your account.
                                     </p>
                                 </div>
                             </div>
@@ -298,26 +297,11 @@
                                     <h5>Account Password</h5>
                                     <p>Keep your password strong and change it regularly.</p>
                                 </div>
-                                <button type="button"
-                                        class="btn btn-outline-primary btn-sm px-4 rounded-pill"
-                                        style="margin-left:auto;" disabled>
+                                <a href="@Url.Action("ChangePassword", "Account")"
+                                   class="btn btn-outline-primary btn-sm px-4 rounded-pill"
+                                   style="margin-left:auto;">
                                     Update
-                                </button>
-                            </div>
-
-                            <div class="security-item">
-                                <div class="security-item-icon">
-                                    <i class="fas fa-fingerprint"></i>
-                                </div>
-                                <div class="security-item-content">
-                                    <h5>Two-Factor Authentication</h5>
-                                    <p>Add an extra layer of protection to your account.</p>
-                                </div>
-                                <button type="button"
-                                        class="btn btn-primary btn-sm px-4 rounded-pill"
-                                        style="margin-left:auto;" disabled>
-                                    Enable
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>

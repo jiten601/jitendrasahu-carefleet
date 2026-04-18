@@ -7,100 +7,139 @@
     ViewBag.HideHeader = true;
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" />
+    <link rel="stylesheet" href="~/css/admin-premium-forms.css" />
 }
 
-<div class="fade-in">
+<div class="premium-admin-container">
     <!-- Premium Header Card -->
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-bold text-white mb-2">Add New Doctor</h1>
-                <p class="text-white-50 mb-0">Register a new healthcare professional to the system</p>
+                <h1 class="header-title-main">Register New Doctor</h1>
+                <p class="header-subtitle"><i class="fas fa-user-plus me-2"></i> Add a healthcare professional to the CareFleet medical network</p>
             </div>
             <div class="header-actions">
                 <a href="@Url.Action("Doctors", "Admin")" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                    <i class="fas fa-arrow-left me-2"></i> Back to Doctors List
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
+    <div class="premium-form-container">
+        <div class="premium-glass-card">
+            <h2 class="form-section-title">
+                <i class="fas fa-stethoscope text-primary"></i> Medical Practitioner Registration
+            </h2>
 
-<div class="form-container">
-    <form asp-action="AddDoctor" method="post">
-        @Html.AntiForgeryToken()
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="FirstName">
-                    <i class="fas fa-user"></i> First Name
-                </label>
-                <input asp-for="FirstName" class="form-control" required />
-                <span asp-validation-for="FirstName" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-            <div class="form-group">
-                <label class="form-label" asp-for="LastName">
-                    <i class="fas fa-user"></i> Last Name
-                </label>
-                <input asp-for="LastName" class="form-control" required />
-                <span asp-validation-for="LastName" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+            <form asp-action="AddDoctor" method="post">
+                @Html.AntiForgeryToken()
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="Email">
-                    <i class="fas fa-envelope"></i> Email Address
-                </label>
-                <input asp-for="Email" type="email" class="form-control" required />
-                <span asp-validation-for="Email" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-            <div class="form-group">
-                <label class="form-label" asp-for="PhoneNumber">
-                    <i class="fas fa-phone"></i> Phone Number
-                </label>
-                <input asp-for="PhoneNumber" class="form-control" required />
-                <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="FirstName">First Name</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-user-md"></i>
+                            <input asp-for="FirstName" class="premium-input" placeholder="e.g. Ram" required />
+                        </div>
+                        <span asp-validation-for="FirstName" class="validation-message"></span>
+                    </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="Specialization">
-                    <i class="fas fa-stethoscope"></i> Specialization
-                </label>
-                <select asp-for="Specialization" class="form-control" required>
-                    <option value="">Select Specialization</option>
-                    <option value="Cardiology">Cardiology</option>
-                    <option value="Dermatology">Dermatology</option>
-                    <option value="Neurology">Neurology</option>
-                    <option value="Pediatrics">Pediatrics</option>
-                    <option value="General Medicine">General Medicine</option>
-                    <option value="Orthopedics">Orthopedics</option>
-                </select>
-                <span asp-validation-for="Specialization" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-            <div class="form-group">
-                <label class="form-label" asp-for="LicenseNumber">
-                    <i class="fas fa-id-card"></i> License Number
-                </label>
-                <input asp-for="LicenseNumber" class="form-control" required />
-                <span asp-validation-for="LicenseNumber" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="LastName">Last Name</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-user-tag"></i>
+                            <input asp-for="LastName" class="premium-input" placeholder="e.g. Bista" required />
+                        </div>
+                        <span asp-validation-for="LastName" class="validation-message"></span>
+                    </div>
+                </div>
 
-        <div style="margin-top: 40px; display: flex; gap: 20px;">
-            <button type="submit" class="btn-primary-small fw-bold" style="padding: 14px 40px; font-size: 16px;">
-                <i class="fas fa-save"></i> Register Doctor
-            </button>
-            <button type="reset" class="btn-primary-small" style="background: #f1f5f9; color: #475569; padding: 14px 40px; font-size: 16px; border: 1px solid #e2e8f0; box-shadow: none;">
-                Clear Form
-            </button>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Email">Email Address</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-envelope"></i>
+                            <input asp-for="Email" type="email" class="premium-input" placeholder="doctor@carefleet.com" required />
+                        </div>
+                        <span asp-validation-for="Email" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="PhoneNumber">Contact Number</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-phone"></i>
+                            <input asp-for="PhoneNumber" class="premium-input" placeholder="+977 98000-0000" required />
+                        </div>
+                        <span asp-validation-for="PhoneNumber" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Specialization">Medical Specialization</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-briefcase-medical"></i>
+                            <select asp-for="Specialization" class="premium-input" required>
+                                <option value="">Select Field...</option>
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Dermatology">Dermatology</option>
+                                <option value="Neurology">Neurology</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="General Medicine">General Medicine</option>
+                                <option value="Orthopedics">Orthopedics</option>
+                                <option value="Gastroenterology">Gastroenterology</option>
+                                <option value="Oncology">Oncology</option>
+                                <option value="Psychiatry">Psychiatry</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Specialization" class="validation-message"></span>
+                    </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="LicenseNumber">Government License No.</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-id-card"></i>
+                            <input asp-for="LicenseNumber" class="premium-input" placeholder="e.g. LIC-123456" required />
+                        </div>
+                        <span asp-validation-for="LicenseNumber" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label">Account Password</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" name="password" class="premium-input" placeholder="Set temporary password" required />
+                        </div>
+                        @if (ViewData.ModelState["Password"]?.Errors.Count > 0)
+                        {
+                            <span class="text-danger small">@ViewData.ModelState["Password"].Errors[0].ErrorMessage</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-actions-premium">
+                    <button type="submit" class="btn-premium-save">
+                        <i class="fas fa-plus-circle"></i> Register Doctor
+                    </button>
+                    <button type="reset" class="btn-premium-cancel">
+                        Reset Form
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
-</div>
 
+<style>
+    /* Specific page adjustments if needed */
+    .premium-form-container {
+        max-width: 900px;
+        margin-top: -15px;
+    }
+</style>

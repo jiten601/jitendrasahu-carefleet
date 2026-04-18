@@ -24,6 +24,11 @@
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="sidebar-toggle-mobile" id="sidebarToggleMobile">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -93,7 +98,6 @@
                         <div class="avatar">@initials.ToUpper()</div>
                         <i class="fas fa-chevron-down ms-2"></i>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3" id="userMenu">
-                            @* <li><h6 class="dropdown-header">@firstName @lastName</h6></li> *@
                             <li><a class="dropdown-item" href="@Url.Action("Profile", "Patient")"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
@@ -207,9 +211,9 @@
                 e.stopPropagation();
                 const dropdown = this.parentElement.querySelector('.notiDropdown');
                 const isShowing = dropdown.classList.contains('show');
-                
+
                 document.querySelectorAll('.notiDropdown.show').forEach(d => d.classList.remove('show'));
-                
+
                 if (!isShowing) {
                     dropdown.classList.add('show');
                     fetchNotifications();
@@ -232,6 +236,29 @@
                 document.cookie = "LastVisitedPath=" + currentPath + ";expires=" + expires.toUTCString() + ";path=/";
             }
         });
+
+        // Sidebar Toggle Logic for Mobile
+        const sidebarToggle = document.getElementById('sidebarToggleMobile');
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                const icon = sidebarToggle.querySelector('i');
+                if (sidebar.classList.contains('active')) {
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    sidebarToggle.querySelector('i').classList.replace('fa-times', 'fa-bars');
+                }
+            });
+        }
     </script>
     <partial name="_VideoCallModal" />
     @await RenderSectionAsync("Scripts", required: false)

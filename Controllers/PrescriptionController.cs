@@ -23,11 +23,11 @@ namespace CareFleet.Controllers
         {
             SetUserInfo();
             var userRole = HttpContext.Session.GetString("UserRole");
-            if (userRole != "Doctor") return RedirectToAction("Login", "Account");
+            if (!string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase)) return RedirectToAction("Login", "Account");
 
             var doctorEmail = HttpContext.Session.GetString("UserEmail");
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == doctorEmail);
-            if (doctor == null) return Unauthorized();
+            if (doctor == null) return RedirectToAction("Login", "Account");
             ViewBag.Doctor = doctor;
 
             if (appointmentId != null)
@@ -35,9 +35,14 @@ namespace CareFleet.Controllers
                 var appointment = await _context.Appointments.FindAsync(appointmentId);
                 if (appointment == null) return NotFound();
 
-                if (appointment.DoctorName != (doctor.FirstName + " " + doctor.LastName))
+                var fullName = (doctor.FirstName + " " + doctor.LastName).ToLower();
+                var apptDoctorName = appointment.DoctorName.ToLower();
+
+                // Flexible check: either direct match or contains (to handle "Dr. " prefix)
+                if (!apptDoctorName.Contains(fullName) && !fullName.Contains(apptDoctorName.Replace("dr. ", "").Trim()))
                 {
-                    return Unauthorized();
+                    TempData["Error"] = "You are not authorized to prescribe for this appointment.";
+                    return RedirectToAction("Dashboard", "Doctor");
                 }
 
                 var patient = await _context.Patients.FirstOrDefaultAsync(p => p.FirstName + " " + p.LastName == appointment.PatientName);
@@ -83,7 +88,7 @@ namespace CareFleet.Controllers
         public async Task<IActionResult> Create(int patientId, int doctorId, int? appointmentId, string notes, List<PrescriptionItem> items)
         {
             var userRole = HttpContext.Session.GetString("UserRole");
-            if (userRole != "Doctor") return Json(new { success = false, message = "Unauthorized" });
+            if (!string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase)) return Json(new { success = false, message = "Session expired or unauthorized. Please login again." });
 
             if (items == null || !items.Any())
             {
@@ -208,11 +213,19 @@ namespace CareFleet.Controllers
 
             if (userRole == "Patient")
             {
-                if (prescription.Patient?.Email != userEmail) return Unauthorized();
+                if (!string.Equals(prescription.Patient?.Email, userEmail, StringComparison.OrdinalIgnoreCase)) 
+                {
+                    TempData["Error"] = "You are not authorized to view this prescription.";
+                    return RedirectToAction("MyPrescriptions");
+                }
             }
             else if (userRole == "Doctor")
             {
-                if (prescription.Doctor?.Email != userEmail) return Unauthorized();
+                if (!string.Equals(prescription.Doctor?.Email, userEmail, StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["Error"] = "You do not have permission to view prescriptions for this patient.";
+                    return RedirectToAction("MyPrescriptions");
+                }
             }
 
             return View(prescription);

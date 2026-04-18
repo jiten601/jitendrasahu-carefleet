@@ -55,6 +55,27 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile Sidebar Toggle Button Styles */
+.sidebar-toggle-mobile {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    width: 45px;
+    height: 45px;
+    background: var(--primary-dark);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
 }
 
 .sidebar-header {
@@ -113,6 +134,7 @@ body {
     margin-left: 280px;
     position: relative;
     padding: 0;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Header Styles */
@@ -325,5 +347,69 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Responsive Dashboard Adjustments */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle-mobile {
+        display: flex;
+    }
+
+    .content-header {
+        padding: 1.5rem 1.5rem 1.5rem 5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .dashboard-content {
+        padding: 0 20px 20px;
+    }
+
+    .premium-header-card {
+        padding: 2rem !important;
+    }
+
+    .header-card-content {
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .user-profile span {
+        display: none;
+    }
+
+    .activity-table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .activity-table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 576px) {
+    .premium-header-card h1 {
+        font-size: 1.75rem;
     }
 }

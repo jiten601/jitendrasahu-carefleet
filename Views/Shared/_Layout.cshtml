@@ -1,83 +1,163 @@
-﻿<!DOCTYPE html>
+@using Microsoft.AspNetCore.Http
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Site Verification -->
+    <meta name="google-site-verification" content="urnEcC0JhHwtVZ62BQhBivBddFTT9RSwdWwqZBtZk4Q" />
     <title>@ViewData["Title"] - CareFleet</title>
+
+    <!-- Premium Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Core Styling -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CareFleet.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light fixed-top mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CareFleet</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+        <nav class="glass-nav fixed-top">
+            <div class="nav-container">
+                <a href="/" class="d-flex align-items-center gap-2 text-decoration-none">
+                    <img src="~/images/FinalLogo.png" alt="CareFleet Logo" style="height: 42px; width: auto;" />
+                    <span class="nav-logo-text">CareFleet</span>
+                </a>
+
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-nav-toggle" id="mobileNavToggle">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-primary text-white ms-md-3 px-4" asp-area="" asp-controller="Account" asp-action="Login">Sign In</a>
-                        </li>
-                    </ul>
+
+                <div class="nav-links-wrapper" id="navLinks">
+                    <a href="/Home/Index" class="nav-link-custom">Home</a>
+                    <a href="/Home/About" class="nav-link-custom">About</a>
+                    <a href="/Home/Services" class="nav-link-custom">Services</a>
+
+                    @if (Context.Session.GetString("UserEmail") != null)
+                    {
+                        <div class="d-flex align-items-center gap-3 ms-lg-4">
+                            <a href="/Account/Login" class="btn-join-primary" style="padding: 10px 25px; border-radius: 100px; background: var(--primary-blue); border: none;">Dashboard</a>
+                            <a href="/Account/Logout" class="text-danger small fw-800 text-decoration-none hvr-opacity">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center gap-4 ms-lg-4">
+                            <a href="/Account/Login" class="nav-link-custom text-dark fw-bold">Login</a>
+                            <a href="/Account/Register" class="btn-join-primary">Register</a>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    
-    <div style="margin-top: 100px;">
-        <main role="main" class="pb-3">
-            <div class="container">
-                @RenderBody()
-            </div>
-        </main>
-    </div>
 
-    <footer class="footer text-muted mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5 class="text-dark fw-bold mb-3">CareFleet</h5>
-                    <p class="small">Your trusted partner in healthcare management. Making clinical care accessible and efficient for everyone.</p>
+    <main role="main" style="padding-top: 100px; min-height: 80vh;">
+        @RenderBody()
+    </main>
+
+    <footer class="footer-premium">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-info-section">
+                    <div class="d-flex align-items-center gap-2 mb-4">
+                        <img src="~/images/FinalLogo.png" alt="Logo" style="height: 35px; width: auto;" />
+                        <h3 class="nav-logo-text mb-0" style="font-size: 1.5rem; background: none; -webkit-text-fill-color: var(--primary-dark);">CareFleet</h3>
+                    </div>
+                    <p class="text-secondary line-height-lg mb-5" style="max-width: 320px; font-size: 1rem;">
+                        Pioneering the future of medical administration. We provide the tools healthcare providers need to focus on what matters most: patient care.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" title="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                        <a href="#" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <h6 class="text-dark fw-bold mb-3">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
-                    </ul>
+                
+                <div class="footer-links-column">
+                    <h4 class="footer-title">Company</h4>
+                    <a href="/" class="footer-link">Home</a>
+                    <a href="/Home/About" class="footer-link">About Us</a>
+                    <a href="/Home/Services" class="footer-link">Services</a>
+                    <a href="/Home/Privacy" class="footer-link">Privacy & Security</a>
                 </div>
-                <div class="col-md-3 text-md-end">
-                    <p class="mb-0">&copy; 2025 CareFleet Inc.</p>
-                    <p class="small text-secondary">All rights reserved.</p>
+
+                <div class="footer-links-column">
+                    <h4 class="footer-title">Support</h4>
+
+                    <div class="footer-contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <a href="http://maps.google.com/maps?q=Inaruwa" target="_blank">Inaruwa</a>
+                    </div>
+
+                    <div class="footer-contact-item">
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:+9779814302810">+977 9814302810</a>
+                    </div>
+
+                    <div class="footer-contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:jitenshah601@gmail.com">jitenshah601@gmail.com</a>
+                    </div>
                 </div>
+
+                <div class="footer-links-column">
+                    <h4 class="footer-title">Get Access</h4>
+                    <a href="/Account/Login" class="footer-link">Login</a>
+                    <a href="/Account/Register" class="footer-link">Register</a>
+                </div>
+            </div>
+
+            <div class="copyright-bar text-center">
+                <p class="text-secondary small mb-0 fw-500">&copy; @DateTime.Now.Year CareFleet All Right Reserved.</p>
             </div>
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-        // Track last visited page for "Remember Me" functionality
+        // Mobile Navigation Toggle
+        const toggleBtn = document.getElementById('mobileNavToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        if (toggleBtn && navLinks) {
+            toggleBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                const icon = toggleBtn.querySelector('i');
+                if (navLinks.classList.contains('active')) {
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!navLinks.contains(e.target) && !toggleBtn.contains(e.target) && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    toggleBtn.querySelector('i').classList.replace('fa-times', 'fa-bars');
+                }
+            });
+        }
+
+        // Track last visited page for "Remember Me" logic
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
             if (currentPath && !currentPath.includes('/Account/')) {
                 const expires = new Date();
-                expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days
+                expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000));
                 document.cookie = "LastVisitedPath=" + currentPath + ";expires=" + expires.toUTCString() + ";path=/";
             }
         });

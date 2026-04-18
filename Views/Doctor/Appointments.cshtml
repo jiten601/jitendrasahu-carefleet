@@ -1,246 +1,259 @@
 @model IEnumerable<CareFleet.Models.Appointment>
 @{
-    ViewData["Title"] = "Appointments";
+    ViewData["Title"] = "Doctor's Schedule";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewBag.ActivePage = "Appointments";
+    ViewBag.HeaderTitle = "System Appointments";
     ViewBag.HideHeader = true;
 }
-@Html.AntiForgeryToken()
 
-<!-- Premium Header Card -->
-<div class="doctor-appointments-page fade-in">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/doctor-appointments.css" asp-append-version="true" />
+}
+
+<div class="premium-admin-container doctor-appointments-page mt-2">
+    <!-- Premium Header Card (Admin Style) -->
     <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-800 text-white mb-0">Appointment Schedule</h1>
+                <h1 class="header-title-main">Clinical Schedule</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-user-md me-2"></i>
+                    Track and manage your upcoming patient consultations
+                </p>
+
+                <div class="header-stats-container d-flex gap-3 mt-4">
+                    <div class="glass-stat-badge">
+                        <span class="stat-label">Total Appointments</span>
+                        <span class="stat-value">@ViewBag.TotalAppointments</span>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
-                <div class="btn-group shadow-sm bg-white rounded-3 p-1">
-                    <button class="btn btn-sm px-4 fw-bold rounded-3 active-toggle">All</button>
-                    <button class="btn btn-sm px-4 fw-bold rounded-3 text-secondary">Today</button>
-                </div>
+                <form method="get" asp-action="Appointments" id="dateFilterForm" class="d-flex align-items-center gap-3">
+                    <input type="hidden" name="searchString" value="@ViewBag.CurrentFilter" />
+                    <input type="hidden" name="statusFilter" value="@ViewBag.StatusFilter" />
+                    <input type="hidden" name="dateFilter" id="dateFilterInput" value="@ViewBag.DateFilter" />
+                    
+                    <div class="filter-group-wrapper shadow-sm">
+                        <button type="button" class="btn btn-sm filter-btn @(ViewBag.DateFilter == "All" || string.IsNullOrEmpty(ViewBag.DateFilter) ? "active" : "")" onclick="applyDateFilter('All')">All</button>
+                        <button type="button" class="btn btn-sm filter-btn @(ViewBag.DateFilter == "Today" ? "active" : "")" onclick="applyDateFilter('Today')">Today</button>
+                    </div>
+                </form>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-    <!-- Main Content -->
-    <div class="premium-card rounded-4 overflow-hidden">
-
-        <!-- Header -->
-        <div class="card-header-premium d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 px-4 py-3">
-            <div class="d-flex align-items-center">
-                <div class="header-icon-container me-3">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-
-                <div>
-                    <h5 class="fw-800 fw-semibold">Scheduled Consultations</h5>
-                    <div class="d-flex align-items-center mt-1">
-                        <span class="badge bg-primary-subtle text-primary fw-700 px-2 py-1 rounded-pill small">
-                            @(Model != null ? Model.Count() : 0) Total Appointments
-                        </span>
-
-                        @if (ViewBag.CurrentFilter != null)
-                        {
-                            <span class="ms-2 badge bg-light text-secondary border fw-600 px-1 py-1 rounded-pill small">
-                                Filtered by: "@ViewBag.CurrentFilter"
-                            </span>
-                        }
-                    </div>
-                </div>
+    <!-- Search & Filter Bar (Admin Style) -->
+    <form method="get" asp-action="Appointments" id="filterForm">
+        <input type="hidden" name="dateFilter" value="@ViewBag.DateFilter" />
+        <div class="search-filter-section mb-4">
+            <div class="search-input-wrapper flex-grow-1">
+                <i class="fas fa-search"></i>
+                <input type="text" name="searchString" id="appointmentSearch"
+                       value="@ViewBag.CurrentFilter"
+                       placeholder="Search patient records..."
+                       class="premium-search-input">
             </div>
-
-            <!-- Search -->
-            <div class="search-container-premium">
-                <form asp-action="Appointments" method="get" class="m-0">
-                    <div class="search-input-group">
-                        <i class="fas fa-search search-form-icon"></i>
-                        <input type="text"
-                               name="searchString"
-                               value="@ViewBag.CurrentFilter"
-                               class="form-control premium-search-input"
-                               placeholder="Search by patient name..."
-                               onblur="if(this.value !== '@ViewBag.CurrentFilter') this.form.submit()"
-                               onkeypress="if(event.keyCode == 13) { this.form.submit(); return false; }">
-
-                        @if (!string.IsNullOrEmpty(ViewBag.CurrentFilter))
-                        {
-                            <a href="@Url.Action("Appointments")" class="clear-search-btn" title="Clear Filter">
-                                <i class="fas fa-times-circle"></i>
-                            </a>
-                        }
-                    </div>
-                </form>
+            <div class="filter-actions">
+                <select name="statusFilter" id="statusFilter" class="btn-filter" style="outline: none; cursor: pointer; min-width: 150px;" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
+                    <option value="Confirmed" selected="@(ViewBag.StatusFilter == "Confirmed")">Confirmed</option>
+                    <option value="Completed" selected="@(ViewBag.StatusFilter == "Completed")">Completed</option>
+                    <option value="Cancelled" selected="@(ViewBag.StatusFilter == "Cancelled")">Cancelled</option>
+                </select>
+                <a href="@Url.Action("Appointments")" class="btn-filter text-decoration-none">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
             </div>
         </div>
+    </form>
 
-        <!-- Table -->
-        <div class="card-body-premium p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light border-bottom border-1">
-                        <tr>
-                            <th class="px-5 py-4 border-0 small text-uppercase fw-bold">Patient Name</th>
-                            <th class="py-3 border-0 small text-uppercase fw-bold">Date & Time</th>
-                            <th class="py-3 border-0 small text-uppercase fw-bold">Reason</th>
-                            <th class="py-3 border-0 small text-uppercase fw-bold">Status</th>
-                            <th class="py-3 px-4 border-0 small text-uppercase fw-bold text-center">Action</th>
-                        </tr>
-                    </thead>
+    <!-- Table Glass Wrapper (Admin Style) -->
+    <div class="table-glass-wrapper shadow-lg overflow-visible">
+        <table class="premium-table" id="appointmentsTable">
+            <thead>
+                <tr>
+                    <th class="ps-5">Schedule</th>
+                    <th>Patient Name</th>
+                    <th>Reason</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center pe-5">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        var initials = !string.IsNullOrEmpty(item.PatientName) ?
+                        string.Join("", item.PatientName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(n => n[0])).ToUpper() : "PA";
 
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td class="px-4">
-                                        <div class="d-flex align-items-center gap-3">
-                                            @{
-                                                var nameParts = item.PatientName?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                                                var initials = (nameParts != null && nameParts.Length > 0)
-                                                ? string.Join("", nameParts.Select(p => p[0]))
-                                                : "PA";
-                                            }
+                        <tr class="appointment-row" data-date="@item.AppointmentDate.ToString("MMM dd, yyyy")">
+                            <td class="ps-5">
+                                <div class="patient-info">
+                                    <span class="patient-name">@item.AppointmentDate.ToString("MMM dd, yyyy")</span>
+                                    <span class="patient-id text-primary"><i class="far fa-clock me-1"></i> @item.TimeSlot</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="patient-identity">
+                                    <div class="patient-avatar">
+                                        @initials.Substring(0, Math.Min(2, initials.Length))
+                                    </div>
+                                    <div class="patient-info">
+                                        <span class="patient-name">@item.PatientName</span>
+                                        <span class="patient-id">ID: #AC-@item.Id.ToString("D4")</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="history-badge fw-600 truncate-text" title="@item.Reason">
+                                    @(string.IsNullOrEmpty(item.Reason) ? "General Consultation" : item.Reason)
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="status-pill @item.Status.ToLower()">
+                                    <i class="fas fa-circle small me-1 opacity-75"></i> @item.Status
+                                </span>
+                            </td>
+                            <td class="pe-5">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <a href="@Url.Action("AppointmentDetails", "Doctor", new { id = item.Id })"
+                                       class="btn-action-premium edit" title="Full Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
 
-                                            <div class="avatar-sm-circle bg-primary-subtle text-primary fw-bold">
-                                                @initials.ToUpper()
-                                            </div>
-
-                                            <div>
-                                                <div class="patient-name">@item.PatientName</div>
-                                                <small class="text-muted">Appointment Details</small>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td>
-                                        <div class="text-dark text-secondary">@item.AppointmentDate.ToString("MMM dd, yyyy")</div>
-                                        <div class="small text-secondary">@item.AppointmentDate.ToString("hh:mm tt")</div>
-                                    </td>
-
-                                    <td class="small text-secondary fw-medium">@item.Reason</td>
-
-                                    <td>
-                                        @{
-                                            var statusClass = item.Status switch
+                                    <div class="dropdown">
+                                        <button class="btn-action-premium view dropdown-toggle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-edit me-1"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2">
+                                            <li class="px-3 py-2 dropdown-header small text-uppercase fw-800 text-muted">Quick Update</li>
+                                            @foreach (var status in new[] { "Confirmed", "Completed", "Pending", "Cancelled" })
                                             {
-                                                "Confirmed" => "bg-success-subtle text-success border-success",
-                                                "Pending" => "bg-warning-subtle text-warning border-warning",
-                                                "Cancelled" => "bg-danger-subtle text-danger border-danger",
-                                                _ => "bg-info-subtle text-info border-info"
-                                            };
-                                        }
-                                        <span class="badge @statusClass border border-opacity-10 px-3 py-2">
-                                            @item.Status
-                                        </span>
-                                    </td>
+                                                <li>
+                                                    <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
+                                                        <input type="hidden" name="appointmentId" value="@item.Id" />
+                                                        <input type="hidden" name="status" value="@status" />
+                                                        <button type="submit" class="dropdown-item py-2 px-3 rounded-2 small fw-600 @(item.Status == status ? "text-primary bg-light" : "")">
+                                                            Mark as @status
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            }
+                                            <li><hr class="dropdown-divider opacity-50"></li>
+                                            <li>
+                                                <a href="@Url.Action("Create", "Prescription", new { appointmentId = item.Id })" class="dropdown-item py-2 px-3 rounded-2 small fw-600 text-primary">
+                                                    <i class="fas fa-file-medical me-2"></i> Issue Prescription
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0)" onclick="createManualBill(@item.Id)" class="dropdown-item py-2 px-3 rounded-2 small fw-600 text-dark">
+                                                    <i class="fas fa-file-invoice-dollar me-2"></i> Generate Bill
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 100px;">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times mb-4" style="font-size: 4.5rem; color: #cbd5e1; opacity: 0.4;"></i>
+                                <h3 style="color: #64748b; font-family: 'Outfit', sans-serif; font-weight: 700;">No Appointments Found</h3>
+                                <p style="color: #94a3b8; font-weight: 500;">No clinical consultations match your current filter criteria.</p>
+                                <a href="@Url.Action("Appointments")" class="btn btn-primary mt-3">Clear All Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-                                    <td class="px-4">
-                                        <div class="d-flex align-items-center justify-content-center gap-2">
-                                            <a href="@Url.Action("AppointmentDetails", "Doctor", new { id = item.Id })"
-                                               class="btn-action-view"
-                                               title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                                <span>View</span>
-                                            </a>
+        <!-- Premium Pagination -->
+        @if (ViewBag.TotalAppointments > 0)
+        {
+            <div class="premium-pagination-container">
+                <div class="pagination-info">
+                    @{
+                        int start = (ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1;
+                        int end = Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalAppointments);
+                    }
+                    Showing <span class="text-dark fw-bold">@start</span> to <span class="text-dark fw-bold">@end</span> of <span class="text-dark fw-bold">@ViewBag.TotalAppointments</span> appointments
+                </div>
+                
+                <div class="pagination-controls">
+                    <a href="@Url.Action("Appointments", new { page = ViewBag.CurrentPage - 1, searchString = ViewBag.CurrentFilter, statusFilter = ViewBag.StatusFilter, dateFilter = ViewBag.DateFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage <= 1 ? "disabled" : "")" title="Previous Page">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
 
-                                            <div class="dropdown">
-                                                <button class="btn-action-status dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-edit me-1"></i> Status
-                                                </button>
-
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
-                                                    <li class="dropdown-header small text-uppercase fw-bold text-muted">
-                                                        Update Status
-                                                    </li>
-
-                                                    @foreach (var status in new[] { "Confirmed", "Completed", "Pending", "Cancelled" })
-                                                    {
-                                                        <li>
-                                                            <form method="post" action="@Url.Action("UpdateAppointmentStatus", "Doctor")">
-                                                                  <input type="hidden" name="appointmentId" value="@item.Id" />
-                                                                  <input type="hidden" name="status" value="@status" />
-                                                                  <button type="submit" class="dropdown-item py-2">@status</button>
-                                                            </form>
-                                                        </li>
-                                                    }
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li>
-                                                        <a href="@Url.Action("Create", "Prescription", new { appointmentId = item.Id })" class="dropdown-item py-2 text-primary fw-bold">
-                                                            <i class="fas fa-file-prescription me-2"></i>Issue Prescription
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)" onclick="createManualBill(@item.Id)" class="dropdown-item py-2 text-dark fw-bold">
-                                                            <i class="fas fa-file-invoice-dollar me-2"></i>Create Bill
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                            {
+                                <a href="@Url.Action("Appointments", new { page = i, searchString = ViewBag.CurrentFilter, statusFilter = ViewBag.StatusFilter, dateFilter = ViewBag.DateFilter })" 
+                                   class="page-link-premium @(ViewBag.CurrentPage == i ? "active" : "")">@i</a>
+                            }
+                            else if (i == ViewBag.CurrentPage - 3 || i == ViewBag.CurrentPage + 3)
+                            {
+                                <span class="px-2 text-muted">...</span>
                             }
                         }
-                        else
-                        {
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-secondary">
-                                    <div class="p-5 d-flex flex-column align-items-center">
-                                        <i class="fas fa-calendar-times mb-3 opacity-25" style="font-size:64px;"></i>
-                                        <h6 class="fw-bold mb-1">No Appointments Found</h6>
-                                        <p class="small mb-0">Your schedule for this period is currently empty.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    }
+                    else if (ViewBag.TotalPages == 1)
+                    {
+                        <a href="#" class="page-link-premium active">1</a>
+                    }
 
+                    <a href="@Url.Action("Appointments", new { page = ViewBag.CurrentPage + 1, searchString = ViewBag.CurrentFilter, statusFilter = ViewBag.StatusFilter, dateFilter = ViewBag.DateFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")" title="Next Page">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/doctor-appointments.css" asp-append-version="true" />
-}
-
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const filterButtons = document.querySelectorAll('.header-actions .btn');
-            const tableRows = document.querySelectorAll('tbody tr:not(.text-center)');
+            const searchInput = document.getElementById('appointmentSearch');
+            const filterForm = document.getElementById('filterForm');
             
-            // Filter Buttons (All / Today)
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    filterButtons.forEach(b => b.classList.remove('active-toggle', 'text-white'));
-                    filterButtons.forEach(b => b.classList.add('text-secondary'));
-                    
-                    this.classList.add('active-toggle');
-                    this.classList.remove('text-secondary');
-                    
-                    const filter = this.textContent.trim();
-                    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+            let typingTimer;
+            const doneTypingInterval = 800;
 
-                    tableRows.forEach(row => {
-                        if (filter === 'All') {
-                            row.style.display = '';
-                        } else if (filter === 'Today') {
-                            const rowDate = row.querySelector('td:nth-child(2) .fw-bold').textContent.trim();
-                            if (rowDate === today) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        }
-                    });
-                });
+            searchInput?.addEventListener('keyup', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    filterForm.submit();
+                }, doneTypingInterval);
+            });
+
+            searchInput?.addEventListener('keydown', function() {
+                clearTimeout(typingTimer);
             });
         });
+
+        function applyDateFilter(filter) {
+            document.getElementById('dateFilterInput').value = filter;
+            document.getElementById('dateFilterForm').submit();
+        }
 
         function createManualBill(appointmentId) {
             Swal.fire({
@@ -248,26 +261,24 @@
                 text: "This will create a standard consultation bill for this patient.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#547792',
+                confirmButtonColor: '#1B3C53',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Yes, Generate Bill'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({
-                        title: 'Generating...',
+                        title: 'Processing...',
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();
                         }
                     });
 
-                    // Get antiforgery token from any form on the page
                     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
                     const formData = new FormData();
                     formData.append('appointmentId', appointmentId);
                     formData.append('__RequestVerificationToken', token);
-                    
+
                     fetch('@Url.Action("CreateAppointmentInvoice", "Billing")', {
                         method: 'POST',
                         body: formData
@@ -278,14 +289,15 @@
                             Swal.fire({
                                 title: 'Success!',
                                 text: data.message,
-                                icon: 'success'
+                                icon: 'success',
+                                confirmButtonColor: '#1B3C53'
                             }).then(() => location.reload());
                         } else {
                             Swal.fire('Notice', data.message, 'info');
                         }
                     })
                     .catch(error => {
-                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                        Swal.fire('Error', 'An unexpected system error occurred.', 'error');
                     });
                 }
             });

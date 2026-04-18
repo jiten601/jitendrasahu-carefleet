@@ -3,49 +3,338 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Reports";
     ViewBag.HideHeader = true;
+
+    var confirmed  = (int)(ViewBag.AppointmentsConfirmed  ?? 0);
+    var pending    = (int)(ViewBag.AppointmentsPending    ?? 0);
+    var cancelled  = (int)(ViewBag.AppointmentsCancelled  ?? 0);
+    var completed  = (int)(ViewBag.AppointmentsCompleted  ?? 0);
+    var total      = confirmed + pending + cancelled + completed;
+    var confirmRate = total > 0 ? (confirmed * 100 / total) : 0;
+
+    var months             = Json.Serialize(ViewBag.Months);
+    var patientGrowth      = Json.Serialize(ViewBag.PatientGrowth);
+    var doctorGrowth       = Json.Serialize(ViewBag.DoctorGrowth);
+    var appointmentMonthly = Json.Serialize(ViewBag.AppointmentMonthly);
+
+    var recentAppointments = ViewBag.RecentAppointments as List<CareFleet.Models.Appointment> ?? new List<CareFleet.Models.Appointment>();
 }
 
-<div class="fade-in">
-    <!-- Premium Header Card -->
-    <div class="premium-header-card">
-        <div class="header-card-content">
-            <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Reports & Analytics</h3>
-                <p class="text-white-50 mb-0">Advanced system reporting and data insights.</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn-premium-light">
-                    <i class="fas fa-download me-2"></i>Export Report
-                </button>
-            </div>
-        </div>
-        <div class="header-bg-pattern"></div>
-    </div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-reports.css" asp-append-version="true" />
+}
 
-    <div class="summary-cards">
-        <div class="summary-card">
-            <h3 class="card-title">Registration Growth</h3>
-            <div class="card-value">+15%</div>
-            <p class="card-description">Increase in new patients this month.</p>
+<div class="reports-fade-in">
+
+    <!-- ░░ HEADER ░░ -->
+    <div class="reports-header">
+        <div class="reports-header-info">
+            <h1><i class="fas fa-chart-bar me-3"></i>Reports &amp; Analytics</h1>
+            <p>A comprehensive overview of system performance, growth trends, and appointment distribution.</p>
         </div>
-        <div class="summary-card">
-            <h3 class="card-title">Appointment Density</h3>
-            <div class="card-value">82%</div>
-            <p class="card-description">Completion rate of scheduled appointments.</p>
-        </div>
-        <div class="summary-card">
-            <h3 class="card-title">User Satisfaction</h3>
-            <div class="card-value">4.8/5</div>
-            <p class="card-description">Based on recent patient feedback.</p>
+        <div class="reports-header-actions">
+            <button onclick="window.print()" class="btn-export">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button onclick="exportToCSV()" class="btn-export">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
         </div>
     </div>
 
-    <div class="activity-section">
-        <h3 class="section-title">Monthly Detailed Report</h3>
-        <p>Reports will be displayed here in graphical format using Chart.js in the future.</p>
-        <div style="height: 300px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; border-radius: 8px; margin-top: 20px;">
-            [Analytics Visualization Placeholder]
+    <!-- ░░ KPI CARDS ░░ -->
+    <div class="kpi-grid">
+        <div class="kpi-card blue">
+            <div class="kpi-icon"><i class="fas fa-users"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">Total Users</div>
+                <div class="kpi-value">@ViewBag.TotalUsers</div>
+                <div class="kpi-sub">Registered accounts</div>
+            </div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-icon"><i class="fas fa-user-injured"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">Total Patients</div>
+                <div class="kpi-value">@ViewBag.TotalPatients</div>
+                <div class="kpi-sub">Active patient base</div>
+            </div>
+        </div>
+        <div class="kpi-card purple">
+            <div class="kpi-icon"><i class="fas fa-user-md"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">Total Doctors</div>
+                <div class="kpi-value">@ViewBag.TotalDoctors</div>
+                <div class="kpi-sub">@ViewBag.ActiveDoctors active</div>
+            </div>
+        </div>
+        <div class="kpi-card amber">
+            <div class="kpi-icon"><i class="fas fa-coins"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value">Rs. @string.Format("{0:N0}", ViewBag.TotalRevenue ?? 0)</div>
+                <div class="kpi-sub">From confirmed &amp; completed</div>
+            </div>
         </div>
     </div>
+
+    <!-- ░░ APPOINTMENT STATUS BANNER ░░ -->
+    <div class="status-banner">
+        <div class="status-pill-card">
+            <div class="spc-dot confirmed"><i class="fas fa-check-circle"></i></div>
+            <div class="spc-body">
+                <div class="spc-count">@confirmed</div>
+                <div class="spc-label">Confirmed</div>
+            </div>
+        </div>
+        <div class="status-pill-card">
+            <div class="spc-dot pending"><i class="fas fa-hourglass-half"></i></div>
+            <div class="spc-body">
+                <div class="spc-count">@pending</div>
+                <div class="spc-label">Pending</div>
+            </div>
+        </div>
+        <div class="status-pill-card">
+            <div class="spc-dot completed"><i class="fas fa-clipboard-check"></i></div>
+            <div class="spc-body">
+                <div class="spc-count">@completed</div>
+                <div class="spc-label">Completed</div>
+            </div>
+        </div>
+        <div class="status-pill-card">
+            <div class="spc-dot cancelled"><i class="fas fa-times-circle"></i></div>
+            <div class="spc-body">
+                <div class="spc-count">@cancelled</div>
+                <div class="spc-label">Cancelled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ░░ CHARTS ROW ░░ -->
+    <div class="charts-grid">
+        <!-- Line chart: Registration Trend -->
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h3><i class="fas fa-chart-line me-2" style="color:#3b82f6;"></i>Registration &amp; Appointment Trends</h3>
+                <span class="chart-badge">Last 6 Months</span>
+            </div>
+            <div style="position: relative; height: 300px;">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Doughnut: Appointment Status -->
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h3><i class="fas fa-chart-pie me-2" style="color:#8b5cf6;"></i>Appointment Status</h3>
+            </div>
+            <div style="position: relative; height: 260px;">
+                <canvas id="appointmentChart"></canvas>
+            </div>
+            <!-- Centre legend -->
+            <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                <span style="font-size:0.8rem; font-weight:600; color:#059669;"><i class="fas fa-circle me-1" style="font-size:0.6rem;"></i>Confirmed (@confirmed)</span>
+                <span style="font-size:0.8rem; font-weight:600; color:#D97706;"><i class="fas fa-circle me-1" style="font-size:0.6rem;"></i>Pending (@pending)</span>
+                <span style="font-size:0.8rem; font-weight:600; color:#2563EB;"><i class="fas fa-circle me-1" style="font-size:0.6rem;"></i>Completed (@completed)</span>
+                <span style="font-size:0.8rem; font-weight:600; color:#DC2626;"><i class="fas fa-circle me-1" style="font-size:0.6rem;"></i>Cancelled (@cancelled)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ░░ BOTTOM ROW ░░ -->
+    <div class="bottom-grid">
+
+        <!-- Bar chart: Monthly Appointments -->
+        <div class="chart-panel">
+            <div class="chart-panel-header">
+                <h3><i class="fas fa-calendar-alt me-2" style="color:#10b981;"></i>Monthly Appointments</h3>
+                <span class="chart-badge">Last 6 Months</span>
+            </div>
+            <div style="position: relative; height: 260px;">
+                <canvas id="appointmentBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Appointments -->
+        <div class="recent-panel">
+            <div class="recent-panel-header">
+                <h3><i class="fas fa-clock me-2" style="color:#f59e0b;"></i>Recent Appointments</h3>
+                <a href="@Url.Action("Appointments","Admin")" style="font-size:0.82rem; color:#456882; font-weight:600; text-decoration:none;">View All →</a>
+            </div>
+            <table class="recent-table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (recentAppointments.Any())
+                    {
+                        @foreach (var appt in recentAppointments)
+                        {
+                            <tr>
+                                <td><strong>@appt.PatientName</strong></td>
+                                <td style="color:#64748b;">@appt.DoctorName</td>
+                                <td style="color:#64748b; white-space:nowrap;">@appt.AppointmentDate.ToString("MMM dd, yyyy")</td>
+                                <td><span class="pill @appt.Status.ToLower()">@appt.Status</span></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="4" class="text-center py-4 text-muted">No appointments found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
 </div>
 
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const chartDefaults = {
+                font: { family: "'Inter', sans-serif" },
+                color: '#64748b'
+            };
+            Chart.defaults.font.family = chartDefaults.font.family;
+            Chart.defaults.color = chartDefaults.color;
+
+            const months             = @Html.Raw(months);
+            const patientGrowthData  = @Html.Raw(patientGrowth);
+            const doctorGrowthData   = @Html.Raw(doctorGrowth);
+            const appointmentData    = @Html.Raw(appointmentMonthly);
+
+            // ── Growth line chart ──────────────────────────────────────────
+            new Chart(document.getElementById('growthChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Patients',
+                            data: patientGrowthData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            fill: true,
+                            tension: 0.45,
+                            pointBackgroundColor: '#3b82f6',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            borderWidth: 2.5
+                        },
+                        {
+                            label: 'Doctors',
+                            data: doctorGrowthData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139,92,246,0.08)',
+                            fill: true,
+                            tension: 0.45,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            borderWidth: 2.5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } },
+                        tooltip: { backgroundColor: '#1B3C53', padding: 12, cornerRadius: 10 }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // ── Appointment doughnut ───────────────────────────────────────
+            new Chart(document.getElementById('appointmentChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Confirmed', 'Pending', 'Completed', 'Cancelled'],
+                    datasets: [{
+                        data: [@confirmed, @pending, @completed, @cancelled],
+                        backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#1B3C53', padding: 12, cornerRadius: 10 }
+                    },
+                    cutout: '72%'
+                }
+            });
+
+            // ── Monthly appointments bar chart ─────────────────────────────
+            new Chart(document.getElementById('appointmentBarChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Appointments',
+                        data: appointmentData,
+                        backgroundColor: 'rgba(27,60,83,0.75)',
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        hoverBackgroundColor: '#456882'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#1B3C53', padding: 12, cornerRadius: 10 }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        });
+
+        // ── CSV Export ────────────────────────────────────────────────────
+        function exportToCSV() {
+            const data = [
+                ['Metric', 'Value'],
+                ['Total Users',          '@(ViewBag.TotalUsers ?? 0)'],
+                ['Total Patients',        '@(ViewBag.TotalPatients ?? 0)'],
+                ['Total Doctors',         '@(ViewBag.TotalDoctors ?? 0)'],
+                ['Active Doctors',        '@(ViewBag.ActiveDoctors ?? 0)'],
+                ['Total Appointments',    '@(ViewBag.TotalAppointments ?? 0)'],
+                ['Confirmed Appts',       '@confirmed'],
+                ['Pending Appts',         '@pending'],
+                ['Completed Appts',       '@completed'],
+                ['Cancelled Appts',       '@cancelled'],
+                ['Total Revenue (Rs.)',   '@string.Format("{0:N0}", ViewBag.TotalRevenue ?? 0)']
+            ];
+
+            let csv = "data:text/csv;charset=utf-8,";
+            data.forEach(row => { csv += row.join(",") + "\r\n"; });
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csv));
+            link.setAttribute("download", "carefleet_report_@(DateTime.Now.ToString("yyyyMMdd")).csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+}
