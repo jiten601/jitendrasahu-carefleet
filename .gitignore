@@ -1,1 +1,32 @@
+# =============================================
+# Visual Studio & .NET specific ignores
+# =============================================
+
+# Visual Studio cache and temporary files
 .vs/
+
+# Build output directories
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.sln.docstates
+
+# GitHub Copilot cache (important for your previous issue)
+**/.vs/**/CopilotIndices/
+
+# Logs and temporary files
+*.log
+logs/
+
+# Package restore
+packages/
+
+# Rider / JetBrains
+.idea/
+
+# macOS / Windows junk
+.DS_Store
+Thumbs.db
