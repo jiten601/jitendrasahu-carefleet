@@ -1,28 +1,26 @@
-﻿@{
+@{
     ViewData["Title"] = "Verify Email";
-    Layout = null;
+    Layout = "_Layout";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareFleet - Verify Email</title>
+@section Styles {
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+}
 
-    <link rel="stylesheet" href="~/css/auth.css" />
-</head>
-<body>
+<div class="auth-page-wrapper fade-in">
     <div class="auth-container">
         <div class="auth-card">
-            <div class="logo-container" style="text-align: center; margin-bottom: 20px;">
-                <img src="~/images/FinalLogo.png" alt="CareFleet Logo" style="max-width: 200px; height: auto;" />
+
+            <!-- Logo -->
+            <div class="logo-container" style="text-align:center; margin-bottom:20px;">
+                <img src="~/images/FinalLogo.png"
+                     alt="CareFleet Logo"
+                     style="max-width:200px; height:auto;" />
             </div>
 
-            <h1 class="app-title">CareFleet</h1>
-            <h2 class="register-title">Email Verification</h2>
+            <h2 class="welcome-text">Email Verification</h2>
 
-            <p style="text-align:center; margin-bottom:15px;">
+            <p style="text-align:center; margin-bottom:24px; color:#547792; font-size:0.95rem;">
                 We have sent a 6-digit OTP to your email.<br />
                 Please enter it below to verify your account.
             </p>
@@ -51,13 +49,11 @@
                 </button>
 
                 <p class="auth-link">
-                    Didn’t receive the code?
+                    Didn't receive the code?
                     <a asp-action="Register">Register again</a>
                 </p>
 
             </form>
-
         </div>
     </div>
-</body>
-</html>
+</div>

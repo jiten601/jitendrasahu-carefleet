@@ -1,0 +1,103 @@
+
+
+/* Filter Toggle Styling */
+.filter-group-wrapper {
+    background: white;
+    padding: 4px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid rgba(0,0,0,0.05);
+    height: 50px;
+}
+
+.filter-btn {
+    border-radius: 10px !important;
+    padding: 8px 24px !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: none !important;
+    color: #64748b !important;
+    background: transparent !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    cursor: pointer;
+}
+
+.filter-btn.active {
+    background: #1B3C53 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(27, 60, 83, 0.2);
+}
+
+.filter-btn:hover:not(.active) {
+    background: #f1f5f9 !important;
+    color: #1B3C53 !important;
+}
+
+.btn-premium-light {
+    height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Layout Fixes for Horizontal Alignment */
+.header-card-content {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 20px;
+}
+
+.header-info {
+    flex: 1;
+}
+
+.header-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-shrink: 0;
+}
+
+/* Ensure the form items are horizontal */
+#dateFilterForm {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 15px !important;
+    margin-bottom: 0;
+}
+
+@media (max-width: 1200px) {
+    .header-card-content {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 25px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #dateFilterForm {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        width: 100%;
+    }
+    
+    .filter-group-wrapper, .btn-premium-light {
+        width: 100%;
+        justify-content: center;
+    }
+}
+

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using CareFleet.Services;
 
 namespace CareFleet.Controllers
 {
@@ -13,11 +14,13 @@ namespace CareFleet.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
+        private readonly EmailService _emailService;
 
-        public DoctorController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+        public DoctorController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment, EmailService emailService)
         {
             _context = context;
             _hostEnvironment = hostEnvironment;
+            _emailService = emailService;
         }
 
         // Check authentication helper
@@ -179,17 +182,24 @@ namespace CareFleet.Controllers
                 return NotFound();
             }
 
+            var oldDoctor = _context.Doctors.AsNoTracking().FirstOrDefault(d => d.Id == id);
+            if (oldDoctor == null) return NotFound();
+            var oldEmail = oldDoctor.Email;
+
             if (ModelState.IsValid)
             {
-                var existingDoctor = _context.Doctors.FirstOrDefault(d => d.Email == doctor.Email && d.Id != id);
-                if (existingDoctor != null)
+                var emailExists = _context.Users.Any(u => u.Email == doctor.Email && u.Email != oldEmail) ||
+                                  _context.Doctors.Any(d => d.Email == doctor.Email && d.Id != id) ||
+                                  _context.Patients.Any(p => p.Email == doctor.Email);
+                
+                if (emailExists)
                 {
-                    ViewBag.Error = "A doctor with this email already exists.";
+                    ViewBag.Error = "This email is already registered in our system.";
                     return View(doctor);
                 }
 
-                existingDoctor = _context.Doctors.FirstOrDefault(d => d.LicenseNumber == doctor.LicenseNumber && d.Id != id);
-                if (existingDoctor != null)
+                var licenseExists = _context.Doctors.Any(d => d.LicenseNumber == doctor.LicenseNumber && d.Id != id);
+                if (licenseExists)
                 {
                     SetUserInfo();
                     ViewBag.HeaderTitle = "Edit Doctor";
@@ -202,11 +212,12 @@ namespace CareFleet.Controllers
                 _context.Update(doctor);
 
                 // Synchronize with ApplicationUser table
-                var user = _context.Users.FirstOrDefault(u => u.Email == doctor.Email);
+                var user = _context.Users.FirstOrDefault(u => u.Email == oldEmail);
                 if (user != null)
                 {
                     user.FirstName = doctor.FirstName;
                     user.LastName = doctor.LastName;
+                    user.Email = doctor.Email;
                     _context.Users.Update(user);
                 }
 
@@ -219,7 +230,7 @@ namespace CareFleet.Controllers
                 }
 
                 TempData["Success"] = "Profile updated successfully!";
-                
+
                 var role = HttpContext.Session.GetString("UserRole");
                 if (role == "Doctor")
                 {
@@ -252,9 +263,30 @@ namespace CareFleet.Controllers
             var doctor = _context.Doctors.Find(id);
             if (doctor != null)
             {
+                var email = doctor.Email;
+
+                // Manually remove dependent records to avoid DB constraint failures
+                var prescriptions = _context.Prescriptions.Where(p => p.DoctorId == doctor.Id).ToList();
+                _context.Prescriptions.RemoveRange(prescriptions);
+
+                var messages = _context.Messages.Where(m => m.SenderEmail == email || m.ReceiverEmail == email).ToList();
+                _context.Messages.RemoveRange(messages);
+
+                var notifications = _context.Notifications.Where(n => n.ReceiverEmail == email).ToList();
+                _context.Notifications.RemoveRange(notifications);
+                
+                // Remove from Doctors
                 _context.Doctors.Remove(doctor);
+                
+                // Remove from ApplicationUser
+                var appUser = _context.Users.FirstOrDefault(u => u.Email == email);
+                if (appUser != null)
+                {
+                    _context.Users.Remove(appUser);
+                }
+                
                 _context.SaveChanges();
-                TempData["Success"] = "Doctor deleted successfully!";
+                TempData["Success"] = "Doctor completely deleted successfully!";
             }
 
             if (HttpContext.Session.GetString("UserRole") == "Admin")
@@ -289,7 +321,7 @@ namespace CareFleet.Controllers
 
             ViewBag.UpcomingAppointments = upcomingAppointments;
             ViewBag.RecentActivity = recentActivity;
-            
+
             // Statistics
             // Statistics - Filtered by Doctor
             // 1. Total Patients: Count distinct patients who have had appointments with this doctor
@@ -306,7 +338,7 @@ namespace CareFleet.Controllers
                 .Distinct()
                 .Count();
             ViewBag.NewPatientsThisMonth = _context.Patients.Count(p => p.CreatedAt.Month == DateTime.Now.Month && p.CreatedAt.Year == DateTime.Now.Year);
-            
+
             // New Module Stats
             ViewBag.TotalPrescriptions = _context.Prescriptions.Count(p => p.DoctorId == doctor.Id);
             ViewBag.TotalInvoices = _context.Invoices.Count(i => i.Appointment != null && i.Appointment.DoctorName.Contains(doctor.FirstName) && i.Appointment.DoctorName.Contains(doctor.LastName));
@@ -343,57 +375,114 @@ namespace CareFleet.Controllers
             return View(appointments);
         }
 
-        public IActionResult Appointments(string searchString)
+        public IActionResult Appointments(string searchString, string statusFilter, string dateFilter, int page = 1)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
             var doctor = GetLoggedInDoctor();
-            
-            var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
-            var appointmentsQuery = _context.Set<Appointment>()
+            if (doctor == null) return RedirectToAction("Logout", "Account");
+
+            int pageSize = 10;
+            var query = _context.Appointments
                 .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName));
 
+            // Search Filter
             if (!string.IsNullOrEmpty(searchString))
             {
-                appointmentsQuery = appointmentsQuery.Where(a => a.PatientName.Contains(searchString));
+                query = query.Where(a => a.PatientName.Contains(searchString) || a.Reason.Contains(searchString));
             }
 
-            var appointments = appointmentsQuery
+            // Status Filter
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                query = query.Where(a => a.Status == statusFilter);
+            }
+
+            // Date Filter
+            if (dateFilter == "Today")
+            {
+                var today = DateTime.Today;
+                query = query.Where(a => a.AppointmentDate.Date == today);
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var appointments = query
                 .OrderByDescending(a => a.AppointmentDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            ViewBag.TotalAppointments = totalItems;
             ViewBag.CurrentFilter = searchString;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.DateFilter = dateFilter ?? "All";
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
             ViewBag.HeaderTitle = "My Appointments";
             ViewBag.ActivePage = "Appointments";
+
             return View(appointments);
         }
 
-        public IActionResult Patients()
+        public IActionResult Patients(string searchString, int page = 1)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
             var doctor = GetLoggedInDoctor();
+            if (doctor == null) return RedirectToAction("Logout", "Account");
 
-            // Filter patients who have had appointments with this doctor
-            // Filter patients who have had appointments with this doctor
+            int pageSize = 10;
             var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
-            var patientNames = _context.Set<Appointment>()
+            
+            // Get patient names from appointments associated with this doctor
+            var patientNamesFromApps = _context.Set<Appointment>()
                 .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
                 .Select(a => a.PatientName)
                 .Distinct()
                 .ToList();
 
-            // Fetch all patients and filter in memory to allow flexible string matching
-            // Note: In a real app with large data, we should add PatientId to Appointment
-            var allPatients = _context.Patients.ToList();
-            var patients = allPatients
-                .Where(p => patientNames.Any(n => n.Contains(p.FirstName, StringComparison.OrdinalIgnoreCase) && 
-                                                n.Contains(p.LastName, StringComparison.OrdinalIgnoreCase)))
-                .OrderByDescending(p => p.Id)
+            // Query patients whose names match any retrieved from appointments
+            var query = _context.Patients.AsEnumerable()
+                .Where(p => patientNamesFromApps.Any(n => n.Contains(p.FirstName, StringComparison.OrdinalIgnoreCase) &&
+                                                        n.Contains(p.LastName, StringComparison.OrdinalIgnoreCase)))
+                .AsQueryable();
+
+            // Search Filter
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var term = searchString.ToLower();
+                query = query.Where(p => p.FirstName.ToLower().Contains(term) || 
+                                       p.LastName.ToLower().Contains(term) || 
+                                       p.Email.ToLower().Contains(term) ||
+                                       p.PhoneNumber.Contains(term));
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var patients = query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
             ViewBag.HeaderTitle = "My Patients";
             ViewBag.ActivePage = "Patients";
+            ViewBag.CurrentFilter = searchString;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+
             return View(patients);
         }
 
@@ -557,17 +646,19 @@ namespace CareFleet.Controllers
             public int GetHashCode(Patient obj) => obj.Id.GetHashCode();
         }
 
-        public IActionResult MedicalRecords()
+        public IActionResult MedicalRecords(string searchString, string categoryFilter, int page = 1)
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            
+
             var doctor = GetLoggedInDoctor();
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
-            // Filter patients who have had appointments with this doctor
+            int pageSize = 10;
             var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
-            var patientNames = _context.Set<Appointment>()
+            
+            // Get patients associated with this doctor via appointments
+            var patientNamesFromApps = _context.Set<Appointment>()
                 .Where(a => a.DoctorName.Contains(doctor.FirstName) && a.DoctorName.Contains(doctor.LastName))
                 .Select(a => a.PatientName)
                 .Distinct()
@@ -575,18 +666,49 @@ namespace CareFleet.Controllers
 
             var patientIds = _context.Patients
                 .AsEnumerable()
-                .Where(p => patientNames.Any(n => n.Contains(p.FirstName) && n.Contains(p.LastName)))
+                .Where(p => patientNamesFromApps.Any(n => n.Contains(p.FirstName) && n.Contains(p.LastName)))
                 .Select(p => p.Id)
                 .ToList();
 
-            var records = _context.MedicalRecords
+            var query = _context.MedicalRecords
                 .Include(m => m.Patient)
-                .Where(m => patientIds.Contains(m.PatientId))
+                .Where(m => patientIds.Contains(m.PatientId));
+
+            // Category Filter
+            if (!string.IsNullOrEmpty(categoryFilter) && categoryFilter != "All")
+            {
+                query = query.Where(m => m.Category == categoryFilter);
+            }
+
+            // Search Filter
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(m => m.DocumentName.Contains(searchString) || 
+                                       m.Patient.FirstName.Contains(searchString) || 
+                                       m.Patient.LastName.Contains(searchString));
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var records = query
                 .OrderByDescending(m => m.DateIssued)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
+            ViewBag.TotalRecords = totalItems;
+            ViewBag.CurrentFilter = searchString;
+            ViewBag.CategoryFilter = categoryFilter ?? "All";
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
             ViewBag.HeaderTitle = "Medical Records Access";
             ViewBag.ActivePage = "MedicalRecords";
+            
             return View(records);
         }
 
@@ -640,7 +762,7 @@ namespace CareFleet.Controllers
 
                 record.FilePath = "/uploads/medical_records/" + uniqueFileName;
                 record.FileType = Path.GetExtension(file.FileName).ToUpper().Replace(".", "");
-                
+
                 if (record.DateIssued == default) record.DateIssued = DateTime.Now;
 
                 _context.MedicalRecords.Add(record);
@@ -758,7 +880,7 @@ namespace CareFleet.Controllers
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            
+
             var doctor = GetLoggedInDoctor();
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
@@ -772,7 +894,7 @@ namespace CareFleet.Controllers
         {
             if (!IsDoctor()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            
+
             var doctor = GetLoggedInDoctor();
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
@@ -799,24 +921,47 @@ namespace CareFleet.Controllers
         [HttpPost]
         public IActionResult ToggleStatus(int id)
         {
-            if (!IsAuthenticated())
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UserEmail")))
             {
-                return RedirectToAction("Login", "Account");
-            }
+                var doctor = _context.Doctors.Find(id);
+                if (doctor != null)
+                {
+                    bool wasActive = doctor.IsActive;
+                    doctor.IsActive = !doctor.IsActive;
+                    doctor.UpdatedAt = DateTime.Now;
+                    _context.SaveChanges();
 
-            var doctor = _context.Doctors.Find(id);
-            if (doctor != null)
-            {
-                doctor.IsActive = !doctor.IsActive;
-                doctor.UpdatedAt = DateTime.Now;
-                _context.SaveChanges();
-            }
+                    // Notify doctor via email if they were just activated/approved
+                    if (!wasActive && doctor.IsActive)
+                    {
+                        try
+                        {
+                            var subject = "Account Approved - Welcome to CareFleet";
+                            var body = $@"
+                                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                                    <h2 style='color: #2B6CB0;'>Account Approved!</h2>
+                                    <p>Hello Dr. {doctor.FirstName} {doctor.LastName},</p>
+                                    <p>Your account on CareFleet has been <strong>approved</strong> by the administrator.</p>
+                                    <p>You can now log in to your dashboard to manage your appointments and patients.</p>
+                                    <div style='margin: 25px 0;'>
+                                        <a href='https://carefleet-fyp-2026-fccudzeehhc0dsg2.centralindia-01.azurewebsites.net/Doctor/Dashboard' 
+                                           style='background-color: #4299E1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold;'>
+                                            Login to Your Account
+                                        </a>
+                                    </div>
+                                    <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                                    <p style='font-size: 0.8em; color: #777;'>Thank you for joining CareFleet.</p>
+                                </div>";
+                            _emailService.Send(doctor.Email, subject, body);
+                        }
+                        catch { /* Silent fail for email */ }
+                    }
 
-            if (HttpContext.Session.GetString("UserRole") == "Admin")
-            {
-                return RedirectToAction("Doctors", "Admin");
+                    return Json(new { success = true, isActive = doctor.IsActive });
+                }
+                return Json(new { success = false, message = "Doctor not found." });
             }
-            return RedirectToAction(nameof(Index));
+            return Unauthorized();
         }
         // POST: Doctor/UpdateAppointmentStatus
         [HttpPost]
@@ -831,19 +976,19 @@ namespace CareFleet.Controllers
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
             var doctorName = $"Dr. {(doctor.FirstName)} {(doctor.LastName)}";
-            
+
             // Be more flexible with name matching
-            bool isAssignedDoctor = appointment != null && 
-                                   (appointment.DoctorName == doctorName || 
+            bool isAssignedDoctor = appointment != null &&
+                                   (appointment.DoctorName == doctorName ||
                                     (appointment.DoctorName.Contains(doctor.FirstName) && appointment.DoctorName.Contains(doctor.LastName)));
 
             if (appointment != null && isAssignedDoctor)
             {
                 appointment.Status = status;
-                
+
                 // Find patient by name for notification
                 var patient = _context.Patients.FirstOrDefault(p => (p.FirstName + " " + p.LastName) == appointment.PatientName);
-                
+
                 if (patient != null)
                 {
                     // Create notification for patient
@@ -855,8 +1000,33 @@ namespace CareFleet.Controllers
                     };
 
                     _context.Notifications.Add(notification);
+
+                    if (status == "Confirmed")
+                    {
+                        try
+                        {
+                            var subject = "Your Appointment is Confirmed - CareFleet";
+                            var body = $@"
+                                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                                    <h2 style='color: #2B6CB0;'>Appointment Confirmed!</h2>
+                                    <p>Hello {patient.FirstName} {patient.LastName},</p>
+                                    <p>Your appointment with <strong>{doctorName}</strong> on <strong>{appointment.AppointmentDate:MMMM dd, yyyy} at {appointment.TimeSlot}</strong> has been successfully confirmed.</p>
+                                    <p>Please remember to arrive 10 minutes early. If you need to reschedule or cancel, you can do so from your patient dashboard.</p>
+                                    <div style='margin: 25px 0;'>
+                                        <a href='https://carefleet-fyp-2026-fccudzeehhc0dsg2.centralindia-01.azurewebsites.net/Patient/Dashboard' 
+                                           style='background-color: #4299E1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold;'>
+                                            View Your Dashboard
+                                        </a>
+                                    </div>
+                                    <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                                    <p style='font-size: 0.8em; color: #777;'>Thank you for choosing CareFleet.</p>
+                                </div>";
+                            _emailService.Send(patient.Email, subject, body);
+                        }
+                        catch { /* Silent fail for email */ }
+                    }
                 }
-                
+
                 await _context.SaveChangesAsync();
 
                 // Generate Invoice if status is Completed
@@ -885,11 +1055,11 @@ namespace CareFleet.Controllers
             if (doctor == null) return RedirectToAction("Logout", "Account");
 
             var appointment = await _context.Set<Appointment>().FirstOrDefaultAsync(a => a.Id == id);
-            
+
             if (appointment == null) return NotFound();
 
             var doctorName = $"Dr. {doctor.FirstName} {doctor.LastName}";
-            bool isAssignedDoctor = appointment.DoctorName == doctorName || 
+            bool isAssignedDoctor = appointment.DoctorName == doctorName ||
                                    (appointment.DoctorName.Contains(doctor.FirstName) && appointment.DoctorName.Contains(doctor.LastName));
 
             if (!isAssignedDoctor)

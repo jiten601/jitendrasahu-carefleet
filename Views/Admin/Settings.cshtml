@@ -1,142 +1,351 @@
 @model CareFleet.Models.ApplicationUser
 @{
-    ViewData["Title"] = "Admin Settings";
+    ViewData["Title"] = "Profile Settings";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.ActivePage = "Settings";
+    ViewBag.HideHeader = true;
 
     var user = Model ?? new CareFleet.Models.ApplicationUser
     {
-        Id = 0,
+        Id        = 0,
         FirstName = ViewBag.FirstName?.ToString() ?? "Admin",
-        LastName = ViewBag.LastName?.ToString() ?? "User",
-        Email = ViewBag.UserEmail?.ToString() ?? "admin@carefleet.com"
+        LastName  = ViewBag.LastName?.ToString()  ?? "User",
+        Email     = ViewBag.UserEmail?.ToString()  ?? "admin@carefleet.com",
+        CreatedAt = DateTime.Now
     };
 
     var initials = ((user.FirstName?.Length > 0 ? user.FirstName.Substring(0, 1) : "A") +
-                   (user.LastName?.Length > 0 ? user.LastName.Substring(0, 1) : "D")).ToUpper();
+                   (user.LastName?.Length  > 0 ? user.LastName.Substring(0, 1)  : "D")).ToUpper();
 
-    ViewBag.ActivePage = "Settings";
-    ViewBag.HideHeader = true;
+    int completedFields = 0;
+    if (!string.IsNullOrEmpty(user.FirstName)) completedFields++;
+    if (!string.IsNullOrEmpty(user.LastName))  completedFields++;
+    if (!string.IsNullOrEmpty(user.Email))     completedFields++;
+    int profileCompletion = (int)((completedFields / 3.0) * 100);
+
+    bool   hasSaved    = TempData["Success"] != null;
+    string saveMessage = TempData["Success"]?.ToString() ?? "Profile updated successfully.";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-settings.css" asp-append-version="true" />
 }
 
-<div class="admin-settings-page fade-in py-5">
+<div class="admin-settings-page">
 
-    <!-- Premium Header -->
-    <div class="premium-header-card mb-5">
+    <!-- ── Premium Header ─────────────────────────────────── -->
+    <div class="premium-header-card mb-4">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-bold text-white mb-2">Account Settings</h1>
-                <p class="text-white-50 mb-0">Manage your profile and system security preferences</p>
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+                    <div style="width:44px;height:44px;background:rgba(255,255,255,0.15);border-radius:12px;
+                                display:flex;align-items:center;justify-content:center;
+                                border:1px solid rgba(255,255,255,0.25);">
+                        <i class="fas fa-user-cog" style="color:#fff;font-size:1.1rem;"></i>
+                    </div>
+                    <h2 style="font-family:'Outfit',sans-serif;font-weight:800;color:#fff;margin:0;font-size:1.6rem;">
+                        Account Settings
+                    </h2>
+                </div>
+                <p style="color:rgba(255,255,255,0.75);margin:0;font-size:0.95rem;">
+                    Manage your profile, credentials, and security preferences.
+                </p>
             </div>
             <div class="header-actions">
-                <div class="profile-badge-premium">
-                    <div class="avatar-circle">@initials</div>
-                    <div class="badge-text text-white">
-                        <span class="d-block fw-bold">@user.FirstName @user.LastName</span>
-                        <span class="d-block small text-white-50">Administrator</span>
-                    </div>
-                </div>
+                <a href="@Url.Action("Dashboard","Admin")" class="btn-premium-light">
+                    <i class="fas fa-home" style="margin-right:8px;"></i>Dashboard
+                </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-    <div class="row g-5 d-flex justify-content-center">
-        <div class="col-lg-8">
+    <!-- ── TWO-COLUMN GRID ────────────────────────────── -->
+    <div class="as-layout">
 
-            <!-- Tabs -->
-            <form method="post" action="@Url.Action("Profile", "Admin")" id="settingsForm">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="Id" value="@user.Id" />
-                <input type="hidden" name="Email" value="@user.Email" />
-                <input type="hidden" name="Role" value="@user.Role" />
-                <input type="hidden" name="PasswordHash" value="@user.PasswordHash" />
-
-                <!-- Single Profile Section (No Tabs) -->
-                <div class="premium-card">
-                    <div class="card-header-premium">
-                        <h5 class="fw-bold mb-0">
-                            <i class="fas fa-user-edit me-2"></i>Personal Profile Information
-                        </h5>
+        <!-- Sidebar -->
+        <div class="as-col-sidebar">
+            <div class="as-summary-card as-sticky">
+                <div class="as-avatar-section">
+                    <div class="as-avatar-wrapper" style="margin:0 auto 1.1rem;">
+                        <div class="as-avatar-circle">@initials</div>
+                        <div class="as-upload-overlay">
+                            <label class="as-upload-btn m-0" title="Change photo">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                        </div>
                     </div>
-                    <div class="card-body-premium">
-                        <h6 class="settings-section-title">Identity Details</h6>
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="form-group mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-user"></i> First Name
-                                    </label>
-                                    <input type="text" class="form-control" name="FirstName" value="@user.FirstName" required>
+                    <h5 class="as-profile-name">@user.FirstName @user.LastName</h5>
+                    <p class="as-profile-email">@user.Email</p>
+                    <p class="as-role-tag">
+                        <i class="fas fa-shield-alt"></i> Administrator
+                    </p>
+                    <span class="as-verified-badge">
+                        <i class="fas fa-check-circle"></i> Verified Admin
+                    </span>
+                </div>
+
+                <div class="as-completion-section">
+                    <div class="as-completion-header">
+                        <span>Profile Completion</span>
+                        <span>@profileCompletion%</span>
+                    </div>
+                    <div class="as-progress-track">
+                        <div class="as-progress-fill" style="width:@(profileCompletion)%;"></div>
+                    </div>
+                </div>
+
+                <div class="as-quick-links">
+                    <button class="as-quick-link" onclick="asSwitchTab('personal')">
+                        <i class="fas fa-user"></i>
+                        <span>Personal Info</span>
+                        <i class="fas fa-chevron-right" style="margin-left:auto;font-size:.68rem;opacity:.4;"></i>
+                    </button>
+                    <button class="as-quick-link" onclick="asSwitchTab('security')">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Security &amp; Privacy</span>
+                        <i class="fas fa-chevron-right" style="margin-left:auto;font-size:.68rem;opacity:.4;"></i>
+                    </button>
+                    <button class="as-quick-link" onclick="asSwitchTab('account')">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Account Info</span>
+                        <i class="fas fa-chevron-right" style="margin-left:auto;font-size:.68rem;opacity:.4;"></i>
+                    </button>
+                </div>
+
+                <div class="as-account-info">
+                    <h6>ACCOUNT INFO</h6>
+                    <div class="as-info-row">
+                        <span class="as-info-label">Member Since</span>
+                        <span class="as-info-value">@user.CreatedAt.ToString("MMM yyyy")</span>
+                    </div>
+                    <div class="as-info-row">
+                        <span class="as-info-label">Account ID</span>
+                        <span class="as-info-value">#@user.Id.ToString("D5")</span>
+                    </div>
+                    <div class="as-info-row">
+                        <span class="as-info-label">Status</span>
+                        <span class="as-status-active">Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="as-col-main">
+
+            <!-- Tab Bar -->
+            <div class="as-tabs">
+                <button class="as-tab-btn active" data-tab="personal">
+                    <i class="fas fa-user"></i> <span>Personal Info</span>
+                </button>
+                <button class="as-tab-btn" data-tab="security">
+                    <i class="fas fa-shield-alt"></i> <span>Security</span>
+                </button>
+                <button class="as-tab-btn" data-tab="account">
+                    <i class="fas fa-info-circle"></i> <span>Account</span>
+                </button>
+            </div>
+
+            <!-- Panels -->
+            <div class="as-panel-container">
+                
+                <!-- Personal Info Panel -->
+                <div class="as-panel active" data-panel="personal">
+                    <form method="post" action="@Url.Action("Profile","Admin")" id="profileForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Id" value="@user.Id" />
+                        <div class="as-card">
+                            <div class="as-card-header">
+                                <div class="as-card-icon"><i class="fas fa-id-card"></i></div>
+                                <div>
+                                    <h5>Personal Details</h5>
+                                    <p>Update your basic contact information.</p>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-user"></i> Last Name
-                                    </label>
-                                    <input type="text" class="form-control" name="LastName" value="@user.LastName" required>
+                            <div class="as-card-body">
+                                <div class="as-row">
+                                    <div>
+                                        <label class="as-label">First Name</label>
+                                        <input type="text" class="as-input" name="FirstName" value="@user.FirstName" required>
+                                    </div>
+                                    <div>
+                                        <label class="as-label">Last Name</label>
+                                        <input type="text" class="as-input" name="LastName" value="@user.LastName" required>
+                                    </div>
+                                    <div>
+                                        <label class="as-label">Email Address</label>
+                                        <div class="as-lock-wrap">
+                                            <input type="email" class="as-input as-input-locked" value="@user.Email" readonly disabled>
+                                            <i class="fas fa-lock as-lock-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="as-label">System Role</label>
+                                        <div class="as-lock-wrap">
+                                            <input type="text" class="as-input as-input-locked" value="@(user.Role ?? "Admin")" readonly disabled>
+                                            <i class="fas fa-lock as-lock-icon"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-12 mt-2">
-                                <div class="form-group mb-0">
-                                    <label class="form-label">
-                                        <i class="fas fa-envelope"></i> Email Address <span class="text-muted ms-2">(Read-only)</span>
-                                    </label>
-                                    <input type="email" class="form-control"
-                                           style="background-color: #f8fafc; cursor: not-allowed;"
-                                           value="@user.Email"
-                                           readonly disabled><br></br>
-                                    <p class="text-muted small mt-4 mb-0">
-                                        <i class="fas fa-info-circle me-1"></i> Email address is used for system identity and cannot be changed here.
-                                    </p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Security Panel -->
+                <div class="as-panel" data-panel="security">
+                    <div class="as-card">
+                        <div class="as-card-header">
+                            <div class="as-card-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <h5>Password &amp; Security</h5>
+                                <p>Control your account security settings.</p>
+                            </div>
+                        </div>
+                        <div class="as-card-body">
+                            <!-- Info Box -->
+                            <div class="as-security-notice" style="background:#f0f9ff; border:1px solid #e0f2fe;">
+                                <i class="fas fa-info-circle" style="color:#0ea5e9;"></i>
+                                <div>
+                                    <p class="fw-bold" style="margin-bottom:4px; font-weight:700; color:#0c4a6e;">Security Best Practices</p>
+                                    <p style="color:#0c4a6e; font-size:0.85rem;">Use a unique password of at least 12 characters to ensure maximum protection for your account.</p>
+                                </div>
+                            </div>
+
+                            <!-- Password Item -->
+                            <div class="as-security-item" style="border:1px solid #e2e8f0; margin-top:20px;">
+                                <div class="as-sec-row">
+                                    <div class="as-sec-icon" style="background:#f1f5f9;"><i class="fas fa-key"></i></div>
+                                    <div class="as-sec-content">
+                                        <h5>Account Password</h5>
+                                        <p>Keep your password strong and change it regularly.</p>
+                                    </div>
+                                    <a href="@Url.Action("ChangePassword", "Account")" class="as-btn-outline" style="text-decoration:none;">Update</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer Buttons -->
-                <div class="d-flex justify-content-center gap-4 mt-5 pt-4">
-                    <button type="submit" class="btn-primary-small"
-                            style="padding: 16px 50px; font-size: 16px;">
-                        <i class="fas fa-check-circle me-2"></i> Save Changes
-                    </button>
-
-                    <button type="reset" class="btn-primary-small"
-                            style="background: #f1f5f9; color: #475569;
-                                   padding: 16px 50px; font-size: 16px;
-                                   border: 1px solid #e2e8f0; box-shadow: none;">
-                        Reset Form
-                    </button>
+                <!-- Account Panel -->
+                <div class="as-panel" data-panel="account">
+                    <div class="as-card">
+                        <div class="as-card-header">
+                            <div class="as-card-icon"><i class="fas fa-info-circle"></i></div>
+                            <div>
+                                <h5>Account Information</h5>
+                                <p>Your system account details.</p>
+                            </div>
+                        </div>
+                        <div class="as-card-body">
+                            <div class="as-row">
+                                <div>
+                                    <label class="as-label">Account ID</label>
+                                    <input class="as-input as-input-locked" value="#@user.Id.ToString("D5")" readonly disabled>
+                                </div>
+                                <div>
+                                    <label class="as-label">Member Since</label>
+                                    <input class="as-input as-input-locked" value="@user.CreatedAt.ToString("MMMM dd, yyyy")" readonly disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
+
+            </div><!-- /panel-container -->
+
+            <!-- Unified Footer Actions -->
+            <div class="as-footer-actions">
+                <button type="button" class="as-btn-footer-cancel" onclick="window.location.href='@Url.Action("Dashboard","Admin")'">Cancel</button>
+                <button type="button" class="as-btn-save" id="mainSubmitBtn" onclick="submitActiveAsForm()">
+                    <span class="as-spin"></span>
+                    <span class="as-label" style="color: #fff;"><i class="fas fa-save" style="margin-right:5px;"></i>Save Changes</span>
+                </button>
+            </div>
+
+        </div><!-- /col-main -->
+    </div><!-- /as-layout -->
+</div>
+
+<!-- Toast -->
+<div class="as-toast" id="asToast">
+    <div class="as-toast-icon"><i class="fas fa-check"></i></div>
+    <div>
+        <strong>Changes Saved!</strong>
+        <p>@saveMessage</p>
     </div>
 </div>
 
-
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const tabs = document.querySelectorAll('.nav-link-premium');
-            const contents = document.querySelectorAll('.tab-pane-premium');
+<script>
+    function asSwitchTab(name) {
+        document.querySelectorAll('.as-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.as-panel').forEach(p => p.classList.remove('active'));
+        const btn = document.querySelector(`.as-tab-btn[data-tab="${name}"]`);
+        const panel = document.querySelector(`.as-panel[data-panel="${name}"]`);
+        if (btn) btn.classList.add('active');
+        if (panel) panel.classList.add('active');
+        
+        // Contextual buttons in footer
+        const mainBtn = document.getElementById('mainSubmitBtn');
+        if (name === 'security' || name === 'account') {
+            mainBtn.style.display = 'none';
+        } else {
+            mainBtn.style.display = 'flex';
+        }
+    }
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const target = tab.getAttribute('data-tab');
+    function submitActiveAsForm() {
+        const activeTab = document.querySelector('.as-tab-btn.active').dataset.tab;
+        if (activeTab === 'personal') {
+            const form = document.getElementById('profileForm');
+            const btn = document.getElementById('mainSubmitBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            form.submit();
+        }
+    }
 
-                    tabs.forEach(t => t.classList.remove('active'));
-                    contents.forEach(c => c.classList.remove('active'));
-
-                    tab.classList.add('active');
-                    document.querySelector(`.tab-pane-premium[data-content="${target}"]`)
-                        .classList.add('active');
-                });
-            });
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tab buttons
+        document.querySelectorAll('.as-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => asSwitchTab(btn.dataset.tab));
         });
-    </script>
+
+        // Password toggles
+        document.querySelectorAll('.as-toggle-pwd').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.dataset.target;
+                const input = document.getElementById(targetId);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    this.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            });
+            // Style the eye icon
+            btn.style.position = 'absolute';
+            btn.style.right = '14px';
+            btn.style.top = '50%';
+            btn.style.transform = 'translateY(-50%)';
+            btn.style.color = '#94a3b8';
+            btn.style.cursor = 'pointer';
+            btn.style.pointerEvents = 'all';
+            btn.style.fontSize = '.9rem';
+        });
+
+        // Toast
+        const showToast = @(hasSaved ? "true" : "false");
+        if (showToast) {
+            const toast = document.getElementById('asToast');
+            if (toast) {
+                setTimeout(() => toast.classList.add('show'), 300);
+                setTimeout(() => toast.classList.remove('show'), 4500);
+            }
+        }
+    });
+</script>
 }

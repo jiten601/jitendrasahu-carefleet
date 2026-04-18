@@ -12,15 +12,15 @@
 
 <div class="messages-page-wrapper patient-theme fade-in">
     <!-- Header Card -->
-    <div class="premium-header-card mb-4">
+    <div class="premium-header-card mb-2">
         <div class="header-card-content">
             <div class="header-info">
                 <h2 class="fw-800 text-white mb-2">My Messages</h2>
                 <p class="text-white opacity-75 mb-0">Stay connected with your healthcare providers.</p>
             </div>
             <div class="header-actions">
-                <button class="btn-premium-light" onclick="alert('Starting a new conversation...')">
-                    <i class="fas fa-plus me-2"></i>New Conversation
+                <button class="btn-premium-light" onclick="startNewConversation()">
+                    <i class="fas fa-plus me-2"></i>Start Conversation
                 </button>
             </div>
         </div>
@@ -38,14 +38,14 @@
                         <input type="text" id="contactSearch" class="search-input" placeholder="Search providers...">
                     </div>
                 </div>
-                
+
                 <div class="conversations-list custom-scrollbar" id="conversationsList">
                     @if (ViewBag.Contacts != null && ((IEnumerable<CareFleet.Models.Doctor>)ViewBag.Contacts).Any())
                     {
                         foreach (var contact in (IEnumerable<CareFleet.Models.Doctor>)ViewBag.Contacts)
                         {
                             bool isActive = ViewBag.SelectedContactEmail == contact.Email;
-                            <div class="conversation-item @(isActive ? "active" : "")" 
+                            <div class="conversation-item @(isActive ? "active" : "")"
                                  onclick="location.href='@Url.Action("Messages", "Patient", new { receiverEmail = contact.Email })'"
                                  data-name="dr. @contact.FirstName.ToLower() @contact.LastName.ToLower()">
                                 <div class="position-relative">
@@ -86,8 +86,15 @@
                 <header class="chat-window-header">
                     @{
                         var patientName = (string)ViewBag.SelectedContactName;
-                        var initials = !string.IsNullOrEmpty(patientName) ? 
-                            (patientName.Contains(" ") ? patientName.Split(' ').Last().Substring(0, 1) : patientName.Substring(0, 1)) : "D";
+                        var initials = !string.IsNullOrEmpty(patientName) ?
+                        (patientName.Contains(" ") ? patientName.Split(' ').Last().Substring(0, 1) : patientName.Substring(0, 1)) : "D";
+
+                        CareFleet.Models.Doctor activeDoc = null;
+                        if (ViewBag.Contacts != null && ViewBag.SelectedContactEmail != null)
+                        {
+                            var currentEmail = (string)ViewBag.SelectedContactEmail;
+                            activeDoc = ((IEnumerable<CareFleet.Models.Doctor>)ViewBag.Contacts).FirstOrDefault(d => d.Email == currentEmail);
+                        }
                     }
                     <div class="d-flex align-items-center">
                         <div class="user-avatar-medium bg-light text-primary me-3">
@@ -113,9 +120,18 @@
                         <button class="btn-tool" onclick="startVideoCall('@ViewBag.SelectedContactEmail', '@patientName', '@initials')" title="Video Call">
                             <i class="fas fa-video"></i>
                         </button>
-                        <button class="btn-tool" onclick="alert('Viewing doctor profile...')" title="Info">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
+                        @if (activeDoc != null)
+                        {
+                            <button class="btn-tool" onclick="viewProviderProfile('@activeDoc.FirstName', '@activeDoc.LastName', '@activeDoc.Email', '@activeDoc.PhoneNumber', '@activeDoc.Specialization', '@initials')" title="Info">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn-tool" title="Info" disabled>
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        }
                     </div>
                 </header>
 
@@ -147,8 +163,9 @@
                                     </div>
                                     <div class="message-time">
                                         @msg.Timestamp.ToString("hh:mm tt")
-                                        @if (isOutgoing) { 
-                                            <i class="fas fa-check-double ms-1 @(msg.IsRead ? "text-primary" : "")"></i> 
+                                        @if (isOutgoing)
+                                        {
+                                            <i class="fas fa-check-double ms-1 @(msg.IsRead ? "text-primary" : "")"></i>
                                         }
                                     </div>
                                 </div>
@@ -240,6 +257,75 @@
         document.getElementById('messageContent').required = true;
     }
 
+    function startNewConversation() {
+        const contacts = [];
+        @if (ViewBag.Contacts != null)
+        {
+                foreach (var contact in (IEnumerable<CareFleet.Models.Doctor>)ViewBag.Contacts)
+                {
+                        <text>
+                        contacts.push({ email: '@contact.Email', name: 'Dr. @contact.FirstName @contact.LastName', spec: '@contact.Specialization' });
+                        </text>
+                }
+        }
+
+        if (contacts.length === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Providers Available',
+                text: 'You do not have any healthcare providers to message yet. Please book an appointment first.',
+                confirmButtonColor: '#3b82f6',
+                background: '#ffffff',
+                borderRadius: '16px',
+                customClass: {
+                    popup: 'premium-swal-popup',
+                    confirmButton: 'premium-swal-confirm'
+                }
+            });
+            return;
+        }
+
+        let optionsHtml = '<option value="" disabled selected>Select a provider...</option>';
+        contacts.forEach(c => {
+            optionsHtml += `<option value="${c.email}">${c.name} - ${c.spec}</option>`;
+        });
+
+        Swal.fire({
+            title: '<h4 class="fw-bold mb-0">New Conversation</h4>',
+            html: `
+                <div class="text-start mt-3">
+                    <label class="form-label text-muted small mb-2 fw-medium">Select Healthcare Provider</label>
+                    <select id="new-conv-provider" class="form-select border-0 shadow-sm" style="border-radius:12px; background-color:#f8fafc; padding:12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;">
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Start Chat',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#94a3b8',
+            background: '#ffffff',
+            borderRadius: '16px',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel'
+            },
+            preConfirm: () => {
+                const selectedEmail = document.getElementById('new-conv-provider').value;
+                if (!selectedEmail) {
+                    Swal.showValidationMessage('<i class="fas fa-exclamation-circle me-1"></i> Please select a provider');
+                }
+                return selectedEmail;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("Messages", "Patient")?receiverEmail=' + encodeURIComponent(result.value);
+            }
+        });
+    }
+
     function deleteMessage(messageId, btn) {
         Swal.fire({
             title: 'Delete Message?',
@@ -292,6 +378,38 @@
                     console.error('Error:', error);
                     Swal.fire('Error!', 'An error occurred while deleting.', 'error');
                 });
+            }
+        });
+    }
+
+    function viewProviderProfile(firstName, lastName, email, phone, spec, initials) {
+        Swal.fire({
+            html: `
+                <div class="text-center p-3">
+                    <div class="user-avatar-large mx-auto bg-light text-primary mb-3" style="width: 80px; height: 80px; font-size: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #e0f2fe !important; color: #0284c7 !important;">
+                        <span>${initials}</span>
+                    </div>
+                    <h4 class="fw-bold mb-1">Dr. ${firstName} ${lastName}</h4>
+                    <p class="text-muted mb-3"><i class="fas fa-user-md me-1"></i> ${spec}</p>
+
+                    <div class="text-start bg-light rounded-3 p-3">
+                        <div class="mb-2">
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Email Address</small>
+                            <span class="fw-medium">${email}</span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Phone Number</small>
+                            <span class="fw-medium">${phone || 'Not provided'}</span>
+                        </div>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCloseButton: true,
+            background: '#ffffff',
+            borderRadius: '16px',
+            customClass: {
+                popup: 'premium-swal-popup border-0 shadow-lg'
             }
         });
     }

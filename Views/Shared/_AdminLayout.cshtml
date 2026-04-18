@@ -39,6 +39,11 @@
 </head>
 <body>
     <div class="admin-container">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="sidebar-toggle-mobile" id="sidebarToggleMobile">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- Left Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -79,6 +84,12 @@
                     <span>Settings</span>
                 </a>
             </nav>
+            <div class="sidebar-footer">
+                <a href="@Url.Action("Logout", "Account")" class="nav-item sidebar-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -267,11 +278,31 @@
             if (!clickedInside) {
                 dropdowns.forEach(d => { if (d) d.style.display = 'none'; });
             }
-
-            if (!event.target.closest('.notification-container')) {
-                document.querySelectorAll('.notiDropdown.show').forEach(d => d.classList.remove('show'));
-            }
+            document.querySelectorAll('.notiDropdown.show').forEach(d => d.classList.remove('show'));
         });
+
+        // Sidebar Toggle Logic for Mobile
+        const sidebarToggle = document.getElementById('sidebarToggleMobile');
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                const icon = sidebarToggle.querySelector('i');
+                if (sidebar.classList.contains('active')) {
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    sidebarToggle.querySelector('i').classList.replace('fa-times', 'fa-bars');
+                }
+            });
+        }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

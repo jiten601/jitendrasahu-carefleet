@@ -21,8 +21,8 @@
                 <p class="text-white opacity-75 mb-0">Communicate securely with your patients.</p>
             </div>
             <div class="header-actions">
-                <button class="btn-premium-light" onclick="alert('Broadcasting feature is being optimized...')">
-                    <i class="fas fa-plus me-2"></i>New Conversation
+                <button class="btn-premium-light" onclick="startNewConversation()">
+                    <i class="fas fa-plus me-2"></i>Start Conversation
                 </button>
             </div>
         </div>
@@ -40,14 +40,14 @@
                         <input type="text" id="patientSearch" class="search-input" placeholder="Search patients...">
                     </div>
                 </div>
-                
+
                 <div class="conversations-list custom-scrollbar" id="conversationsList">
                     @if (ViewBag.Contacts != null && ((IEnumerable<CareFleet.Models.Patient>)ViewBag.Contacts).Any())
                     {
                         foreach (var contact in (IEnumerable<CareFleet.Models.Patient>)ViewBag.Contacts)
                         {
                             bool isActive = ViewBag.SelectedContactEmail == contact.Email;
-                            <div class="conversation-item @(isActive ? "active" : "")" 
+                            <div class="conversation-item @(isActive ? "active" : "")"
                                  onclick="location.href='@Url.Action("Messages", "Doctor", new { receiverEmail = contact.Email })'"
                                  data-name="@contact.FirstName.ToLower() @contact.LastName.ToLower()">
                                 <div class="position-relative">
@@ -74,7 +74,7 @@
                         </div>
                     }
                 </div>
-                
+
                 <!-- Active Indicator Bar at bottom (matching image) -->
                 <div class="p-2 bg-light bg-opacity-50">
                     <div class="progress" style="height: 8px; border-radius: 4px; background: #cbd5e1;">
@@ -86,6 +86,14 @@
             <!-- Main: Chat Window -->
             <section class="chat-window">
                 <header class="chat-window-header">
+                    @{
+                        CareFleet.Models.Patient activePatient = null;
+                        if (ViewBag.Contacts != null && ViewBag.SelectedContactEmail != null)
+                        {
+                            var currentEmail = (string)ViewBag.SelectedContactEmail;
+                            activePatient = ((IEnumerable<CareFleet.Models.Patient>)ViewBag.Contacts).FirstOrDefault(p => p.Email == currentEmail);
+                        }
+                    }
                     <div class="d-flex align-items-center">
                         <div class="user-avatar-medium bg-light text-primary me-3">
                             @if (ViewBag.SelectedContactName != null)
@@ -110,9 +118,19 @@
                         <button class="btn-tool" onclick="startVideoCall('@ViewBag.SelectedContactEmail', '@ViewBag.SelectedContactName', '@(ViewBag.SelectedContactName != null ? ViewBag.SelectedContactName.Substring(0, 1) : "P")')" title="Video Call">
                             <i class="fas fa-video"></i>
                         </button>
-                        <button class="btn-tool" onclick="location.href='@Url.Action("Patients", "Doctor")'" title="Patient Info">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
+                        @if (activePatient != null)
+                        {
+                            var initials = ViewBag.SelectedContactName != null ? ViewBag.SelectedContactName.Substring(0, 1) : "P";
+                            <button class="btn-tool" onclick="viewPatientProfile('@activePatient.FirstName', '@activePatient.LastName', '@activePatient.Email', '@activePatient.PhoneNumber', '@activePatient.Gender', '@activePatient.BloodGroup', '@initials')" title="Patient Info">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn-tool" title="Patient Info" disabled>
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        }
                     </div>
                 </header>
 
@@ -144,8 +162,9 @@
                                     </div>
                                     <div class="message-time">
                                         @msg.Timestamp.ToString("hh:mm tt")
-                                        @if (isOutgoing) { 
-                                            <i class="fas fa-check-double ms-1 @(msg.IsRead ? "text-primary" : "")"></i> 
+                                        @if (isOutgoing)
+                                        {
+                                            <i class="fas fa-check-double ms-1 @(msg.IsRead ? "text-primary" : "")"></i>
                                         }
                                     </div>
                                 </div>
@@ -272,7 +291,7 @@
                         const messageGroup = btn.closest('.message-group');
                         messageGroup.classList.add('fade-out');
                         setTimeout(() => messageGroup.remove(), 300);
-                        
+
                         Swal.fire({
                             title: 'Deleted!',
                             text: 'Your message has been removed.',
@@ -289,6 +308,107 @@
                     console.error('Error:', error);
                     Swal.fire('Error!', 'An error occurred while deleting.', 'error');
                 });
+            }
+        });
+    }
+
+    function viewPatientProfile(firstName, lastName, email, phone, gender, bloodGroup, initials) {
+        Swal.fire({
+            html: `
+                <div class="text-center p-3">
+                    <div class="user-avatar-large mx-auto bg-light text-primary mb-3" style="width: 80px; height: 80px; font-size: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #e0f2fe !important; color: #0284c7 !important;">
+                        <span>${initials}</span>
+                    </div>
+                    <h4 class="fw-bold mb-1">${firstName} ${lastName}</h4>
+                    <p class="text-muted mb-3"><i class="fas fa-user mb-1 me-1"></i> ${gender || 'Not specified'} ${bloodGroup ? `&bull; Blood Type: ${bloodGroup}` : ''}</p>
+
+                    <div class="text-start bg-light rounded-3 p-3">
+                        <div class="mb-2">
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Email Address</small>
+                            <span class="fw-medium">${email}</span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.75rem;">Phone Number</small>
+                            <span class="fw-medium">${phone || 'Not provided'}</span>
+                        </div>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCloseButton: true,
+            background: '#ffffff',
+            borderRadius: '16px',
+            customClass: {
+                popup: 'premium-swal-popup border-0 shadow-lg'
+            }
+        });
+    }
+
+    function startNewConversation() {
+        const contacts = [];
+        @if (ViewBag.Contacts != null)
+        {
+                foreach (var contact in (IEnumerable<CareFleet.Models.Patient>)ViewBag.Contacts)
+                {
+                        <text>
+                        contacts.push({ email: '@contact.Email', name: '@contact.FirstName @contact.LastName' });
+                        </text>
+                }
+        }
+
+        if (contacts.length === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'No Patients Available',
+                text: 'You do not have any patients in your contact list to message yet.',
+                confirmButtonColor: '#3b82f6',
+                background: '#ffffff',
+                borderRadius: '16px',
+                customClass: {
+                    popup: 'premium-swal-popup',
+                    confirmButton: 'premium-swal-confirm'
+                }
+            });
+            return;
+        }
+
+        let optionsHtml = '<option value="" disabled selected>Select a patient...</option>';
+        contacts.forEach(c => {
+            optionsHtml += `<option value="${c.email}">${c.name}</option>`;
+        });
+
+        Swal.fire({
+            title: '<h4 class="fw-bold mb-0">New Conversation</h4>',
+            html: `
+                <div class="text-start mt-3">
+                    <label class="form-label text-muted small mb-2 fw-medium">Select Patient</label>
+                    <select id="new-conv-patient" class="form-select border-0 shadow-sm" style="border-radius:12px; background-color:#f8fafc; padding:12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;">
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Start Chat',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#94a3b8',
+            background: '#ffffff',
+            borderRadius: '16px',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel'
+            },
+            preConfirm: () => {
+                const selectedEmail = document.getElementById('new-conv-patient').value;
+                if (!selectedEmail) {
+                    Swal.showValidationMessage('<i class="fas fa-exclamation-circle me-1"></i> Please select a patient');
+                }
+                return selectedEmail;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("Messages", "Doctor")?receiverEmail=' + encodeURIComponent(result.value);
             }
         });
     }

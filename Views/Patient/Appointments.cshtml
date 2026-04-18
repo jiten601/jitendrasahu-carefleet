@@ -3,151 +3,189 @@
     ViewData["Title"] = "My Appointments";
     Layout = "~/Views/Shared/_PatientLayout.cshtml";
     ViewBag.ActivePage = "Appointments";
-    ViewBag.HeaderTitle = "Appointments";
+    ViewBag.HeaderTitle = "Appointments tracking";
+    ViewBag.HideHeader = true; // Use premium header card
 }
 
-<div class="appointments-page fade-in">
-    <!-- Header Card -->
-    <div class="premium-header-card mb-4">
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/patient-appointments.css" asp-append-version="true" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('appointmentSearch');
+            const rows = document.querySelectorAll('.appointment-row');
+
+            searchInput?.addEventListener('keyup', function() {
+                const value = this.value.toLowerCase();
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(value) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+}
+
+<div class="premium-admin-container mt-2">
+    <!-- Premium Header Card -->
+    <div class="premium-header-card mb-4" style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);">
         <div class="header-card-content">
             <div class="header-info">
-                <h2 class="fw-800 text-white mb-2">My Appointments</h2>
-                <p class="text-white opacity-75 mb-0">View, manage, and schedule your health consultations.</p>
+                <h1 class="header-title-main">My Appointments</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    View, manage, and schedule your health consultations.
+                </p>
+
+                <div class="d-flex gap-3 mt-4">
+                    <div class="premium-stat-card">
+                        <div class="stat-icon-wrapper upcoming">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Upcoming Limit</span>
+                            <span class="stat-value">@(Model?.Count(a => a.AppointmentDate >= DateTime.Today && a.Status != "Cancelled") ?? 0)</span>
+                        </div>
+                    </div>
+                    <div class="premium-stat-card">
+                        <div class="stat-icon-wrapper total">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Total Visits</span>
+                            <span class="stat-value">@(Model?.Count() ?? 0)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
-                <a href="@Url.Action("Book", "Appointment")" class="btn-premium-light">
-                    <i class="fas fa-plus me-2"></i>Book New Appointment
+                <a href="@Url.Action("Book", "Appointment")" class="btn-premium-light text-decoration-none" style="background: white; color: var(--primary-dark); padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus"></i> Book New Appointment
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-    <!-- Main Content Card -->
-    <div class="dashboard-card border-0 shadow-sm overflow-hidden">
-        <div class="card-header-premium">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="header-icon-box">
-                        <i class="fas fa-calendar-alt"></i>
-                    </span>
-                    <div>
-                        <h5 class="mb-0 fw-bold">Appointment Schedule</h5>
-                        <small class="text-secondary">Overview of your upcoming and past visits</small>
-                    </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <div class="search-box-modern">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search appointments...">
-                    </div>
-                    <button class="btn-filter-modern">
-                        <i class="fas fa-filter me-2"></i>Filter
-                    </button>
-                </div>
-            </div>
+    <!-- Search & Filter Bar -->
+    <div class="search-filter-section mb-4">
+        <div class="search-input-wrapper flex-grow-1">
+            <i class="fas fa-search"></i>
+            <input type="text" id="appointmentSearch" placeholder="Search by doctor, date, or status..." class="premium-search-input">
         </div>
-
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="activity-table-modern">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Medical Expert</th>
-                            <th>Date & Time</th>
-                            <th>Specialization</th>
-                            <th>Status</th>
-                            <th class="text-end pe-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sq-sm me-3">
-                                                @{
-                                                    var docInitials = item.DoctorName?.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                                                                        .Select(p => p[0].ToString())
-                                                                        .Aggregate((a, b) => a + b) ?? "DOC";
-                                                }
-                                                <span>@docInitials.ToUpper()</span>
-                                            </div>
-                                            <div>
-                                                <div class="doctor-name">@item.DoctorName</div>
-                                                <div class="x-small text-muted">Consultant</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="date-box">
-                                            <div class="fw-bold">@item.AppointmentDate.ToString("MMM dd, yyyy")</div>
-                                            <div class="text-secondary small">@item.TimeSlot</div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="spec-pill">Medical Expert</span>
-                                    </td>
-                                    <td>
-                                        @{
-                                            var (badgeClass, icon) = item.Status switch
-                                            {
-                                                "Confirmed" => ("status-pill-success", "fa-check-circle"),
-                                                "Pending" => ("status-pill-warning", "fa-clock"),
-                                                "Cancelled" => ("status-pill-danger", "fa-times-circle"),
-                                                _ => ("status-pill-info", "fa-info-circle")
-                                            };
-                                        }
-                                        <span class="status-pill @badgeClass">
-                                            <i class="fas @icon me-1"></i>@item.Status
-                                        </span>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a href="@Url.Action("AppointmentDetails", "Patient", new { id = item.Id })" class="btn-action-light" title="Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="@Url.Action("Book", "Appointment", new { rescheduleId = item.Id })" class="btn-action-light" title="Reschedule">
-                                                <i class="fas fa-calendar-day"></i>
-                                            </a>
-                                            <form method="post" action="@Url.Action("CancelAppointment", "Patient")" onsubmit="return confirm('Are you sure you want to cancel this appointment?');" style="display:inline;">
-                                                <input type="hidden" name="id" value="@item.Id" />
-                                                <button type="submit" class="btn-action-danger" title="Cancel">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="5" class="text-center py-5">
-                                    <div class="empty-state">
-                                        <div class="empty-state-icon">
-                                            <i class="fas fa-calendar-times"></i>
-                                        </div>
-                                        <h5 class="fw-bold mt-3">No Appointments Found</h5>
-                                        <p class="text-muted">You don't have any appointments scheduled at the moment.</p>
-                                        <button class="btn btn-primary px-4 mt-2" onclick="location.href='@Url.Action("Book", "Appointment")'">
-                                            Schedule Now
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+        <div class="filter-actions">
+            <button class="btn-filter" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt fw-bold"></i>
+            </button>
         </div>
     </div>
-</div>
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/patient-appointments.css" asp-append-version="true" />
-}
+    <!-- Table Section -->
+    <div class="table-glass-wrapper shadow-lg overflow-visible mb-5">
+        <table class="table premium-table mb-0" id="appointmentsTable">
+            <thead>
+                <tr>
+                    <th class="ps-4">Medical Expert</th>
+                    <th>Date & Time</th>
+                    <th>Fee</th>
+                    <th>Medical Reson</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        var docInitials = item.DoctorName?.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(p => p[0].ToString())
+                        .Aggregate((a, b) => a + b) ?? "DOC";
+
+                        <tr class="appointment-row">
+                            <td class="ps-4">
+                                <div class="patient-identity">
+                                    <div class="patient-avatar doctor-avatar" style="background: rgba(84, 119, 146, 0.1); color: var(--primary-blue);">
+                                        @docInitials.ToUpper()
+                                    </div>
+                                    <div class="patient-info">
+                                        <span class="patient-name fw-bold" style="color: var(--primary-dark);">@item.DoctorName</span>
+                                        <span class="patient-id" style="color: var(--text-secondary);">Healthcare Consultant</span>
+                                    </div>
+                                </div>
+                            </td>
+                             <td>
+                                <div>
+                                    <span class="data-label fw-bold" style="color: var(--primary-dark);">@item.AppointmentDate.ToString("MMM dd, yyyy")</span>
+                                    <span class="data-sublabel" style="color: var(--text-secondary);">
+                                        <i class="far fa-clock me-1"></i> @item.TimeSlot
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-bold" style="color: #4361ee; background: rgba(67, 97, 238, 0.1); padding: 5px 10px; border-radius: 6px;">
+                                    Rs. @item.Fee.ToString("N0")
+                                </span>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="history-badge" title="@item.Reason">
+                                        @(string.IsNullOrEmpty(item.Reason) ? "General Consultation" : item.Reason)
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                @{
+                                    var (badgeClass, iconClass, bgColor, textColor) = item.Status switch
+                                    {
+                                        "Confirmed" => ("status-pill-success", "fa-check-circle", "rgba(16, 185, 129, 0.1)", "#059669"),
+                                        "Pending" => ("status-pill-warning", "fa-clock", "rgba(245, 158, 11, 0.1)", "#d97706"),
+                                        "Cancelled" => ("status-pill-danger", "fa-times-circle", "rgba(239, 68, 68, 0.1)", "#dc2626"),
+                                        _ => ("status-pill-info", "fa-info-circle", "rgba(59, 130, 246, 0.1)", "#3b82f6")
+                                    };
+                                }
+                                <span class="status-pill @badgeClass fw-bold" style="background: @bgColor; color: @textColor;">
+                                    <i class="fas @iconClass me-1"></i> @item.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="@Url.Action("AppointmentDetails", "Patient", new { id = item.Id })" class="btn-action-premium view" title="View Details">
+                                        <i class="fas fa-eye text-primary"></i>
+                                    </a>
+                                    @if (item.Status != "Cancelled")
+                                    {
+                                        <a href="@Url.Action("Book", "Appointment", new { rescheduleId = item.Id })" class="btn-action-premium edit" title="Reschedule Consultation">
+                                            <i class="fas fa-calendar-day text-warning"></i>
+                                        </a>
+                                        <form method="post" action="@Url.Action("CancelAppointment", "Patient")" class="d-inline m-0 p-0" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn-action-premium delete border-0" title="Cancel Appointment">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times mb-4" style="font-size: 4.5rem; color: #cbd5e1; opacity: 0.4;"></i>
+                                <h3 style="color: var(--primary-dark); font-family: 'Outfit', sans-serif; font-weight: 700;">No Appointments Found</h3>
+                                <p style="color: var(--text-secondary); font-weight: 500;">You don't have any appointments scheduled at the moment.</p>
+                                <a href="@Url.Action("Book", "Appointment")" class="btn btn-premium-light mt-3" style="background: var(--primary-blue) !important; border:none !important;">Schedule Now</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -25,5 +25,18 @@ namespace CareFleet.Models
 
         [Required(ErrorMessage = "Role is required")]
         public string Role { get; set; } = string.Empty;
+
+        // --- Patient Specific Fields ---
+        public string? PhoneNumber { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? Address { get; set; }
+        public string? BloodGroup { get; set; }
+        public string? MedicalHistory { get; set; }
+        public string? Allergies { get; set; }
+
+        // --- Doctor Specific Fields ---
+        public string? Specialization { get; set; }
+        public string? LicenseNumber { get; set; }
     }
 }

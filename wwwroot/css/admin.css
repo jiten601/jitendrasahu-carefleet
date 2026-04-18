@@ -512,6 +512,21 @@ body {
     color: #dc3545 !important;
 }
 
+.sidebar-footer {
+    padding: 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logout {
+    color: #ff6b6b !important;
+    transition: all 0.3s ease;
+}
+
+.sidebar-logout:hover {
+    background-color: rgba(255, 107, 107, 0.1) !important;
+    color: #ff5252 !important;
+}
+
 .btn-toggle {
     background-color: #94B4C1;
     color: #ffffff;

@@ -1,106 +1,216 @@
 @model IEnumerable<CareFleet.Models.Patient>
 @{
-    ViewData["Title"] = "My Patients";
+    ViewData["Title"] = "My Patient Base";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewBag.ActivePage = "Patients";
+    ViewBag.HeaderTitle = "System Patients";
     ViewBag.HideHeader = true;
 }
 
-<div class="doctor-patients-page fade-in">
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/doctor-patients.css" asp-append-version="true" />
+}
+
+<div class="premium-admin-container doctor-patients-page mt-2">
     <!-- Premium Header Card -->
-    <div class="premium-header-card mb-4">
+    <div class="premium-header-card mb-4" style="background: linear-gradient(135deg, #1B3C53 0%, #3a506b 100%);">
         <div class="header-card-content">
             <div class="header-info">
-                <h2 class="fw-800 text-white mb-2">My Patients</h2>
-                <p class="text-white opacity-75 mb-0">Manage and view your assigned patient base.</p>
-            </div>
-            <div class="header-actions">
-                <form asp-action="Patients" method="get" class="d-flex w-100">
-                    <div class="premium-search-container rounded-pill px-4 py-2 d-flex align-items-center flex-grow-1" style="width: 300px;">
-                        <i class="fas fa-search text-white me-3"></i>
-                        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="border-0 bg-transparent flex-grow-1 text-white" placeholder="Search patients..." style="outline: none; font-size: 14px;" onblur="this.form.submit()" onkeypress="if(event.keyCode == 13) { this.form.submit(); return false; }">
+                <h1 class="header-title-main">My Patient</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-user-friends me-2"></i>
+                    Clinical overview and records of your assigned patient.
+                </p>
+
+                <div class="header-stats-container d-flex gap-3 mt-4">
+                    <div class="glass-stat-badge">
+                        <span class="stat-label">Total Patients</span>
+                        <span class="stat-value">@ViewBag.TotalItems</span>
                     </div>
-                </form>
+                </div>
+            </div>
+            <div class="header-actions d-flex align-items-center gap-3">
+                <div class="filter-group-wrapper shadow-sm">
+                    <button class="btn btn-sm filter-btn active">All Patients</button>
+                </div>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
+    <!-- Search & Filter Bar -->
+    <form method="get" asp-action="Patients" id="filterForm">
+        <div class="search-filter-section mb-4">
+            <div class="search-input-wrapper flex-grow-1">
+                <i class="fas fa-search"></i>
+                <input type="text" name="searchString" id="patientSearch"
+                       value="@ViewBag.CurrentFilter"
+                       placeholder="Search by name, ID, or phone..."
+                       class="premium-search-input">
+            </div>
+            <div class="filter-actions">
+                <a href="@Url.Action("Patients")" class="btn-filter text-decoration-none">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </a>
+            </div>
+        </div>
+    </form>
 
-    <!-- Main Content -->
-    <div class="row g-4">
-        @if (Model != null && Model.Any())
+    <!-- Table Glass Wrapper -->
+    <div class="table-glass-wrapper shadow-lg overflow-visible">
+        <table class="premium-table" id="patientsTable">
+            <thead>
+                <tr>
+                    <th class="ps-5">Patient Name</th>
+                    <th>Age / Gender</th>
+                    <th>Patient Contact</th>
+                    <th>Medical Summary</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center pe-5">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        var initials = !string.IsNullOrEmpty(item.FirstName) ?
+                        (item.FirstName[0].ToString() + (item.LastName?.Length > 0 ? item.LastName[0].ToString() : "")).ToUpper() : "PA";
+
+                        <tr class="patient-row">
+                            <td class="ps-5">
+                                <div class="patient-identity">
+                                    <div class="patient-avatar" style="background: rgba(27, 60, 83, 0.08); color: #1B3C53; font-weight: 800;">
+                                        @initials
+                                    </div>
+                                    <div class="patient-info">
+                                        <span class="patient-name">@item.FirstName @item.LastName</span>
+                                        <span class="patient-id">PAT-ID: #P-@item.Id.ToString("D4")</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="patient-info">
+                                    <span class="data-label fw-600">@(DateTime.Now.Year - item.DateOfBirth.Year) Yrs</span>
+                                    <span class="data-sublabel">@item.Gender</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="email-pill mb-1" title="@item.Email">
+                                    <i class="far fa-envelope me-2"></i> @item.Email
+                                </div>
+                                <span class="data-sublabel"><i class="fas fa-phone"></i> @item.PhoneNumber</span>
+                            </td>
+                            <td>
+                                <span class="history-badge fw-600 truncate-text" style="max-width: 200px;" title="@item.MedicalHistory">
+                                    @(string.IsNullOrEmpty(item.MedicalHistory) ? "General Checkup Required" : item.MedicalHistory)
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="status-pill active">
+                                    <i class="fas fa-circle small me-1 opacity-75"></i> Registered
+                                </span>
+                            </td>
+                            <td class="pe-5">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <a href="@Url.Action("MedicalRecords", "Doctor", new { patientId = item.Id })"
+                                       class="btn-action-premium edit" title="View Records">
+                                        <i class="fas fa-file-medical"></i>
+                                    </a>
+                                    <a href="@Url.Action("Messages", "Doctor", new { receiverEmail = item.Email })"
+                                       class="btn-action-premium view" title="Send Message">
+                                        <i class="fas fa-envelope"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 100px;">
+                            <div class="empty-state">
+                                <i class="fas fa-user-injured mb-4" style="font-size: 4.5rem; color: #cbd5e1; opacity: 0.4;"></i>
+                                <h3 style="color: #64748b; font-family: 'Outfit', sans-serif; font-weight: 700;">No Patients Found</h3>
+                                <p style="color: #94a3b8; font-weight: 500;">You are currently not assigned to any patient base matching your criteria.</p>
+                                <a href="@Url.Action("Patients")" class="btn btn-primary mt-3">Clear Filters</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Premium Pagination -->
+        @if (ViewBag.TotalItems > 0)
         {
-            foreach (var item in Model)
-            {
-                var initials = ((item.FirstName?.Length > 0 ? item.FirstName.Substring(0, 1) : "P") + 
-                               (item.LastName?.Length > 0 ? item.LastName.Substring(0, 1) : "A")).ToUpper();
-                
-                <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="patient-card-premium h-100">
-                        <div class="card-body-premium p-4 text-center">
-                            <span class="patient-id-badge">ID: #@item.Id.ToString("D5")</span>
-                            
-                            <div class="patient-avatar-wrapper">
-                                <div class="patient-avatar-circle">
-                                    @initials
-                                </div>
-                                <span class="online-indicator"></span>
-                            </div>
-                            
-                            <h6 class="fw-800 mb-1">@item.FirstName @item.LastName</h6>
-                            
-                            <div class="d-flex justify-content-center gap-2 mb-4">
-                                @{
-                                    var genderClass = item.Gender == "Male" ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger";
-                                }
-                                <span class="badge @genderClass px-2 py-1 rounded-pill x-small border border-opacity-10">@item.Gender</span>
-                                <span class="badge bg-light text-secondary px-2 py-1 rounded-pill x-small border">Regular</span>
-                            </div>
-
-                            <!-- Info Grid -->
-                            <div class="info-grid-premium text-start border rounded-3 p-3 mb-4 bg-light bg-opacity-50">
-                                <div class="info-item-sm mb-2">
-                                    <div class="info-icon-sq"><i class="fas fa-phone-alt" style="color: #547792;"></i></div>
-                                    <span>@item.PhoneNumber</span>
-                                </div>
-                                <div class="info-item-sm">
-                                    <div class="info-icon-sq"><i class="fas fa-calendar-check" style="color: #547792;"></i></div>
-                                    <span>Since @item.CreatedAt.ToString("MMM yyyy")</span>
-                                </div>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="d-grid gap-2">
-                                <a href="@Url.Action("MedicalRecords", "Doctor", new { patientId = item.Id })" class="btn btn-primary btn-sm fw-bold rounded-3 py-2" style="background-color: #547792; border-color: #547792; color: #ffffff;">
-                                    <i class="fas fa-history me-1 text-white"></i>View History
-                                </a>
-                                <a href="@Url.Action("Messages", "Doctor")" class="btn btn-outline-secondary btn-sm fw-bold rounded-3 py-2">
-                                    Message
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <div class="premium-pagination-container">
+                <div class="pagination-info">
+                    @{
+                        int start = (ViewBag.CurrentPage - 1) * ViewBag.PageSize + 1;
+                        int end = Math.Min(ViewBag.CurrentPage * ViewBag.PageSize, ViewBag.TotalItems);
+                    }
+                    Showing <span class="text-dark fw-bold">@start</span> to <span class="text-dark fw-bold">@end</span> of <span class="text-dark fw-bold">@ViewBag.TotalItems</span> patients
                 </div>
-            }
-        }
-        else
-        {
-            <div class="col-12">
-                <div class="dashboard-card p-5 text-center">
-                    <div class="mb-3">
-                        <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm" style="width: 80px; height: 80px;">
-                            <i class="fas fa-user-friends text-secondary opacity-25 fs-1"></i>
-                        </div>
-                    </div>
-                    <h5 class="fw-bold mb-2">No Patients Found</h5>
-                    <p class="text-secondary small mb-0">Patients assigned to you will appear here.</p>
+                
+                <div class="pagination-controls">
+                    <a href="@Url.Action("Patients", new { page = ViewBag.CurrentPage - 1, searchString = ViewBag.CurrentFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage <= 1 ? "disabled" : "")" title="Previous Page">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    @if (ViewBag.TotalPages > 1)
+                    {
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                            {
+                                <a href="@Url.Action("Patients", new { page = i, searchString = ViewBag.CurrentFilter })" 
+                                   class="page-link-premium @(ViewBag.CurrentPage == i ? "active" : "")">@i</a>
+                            }
+                            else if (i == ViewBag.CurrentPage - 3 || i == ViewBag.CurrentPage + 3)
+                            {
+                                <span class="px-2 text-muted">...</span>
+                            }
+                        }
+                    }
+                    else if (ViewBag.TotalPages == 1)
+                    {
+                        <a href="#" class="page-link-premium active">1</a>
+                    }
+
+                    <a href="@Url.Action("Patients", new { page = ViewBag.CurrentPage + 1, searchString = ViewBag.CurrentFilter })" 
+                       class="page-link-premium @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")" title="Next Page">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
                 </div>
             </div>
         }
     </div>
 </div>
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/doctor-patients.css" asp-append-version="true" />
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('patientSearch');
+            const filterForm = document.getElementById('filterForm');
+            
+            let typingTimer;
+            const doneTypingInterval = 800;
+
+            searchInput?.addEventListener('keyup', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    filterForm.submit();
+                }, doneTypingInterval);
+            });
+
+            searchInput?.addEventListener('keydown', function() {
+                clearTimeout(typingTimer);
+            });
+        });
+    </script>
 }

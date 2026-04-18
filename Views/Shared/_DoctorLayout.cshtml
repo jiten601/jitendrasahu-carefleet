@@ -24,6 +24,11 @@
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="sidebar-toggle-mobile" id="sidebarToggleMobile">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -306,6 +311,29 @@
                 document.cookie = "LastVisitedPath=" + currentPath + ";expires=" + expires.toUTCString() + ";path=/";
             }
         });
+
+        // Sidebar Toggle Logic for Mobile
+        const sidebarToggle = document.getElementById('sidebarToggleMobile');
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                const icon = sidebarToggle.querySelector('i');
+                if (sidebar.classList.contains('active')) {
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    sidebarToggle.querySelector('i').classList.replace('fa-times', 'fa-bars');
+                }
+            });
+        }
     </script>
     <partial name="_VideoCallModal" />
     @await RenderSectionAsync("Scripts", required: false)

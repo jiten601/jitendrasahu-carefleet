@@ -1,8 +1,188 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "CareFleet — Advanced Healthcare Management";
+    Layout = "_Layout";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+<div class="fade-in">
+
+    @* ===== HERO ===== *@
+    <div class="hero-main-v2 container mt-3">
+        <div class="row align-items-center g-4 position-relative z-3">
+
+            @* LEFT — TEXT CONTENT *@
+            <div class="col-lg-6 col-md-12">
+                <div class="badge-premium">Welcome to CareFleet</div>
+                <h1 class="hero-title-v2">Modern Healthcare,<br />Managed with Care.</h1>
+                <p class="hero-subtitle-v2">Your trusted partner in healthcare excellence. We bridge the gap between clinical complexity and administrative efficiency with a secure, world-class platform.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a asp-controller="Account" asp-action="Register"
+                       class="btn btn-light btn-lg px-5 py-3 fw-800 rounded-pill shadow-lg"
+                       style="color: var(--primary-dark)">
+                        <i class="fas fa-rocket me-2"></i>Explore the Portal
+                    </a>
+                    <a asp-controller="Home" asp-action="Services"
+                       class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-700">
+                        View Solutions
+                    </a>
+                </div>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <span class="hero-trust-badge"><i class="fas fa-shield-halved me-1"></i>HIPAA Secure</span>
+                    <span class="hero-trust-badge"><i class="fas fa-lock me-1"></i>End-to-End Encrypted</span>
+                    <span class="hero-trust-badge"><i class="fas fa-star me-1"></i>98% Satisfaction</span>
+                </div>
+            </div>
+
+            @* RIGHT — IMAGE *@
+            <div class="col-lg-6 col-md-12 text-center">
+                <div class="dashboard-mockup">
+                    <img src="~/images/hero_main.png" alt="CareFleet Ecosystem" class="img-fluid rounded-4" />
+                </div>
+            </div>
+
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    @* ===== STATS STRIP ===== *@
+    <div class="container" style="max-width:960px;">
+        <div class="home-stats-strip">
+            <div class="home-stat-item">
+                <span class="home-stat-number">10K+</span>
+                <span class="home-stat-label">Patients Served</span>
+            </div>
+            <div class="home-stat-divider"></div>
+            <div class="home-stat-item">
+                <span class="home-stat-number">500+</span>
+                <span class="home-stat-label">Certified Doctors</span>
+            </div>
+            <div class="home-stat-divider"></div>
+            <div class="home-stat-item">
+                <span class="home-stat-number">98%</span>
+                <span class="home-stat-label">Satisfaction Rate</span>
+            </div>
+            <div class="home-stat-divider"></div>
+            <div class="home-stat-item">
+                <span class="home-stat-number">24/7</span>
+                <span class="home-stat-label">Patient Support</span>
+            </div>
+        </div>
+    </div>
+
+    @* ===== SOLUTIONS GRID ===== *@
+    <div class="premium-section-wrapper">
+        <div class="container home-solutions-section">
+            <div class="text-center mb-5">
+                <div class="home-section-badge mb-3"><i class="fas fa-cubes me-2"></i>Our Solutions</div>
+                <h2 class="home-section-title">Holistic Medical Solutions</h2>
+                <p class="home-section-sub mx-auto">Integrated tools designed for patients, doctors, and administrators to work in perfect harmony.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="solution-card-v2">
+                        <div class="solution-icon-v2 sol-blue"><i class="fa-solid fa-user-doctor"></i></div>
+                        <h4 class="solution-title-v2">Clinical Excellence</h4>
+                        <p class="solution-desc-v2">Advanced appointment scheduling and patient follow-ups built to reduce clinic overhead and dramatically improve care outcomes.</p>
+                        <a asp-controller="Home" asp-action="Services" class="solution-link-v2">
+                            Learn more <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="solution-card-v2">
+                        <div class="solution-icon-v2 sol-green"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <h4 class="solution-title-v2">Financial Ease</h4>
+                        <p class="solution-desc-v2">Automated invoicing and integrated payment gateways providing transparent, PCI-DSS compliant financial auditing and reporting.</p>
+                        <a asp-controller="Home" asp-action="Services" class="solution-link-v2">
+                            Learn more <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="solution-card-v2">
+                        <div class="solution-icon-v2 sol-purple"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h4 class="solution-title-v2">Privacy First</h4>
+                        <p class="solution-desc-v2">Enterprise-grade encryption protecting patient records and clinical communications with state-of-the-art security infrastructure.</p>
+                        <a asp-controller="Home" asp-action="Privacy" class="solution-link-v2">
+                            Learn more <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ===== CORE FEATURES SECTION ===== *@
+    <div class="premium-section-wrapper">
+        <div class="container home-feature-split-section">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-5 text-center">
+                    <div class="feature-img-wrapper">
+                        <img src="~/images/services_illustration.png" alt="Clinical Illustration" class="img-fluid feature-split-img" />
+                    </div>
+                </div>
+                <div class="col-lg-7 ps-lg-5">
+                    <div class="home-section-badge mb-4"><i class="fas fa-layer-group me-2"></i>Core Features</div>
+                    <h2 class="home-section-title text-start mb-3">Engineered for<br />Clinical Precision</h2>
+                    <p class="feature-split-desc">
+                        Experience a platform that adapts to your workflow, not the other way around. Every module is optimized for clarity, speed, and security.
+                    </p>
+                    <ul class="home-feature-list-v2">
+                        <li>
+                            <span class="feature-check"><i class="fas fa-check"></i></span>
+                            Real-time Appointment Synchronization
+                        </li>
+                        <li>
+                            <span class="feature-check"><i class="fas fa-check"></i></span>
+                            Digital Ledger &amp; Automated Invoicing
+                        </li>
+                        <li>
+                            <span class="feature-check"><i class="fas fa-check"></i></span>
+                            Secure Clinician-Patient Messaging
+                        </li>
+                        <li>
+                            <span class="feature-check"><i class="fas fa-check"></i></span>
+                            Encrypted Medical Records Vault
+                        </li>
+                        <li>
+                            <span class="feature-check"><i class="fas fa-check"></i></span>
+                            HD Video Consultations
+                        </li>
+                    </ul>
+                    <a asp-action="About" class="btn-feature-cta">
+                        <i class="fas fa-info-circle me-2"></i>Learn More About Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ===== FINAL CTA ===== *@
+    <div class="container mb-5 pb-3">
+        <div class="home-final-cta">
+            <div class="home-final-cta-content">
+                <div class="home-section-badge mb-3" style="background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.3); color:white;">
+                    <i class="fas fa-rocket me-2"></i>Get Started Today
+                </div>
+                <h2 class="home-final-cta-title">Ready to Transform<br />Healthcare Delivery?</h2>
+                <p class="home-final-cta-sub">Join thousands of patients and doctors already experiencing the future of healthcare management.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a asp-controller="Account" asp-action="Register"
+                       class="btn btn-light btn-lg px-5 py-3 fw-800 rounded-pill shadow"
+                       style="color:var(--primary-dark)">
+                        <i class="fas fa-user-plus me-2"></i>Create Free Account
+                    </a>
+                    <a asp-controller="Account" asp-action="Login"
+                       class="btn btn-outline-light btn-lg px-5 py-3 fw-700 rounded-pill">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+            <div class="header-bg-pattern"></div>
+        </div>
+    </div>
+
 </div>

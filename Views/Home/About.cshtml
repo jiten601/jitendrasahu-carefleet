@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "About Us";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/about.css" asp-append-version="true" />
+}
+
+<div class="fade-in">
+
+    @* ===== HERO ===== *@
+    <div class="about-hero container mt-3">
+        <div class="row align-items-center position-relative z-3 px-lg-5 px-3 py-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="badge-premium mb-3 text-white">
+                    <i class="fas fa-heart-pulse me-2"></i>Who We Are
+                </div>
+                <h1 class="hero-title-v2 mb-4">A Legacy of Trust,<br /><span style="color:#6ee7b7;">A Future of Health.</span></h1>
+                <p class="hero-subtitle-v2 mx-auto" style="max-width:640px; opacity:0.9;">
+                    At CareFleet, we believe healthcare should be accessible to everyone. Our platform bridges the gap between patients and medical professionals using state-of-the-art technology.
+                </p>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    @* ===== STATS STRIP ===== *@
+    <div class="container" style="max-width:900px;">
+        <div class="about-stats-strip">
+            <div class="about-stat-item">
+                <span class="about-stat-number">10K+</span>
+                <span class="about-stat-label">Patients Served</span>
+            </div>
+            <div class="about-stat-divider"></div>
+            <div class="about-stat-item">
+                <span class="about-stat-number">500+</span>
+                <span class="about-stat-label">Certified Doctors</span>
+            </div>
+            <div class="about-stat-divider"></div>
+            <div class="about-stat-item">
+                <span class="about-stat-number">98%</span>
+                <span class="about-stat-label">Satisfaction Rate</span>
+            </div>
+            <div class="about-stat-divider"></div>
+            <div class="about-stat-item">
+                <span class="about-stat-number">24/7</span>
+                <span class="about-stat-label">Patient Support</span>
+            </div>
+        </div>
+    </div>
+
+    @* ===== STORY SECTION ===== *@
+    <div class="premium-section-wrapper">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-5">
+                    <div class="about-image-card">
+                        <img src="~/images/services_illustration.png" alt="Doctor and Patient" class="img-fluid" />
+                        <div class="about-image-badge">
+                            <i class="fas fa-shield-halved"></i> HIPAA Certified
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7 ps-lg-5">
+                    <div class="about-story-badge">
+                        <i class="fas fa-seedling me-2"></i>Our Story
+                    </div>
+                    <h2 class="fw-800 mb-4" style="color:var(--primary-dark); font-family:'Outfit',sans-serif; font-size:2.2rem;">Pioneering Digital Health Since Day One</h2>
+                    <p class="text-secondary mb-4" style="line-height:1.85; font-size:1.05rem;">
+                        CareFleet was founded with a singular mission: to eliminate the friction between patients and quality healthcare. We saw a world where paperwork, phone calls, and long waits stood between people and the care they needed — and we decided to change that.
+                    </p>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="about-feature-item">
+                            <div class="about-feature-icon"><i class="fas fa-shield-halved"></i></div>
+                            <div>
+                                <h5 class="fw-800 mb-1" style="color:var(--primary-dark);">Secure & HIPAA Compliant</h5>
+                                <p class="text-secondary small mb-0" style="line-height:1.7;">Your health data is encrypted with AES-256 and protected with industry-leading security protocols.</p>
+                            </div>
+                        </div>
+                        <div class="about-feature-item">
+                            <div class="about-feature-icon"><i class="fas fa-microscope"></i></div>
+                            <div>
+                                <h5 class="fw-800 mb-1" style="color:var(--primary-dark);">Integrated Diagnostics</h5>
+                                <p class="text-secondary small mb-0" style="line-height:1.7;">Support for advanced diagnostic reports and lab integration for comprehensive patient care.</p>
+                            </div>
+                        </div>
+                        <div class="about-feature-item">
+                            <div class="about-feature-icon"><i class="fas fa-bolt"></i></div>
+                            <div>
+                                <h5 class="fw-800 mb-1" style="color:var(--primary-dark);">Real-Time Everything</h5>
+                                <p class="text-secondary small mb-0" style="line-height:1.7;">Appointments, messages, and notifications sync instantly across all devices for seamless clinical flow.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ===== CTA ===== *@
+    <div class="container py-5 mb-5">
+        <div class="about-cta-card">
+            <h2 class="about-cta-title">Ready to Experience<br />Better Healthcare?</h2>
+            <p class="about-cta-sub">Join thousands of patients and doctors already using CareFleet to transform the way they connect, communicate, and care.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg px-5 py-3 fw-700 rounded-pill" style="color:var(--primary-dark);">Get Started Free</a>
+                <a asp-controller="Home" asp-action="Services" class="btn btn-outline-light btn-lg px-5 py-3 fw-700 rounded-pill">View Services</a>
+            </div>
+            <div class="header-bg-pattern"></div>
+        </div>
+    </div>
+
+</div>

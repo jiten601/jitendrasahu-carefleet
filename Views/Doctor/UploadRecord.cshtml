@@ -1,129 +1,232 @@
 @model CareFleet.Models.MedicalRecord
 @{
-    ViewData["Title"] = "Upload Record";
+    ViewData["Title"] = "Upload New Record";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewBag.ActivePage = "MedicalRecords";
     ViewBag.HideHeader = true;
 }
 
-<div class="doctor-records-page fade-in">
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/doctor-edit-record.css" asp-append-version="true" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const uploadZone = document.querySelector('.premium-upload-zone');
+
+            fileInput?.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    fileNameDisplay.innerHTML = `<i class="fas fa-check-circle me-1"></i> Ready to upload: <strong>${this.files[0].name}</strong>`;
+                    uploadZone.classList.add('has-file');
+                }
+            });
+        });
+    </script>
+}
+
+<div class="premium-admin-container doctor-upload-record-page mt-2">
     <!-- Premium Header Card -->
-    <div class="premium-header-card mb-4">
+    <div class="premium-header-card mb-4" style="background: linear-gradient(135deg, #1B3C53 0%, #3a506b 100%);">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-800 text-white mb-0">Upload Medical Record</h1>
-                <p class="text-white opacity-75 mb-0">Add a new health document for a patient.</p>
+                <h1 class="header-title-main">Upload Medical Document</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                    Securely add new clinical records and diagnostic reports to patient history.
+                </p>
             </div>
             <div class="header-actions">
-                <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Records
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="dashboard-card border-0 shadow-sm overflow-hidden">
-                <div class="card-header-premium px-4 py-3">
-                    <h5 class="fw-bold mb-0">Record Details</h5>
-                </div>
-                <div class="card-body-premium p-4">
-                    <form asp-action="UploadRecord" method="post" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="premium-form-container">
+        <div class="premium-glass-card shadow-lg">
+            <h2 class="form-section-title">
+                <i class="fas fa-plus-circle text-primary"></i> New Record Details
+            </h2>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Patient</label>
-                                <select asp-for="PatientId" class="form-select bg-light border-0 px-3 py-2 fw-medium" required>
-                                    <option value="">Select Patient</option>
-                                    @if (ViewBag.Patients != null)
+            <form asp-action="UploadRecord" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="validation-message mb-3"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="PatientId">Select Patient</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-user-injured"></i>
+                            <select asp-for="PatientId" class="premium-input" required>
+                                <option value="">-- Choose Patient --</option>
+                                @if (ViewBag.Patients != null)
+                                {
+                                    foreach (var patient in ViewBag.Patients)
                                     {
-                                        foreach (var patient in ViewBag.Patients)
-                                        {
-                                            <option value="@patient.Id">@patient.FirstName @patient.LastName</option>
-                                        }
+                                        <option value="@patient.Id">@patient.FirstName @patient.LastName</option>
                                     }
-                                </select>
-                                <span asp-validation-for="PatientId" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Category</label>
-                                <select asp-for="Category" class="form-select bg-light border-0 px-3 py-2 fw-medium" required>
-                                    <option value="General Health">General Health</option>
-                                    <option value="Laboratory">Laboratory</option>
-                                    <option value="Radiology">Radiology</option>
-                                    <option value="Prescription">Prescription</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                                <span asp-validation-for="Category" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Document Name</label>
-                                <input asp-for="DocumentName" class="form-control bg-light border-0 px-3 py-2 fw-medium" placeholder="e.g., Annual Physical Report" required />
-                                <span asp-validation-for="DocumentName" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Provider</label>
-                                <input asp-for="Provider" class="form-control bg-light border-0 px-3 py-2 fw-medium" placeholder="e.g., CareFleet Clinic" required />
-                                <span asp-validation-for="Provider" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Date Issued</label>
-                                <input asp-for="DateIssued" type="date" class="form-control bg-light border-0 px-3 py-2 fw-medium" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
-                                <span asp-validation-for="DateIssued" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Attach File (PDF, Image)</label>
-                                <div class="upload-zone p-4 text-center border-2 border-dashed rounded-4 bg-light">
-                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: #547792;"></i>
-                                    <p class="mb-0 fw-medium">Choose a file or drag it here</p>
-                                    <small class="text-muted d-block mb-3">PDF, JPG, or PNG up to 10MB</small>
-                                    <input type="file" name="file" class="form-control d-none" id="fileInput" required />
-                                    <button type="button" class="btn fw-bold" style="border: 1px solid #547792; color: #547792;" onclick="document.getElementById('fileInput').click()">Select File</button>
-                                    <div id="fileNameDisplay" class="mt-2 fw-bold text-success small"></div>
-                                </div>
-                            </div>
-
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn w-100 py-3 fw-bold rounded-3 shadow-sm text-white" style="background-color: #547792; border: none;">
-                                    <i class="fas fa-check-circle me-2"></i>Save & Upload Record
-                                </button>
-                            </div>
+                                }
+                            </select>
                         </div>
-                    </form>
+                        <span asp-validation-for="PatientId" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Category">Clinical Category</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-tags"></i>
+                            <select asp-for="Category" class="premium-input" required>
+                                <option value="General Health">General Health</option>
+                                <option value="Laboratory">Laboratory Results</option>
+                                <option value="Radiology">Imaging & Radiology</option>
+                                <option value="Prescription">Prescriptions</option>
+                                <option value="Physical">Physical Assessment</option>
+                                <option value="Other">Other Documentation</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Category" class="validation-message"></span>
+                    </div>
                 </div>
-            </div>
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <label class="premium-label" asp-for="DocumentName">Document Title</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-file-alt"></i>
+                            <input asp-for="DocumentName" class="premium-input" placeholder="e.g., Blood Test Report Q1" required />
+                        </div>
+                        <span asp-validation-for="DocumentName" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Provider">Issuing Provider</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-hospital-user"></i>
+                            <input asp-for="Provider" class="premium-input" placeholder="e.g., CareFleet Clinic" required />
+                        </div>
+                        <span asp-validation-for="Provider" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="DateIssued">Date Issued</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-calendar-day"></i>
+                            <input asp-for="DateIssued" type="date" class="premium-input" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <span asp-validation-for="DateIssued" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label class="premium-label">Attachment (PDF, Images)</label>
+                        <div class="premium-upload-zone">
+                            <input type="file" name="file" class="d-none" id="fileInput" required accept=".pdf,image/*" />
+                            <div class="upload-zone-content" onclick="document.getElementById('fileInput').click()">
+                                <div class="upload-icon-wrapper">
+                                    <i class="fas fa-file-upload"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <p class="main-text">Click to select or drag & drop document</p>
+                                    <p class="sub-text">Support for PDF, JPG, PNG (Max 10MB)</p>
+                                </div>
+                                <button type="button" class="btn-select-file">Browse Files</button>
+                            </div>
+                            <div id="fileNameDisplay" class="file-name-preview"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions-premium mt-4">
+                    <button type="submit" class="btn-premium-save">
+                        <i class="fas fa-check-circle"></i> Complete Upload
+                    </button>
+                    <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn-premium-cancel">
+                        Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        document.getElementById('fileInput').onchange = function () {
-            document.getElementById('fileNameDisplay').textContent = "Selected: " + this.files[0].name;
-        };
-    </script>
-}
-
 <style>
-    .upload-zone {
-        border-style: dashed !important;
-        border-color: #dee2e6 !important;
+    .premium-upload-zone {
+        background: rgba(27, 60, 83, 0.02);
+        border: 2px dashed #cbd5e1;
+        border-radius: 20px;
+        padding: 30px;
         transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
     }
-    .upload-zone:hover {
-        border-color: var(--primary-color) !important;
-        background-color: rgba(var(--primary-rgb), 0.05) !important;
+
+        .premium-upload-zone:hover {
+            border-color: #1B3C53;
+            background: rgba(27, 60, 83, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .premium-upload-zone.has-file {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.03);
+        }
+
+    .upload-zone-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .upload-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #1B3C53;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .main-text {
+        font-weight: 700;
+        color: #1B3C53;
+        margin-bottom: 4px;
+    }
+
+    .sub-text {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 0;
+    }
+
+    .btn-select-file {
+        background: #1B3C53;
+        color: white;
+        border: none;
+        padding: 8px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .file-name-preview {
+        margin-top: 15px;
+        font-size: 0.9rem;
+        color: #10b981;
+        font-weight: 600;
     }
 </style>
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/doctor-medical-records.css" asp-append-version="true" />
-}

@@ -288,7 +288,8 @@
     width: 80px;
     height: 80px;
     background: white;
-    color: #1e293b; /* Fallback for --billing-dark if not defined globally */
+    color: #1e293b;
+    /* Fallback for --billing-dark if not defined globally */
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -593,15 +594,42 @@
 
 /* Print Specifics Optimization */
 @media print {
-    body {
-        background: white !important;
+    @page {
+        size: A4 portrait;
+        margin: 0 !important;
     }
 
-    .container {
-        width: 100% !important;
-        max-width: none !important;
+    html,
+    body {
+        width: 210mm;
+        height: 297mm;
         margin: 0 !important;
         padding: 0 !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    body {
+        background: white !important;
+        transform: scale(0.9);
+        transform-origin: top center;
+    }
+
+    .admin-container,
+    .doctor-container,
+    .patient-container,
+    .main-content,
+    .container,
+    .container-fluid {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
     .invoice-paper {
@@ -609,66 +637,127 @@
         border: none !important;
         margin: 0 !important;
         width: 100% !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid !important;
+        display: flex;
+        flex-direction: column;
+        background: white !important;
     }
 
     .invoice-hero {
-        padding: 3rem !important;
+        padding: 2rem 3rem !important;
+        background: linear-gradient(135deg, var(--billing-dark) 0%, var(--billing-primary) 100%) !important;
+        color: white !important;
         -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
     }
 
     .invoice-body {
-        padding: 3rem !important;
+        padding: 2rem 3rem !important;
+        flex-grow: 1;
+        background: white !important;
+    }
+
+    /* Balanced spacing for one-page fit */
+    .invoice-body > .row {
+        margin-bottom: 1.25rem !important;
+        padding-bottom: 1.25rem !important;
+    }
+
+    .invoice-body .mb-5, 
+    .invoice-body .pb-5,
+    .invoice-body .mb-4 {
+        margin-bottom: 1rem !important;
+        padding-bottom: 0 !important;
+    }
+
+    .invoice-body .table-responsive table tbody tr td {
+        padding-top: 0.6rem !important;
+        padding-bottom: 0.6rem !important;
+    }
+
+    .invoice-body .table-responsive table tfoot tr td {
+        padding-top: 0.4rem !important;
+    }
+
+    .invoice-body tfoot .pt-5 {
+        padding-top: 1rem !important;
+    }
+
+    .invoice-body .p-4.rounded-4 {
+        padding: 1rem !important;
     }
 
     .btn,
+    .btn-premium-primary,
+    .btn-premium-secondary,
+    .btn-premium-danger,
+    .btn-premium-light,
     .header-actions,
     .premium-header-card,
+    .d-print-none,
+    .notification-container,
+    .user-profile,
+    .modal,
+    .modal-backdrop,
+    .header-bg-pattern,
     aside,
-    header {
+    header,
+    footer,
+    .sidebar {
         display: none !important;
     }
 
     .invoice-paper-watermark {
-        display: block !important;
+        display: none !important;
+    }
+
+    #printableInvoice {
+        margin-top: 0 !important;
     }
 }
 
 /* Premium UI Components */
 .search-box-modern {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 12px;
-    padding: 10px 20px;
+    padding: 10px 5px;
     display: flex;
     align-items: center;
     gap: 12px;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .search-box-modern i {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--billing-dark);
 }
 
 .search-box-modern input {
     background: transparent;
     border: none;
-    color: white;
+    color: var(--billing-dark);
     outline: none;
     font-size: 14px;
     width: 200px;
-    font-weight: 500;
+    height: 30px;
+    font-weight: 400;
 }
 
 .search-box-modern input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--billing-muted);
+}
+
+.search-box-modern:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .search-box-modern:focus-within {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+    background: #ffffff;
+    border-color: var(--billing-primary);
+    box-shadow: 0 0 0 4px rgba(84, 119, 146, 0.15);
 }
 
 .btn-premium-tab {
@@ -699,4 +788,99 @@
     color: white;
     border-color: var(--billing-dark);
     box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2);
-}
+}
+
+/* Responsive Billing Adjustments */
+@media (max-width: 992px) {
+    .premium-header-card {
+        padding: 2.5rem;
+    }
+
+    .ledger-data-section {
+        gap: 1.5rem;
+    }
+
+    .ledger-amount-pill {
+        min-width: 110px;
+    }
+}
+
+@media (max-width: 768px) {
+    .premium-header-card {
+        padding: 2rem;
+        border-radius: 20px;
+    }
+
+    .header-card-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .ledger-row-card {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+
+    .ledger-patient-vcard {
+        margin-bottom: 10px;
+    }
+
+    .ledger-data-section {
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        justify-content: space-between;
+    }
+
+    .ledger-amount-pill {
+        text-align: center;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .ledger-row-actions {
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
+        margin-top: 10px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .ledger-filter-hub {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .filter-pills-group {
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-pill {
+        white-space: nowrap;
+        padding: 0.6rem 1.2rem;
+    }
+
+    .invoice-hero, .invoice-body {
+        padding: 2.5rem 1.5rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .premium-header-card h1 {
+        font-size: 1.75rem;
+    }
+
+    .billing-stats-card {
+        padding: 1.25rem;
+    }
+
+    .stat-number-v2 {
+        font-size: 2.2rem;
+    }
+}

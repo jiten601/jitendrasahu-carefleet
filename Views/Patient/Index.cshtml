@@ -4,61 +4,149 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Patients";
     ViewBag.HeaderTitle = "Patients Management";
+    ViewBag.HideHeader = true; // Use premium header card instead
 }
 
-<div class="page-header">
-    <h3>All Patients</h3>
-    <a href="@Url.Action("Create", "Patient")" class="btn-primary-small">
-        <i class="fas fa-plus"></i> Add New Patient
-    </a>
-</div>
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" asp-append-version="true" />
 
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Date of Birth</th>
-                <th>Gender</th>
-                <th>Blood Group</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Any())
-            {
-                @foreach (var patient in Model)
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('patientSearch');
+            const rows = document.querySelectorAll('.patient-row');
+
+            searchInput?.addEventListener('keyup', function() {
+                const value = this.value.toLowerCase();
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(value) ? '' : 'none';
+                });
+            });
+        });
+    </script>
+}
+
+<div class="premium-admin-container mt-2">
+    <!-- Premium Header Card matching System Theme -->
+    <div class="premium-header-card mb-4">
+        <div class="header-card-content">
+            <div class="header-info">
+                <h1 class="header-title-main">Patients Management</h1>
+                <p class="header-subtitle"><i class="fas fa-users-medical me-2"></i> Comprehensive directory of all registered patients.</p>
+                <div class="d-flex gap-3 mt-4">
+                    <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                        <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); display: block;">Total Registered</span>
+                        <span style="font-size: 1.2rem; font-weight: 800; color: #ffffff;">@(Model?.Count() ?? 0)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="@Url.Action("Create", "Patient")" class="btn-premium-light text-decoration-none" style="background: white; color: var(--primary-dark); padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-plus"></i> Add New Patient
+                </a>
+            </div>
+        </div>
+        <div class="header-bg-pattern"></div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="search-filter-section mb-4">
+        <div class="search-input-wrapper flex-grow-1">
+            <i class="fas fa-search"></i>
+            <input type="text" id="patientSearch" placeholder="Search by name, ID, or phone..." class="premium-search-input">
+        </div>
+        <div class="filter-actions">
+            <button class="btn-filter" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt fw-bold"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-glass-wrapper shadow-lg overflow-visible mb-5">
+        <table class="table premium-table mb-0" id="patientsTable">
+            <thead>
+                <tr>
+                    <th class="ps-4">Patient Identity</th>
+                    <th>Age / Gender / Blood</th>
+                    <th>Contact Information</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var patient in Model)
+                    {
+                        var initials = !string.IsNullOrEmpty(patient.FirstName) ?
+                        (patient.FirstName[0].ToString() + (patient.LastName?.Length > 0 ? patient.LastName[0].ToString() : "")).ToUpper() : "P";
+
+                        <tr class="patient-row">
+                            <td class="ps-4">
+                                <div class="patient-identity">
+                                    <div class="patient-avatar">
+                                        @initials
+                                    </div>
+                                    <div class="patient-info">
+                                        <span class="patient-name fw-bold" style="color: var(--primary-dark);">@patient.FirstName @patient.LastName</span>
+                                        <span class="patient-id" style="color: var(--text-secondary);">PAT-ID: #P-@patient.Id.ToString("D4")</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="data-label fw-bold" style="color: var(--primary-dark);">@(DateTime.Now.Year - patient.DateOfBirth.Year) Yrs</span>
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <span class="spec-pill" style="background: rgba(84, 119, 146, 0.1); color: var(--primary-blue);">@patient.Gender</span>
+                                        <span class="spec-pill" style="background: rgba(239, 68, 68, 0.1); color: #dc2626; font-weight: 700;">
+                                            <i class="fas fa-tint me-1"></i>@(patient.BloodGroup ?? "N/A")
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="email-pill mb-2" title="@patient.Email" style="background: rgba(84, 119, 146, 0.05); border: 1px solid rgba(84, 119, 146, 0.1);">
+                                    <i class="far fa-envelope me-2" style="color: var(--primary-blue);"></i> @patient.Email
+                                </div>
+                                <span class="data-sublabel" style="color: var(--text-secondary);"><i class="fas fa-phone-alt me-1"></i> @patient.PhoneNumber</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="status-pill active" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
+                                    <i class="fas fa-check-circle me-1"></i> Registered
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="@Url.Action("Edit", "Patient", new { id = patient.Id })" class="btn-action-premium edit" title="Edit Patient">
+                                        <i class="fas fa-pen pt-1 text-primary"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-controller="Patient" method="post" class="m-0 p-0 d-inline" onsubmit="return confirm('Are you sure you want to delete this patient permanently?');">
+                                        <input type="hidden" name="id" value="@patient.Id" />
+                                        <button type="submit" class="btn-action-premium delete border-0" title="Delete Patient">
+                                            <i class="fas fa-trash pt-1 text-danger"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>@patient.FirstName @patient.LastName</td>
-                        <td>@patient.Email</td>
-                        <td>@patient.PhoneNumber</td>
-                        <td>@patient.DateOfBirth.ToString("MM/dd/yyyy")</td>
-                        <td>@patient.Gender</td>
-                        <td>@patient.BloodGroup</td>
-                        <td class="action-buttons">
-                            <a href="@Url.Action("Edit", "Patient", new { id = patient.Id })" class="btn-edit" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form asp-action="Delete" asp-controller="Patient" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this patient?');">
-                                <input type="hidden" name="id" value="@patient.Id" />
-                                <button type="submit" class="btn-delete" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-user-injured mb-4" style="font-size: 4.5rem; color: #cbd5e1; opacity: 0.4;"></i>
+                                <h3 style="color: var(--primary-dark); font-family: 'Outfit', sans-serif; font-weight: 700;">No Patients Found</h3>
+                                <p style="color: var(--text-secondary); font-weight: 500;">There are currently no patients registered in the system.</p>
+                                <a href="@Url.Action("Create", "Patient")" class="btn btn-premium-light mt-3" style="background: var(--primary-blue) !important; border:none !important;">Add First Patient</a>
+                            </div>
                         </td>
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" class="text-center">No patients found. <a href="@Url.Action("Create", "Patient")">Add a new patient</a></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
-

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace CareFleet.Models
 {
@@ -12,6 +12,8 @@ namespace CareFleet.Models
 
         [Display(Name = "Patient Name")]
         public string? PatientName { get; set; }
+
+        public string? PatientEmail { get; set; }
 
         [Required]
         public DateTime AppointmentDate { get; set; }
@@ -32,5 +34,14 @@ namespace CareFleet.Models
         public string Status { get; set; } = "Pending"; // Pending, Confirmed, Cancelled
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Reminder Tracking
+        public bool Is24HourReminderSent { get; set; } = false;
+
+        public bool Is1HourReminderSent { get; set; } = false;
+        
+        [Required]
+        [Range(0, 10000)]
+        public decimal Fee { get; set; } = 200;
     }
 }

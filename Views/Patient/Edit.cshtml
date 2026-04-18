@@ -1,120 +1,188 @@
 @model CareFleet.Models.Patient
 @{
-    ViewData["Title"] = "Edit Patient";
+    ViewData["Title"] = "Edit Patient Profile";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.ActivePage = "Patients";
-    ViewBag.HeaderTitle = "Edit Patient";
+    ViewBag.HeaderTitle = "Patient Management";
+    ViewBag.HideHeader = true;
 }
 
 @section Scripts {
-    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-pages.css" />
+    <link rel="stylesheet" href="~/css/admin-premium-tables.css" />
+    <link rel="stylesheet" href="~/css/admin-premium-forms.css" />
 }
 
-<div class="fade-in">
+<div class="premium-admin-container">
     <!-- Premium Header Card -->
     <div class="premium-header-card">
         <div class="header-card-content">
             <div class="header-info">
-                <h3 class="fw-bold text-white mb-2">Edit Patient Profile</h3>
-                <p class="text-white-50 mb-0">Update information for @Model.FirstName @Model.LastName.</p>
+                <h1 class="header-title-main">Modify Patient Profile</h1>
+                <p class="header-subtitle"><i class="fas fa-user-edit me-2"></i> Update personal records and history for @Model.FirstName @Model.LastName</p>
+                <div style="margin-top: 30px !important; color:white">
+                    <span class="badge rounded-pill" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(5px); padding: 8px 16px; font-weight: 600;">
+                        <i class="far fa-calendar-alt me-2"></i> Registered: @Model.CreatedAt.ToString("MMM dd, yyyy")
+                    </span>
+                </div>
             </div>
             <div class="header-actions">
                 <a href="@Url.Action("Patients", "Admin")" class="btn-premium-light text-decoration-none">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                    <i class="fas fa-arrow-left me-2"></i> Back to Patient Registry
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-<div class="form-container">
-    <form asp-action="Edit" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="CreatedAt" />
+    <div class="premium-form-container">
+        <div class="premium-glass-card">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedAt" />
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="FirstName">First Name <span class="required">*</span></label>
-                <input asp-for="FirstName" class="form-control" placeholder="e.g. John" required />
-                <span asp-validation-for="FirstName" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-            <div class="form-group">
-                <label class="form-label" asp-for="LastName">Last Name <span class="required">*</span></label>
-                <input asp-for="LastName" class="form-control" placeholder="e.g. Doe" required />
-                <span asp-validation-for="LastName" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+                <!-- Section: Personal Information -->
+                <h2 class="form-section-title">
+                    <i class="fas fa-id-card text-primary"></i> Personal Information
+                </h2>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="Email">Email Address</label>
-                <input asp-for="Email" type="email" class="form-control" placeholder="patient@example.com" />
-                <span asp-validation-for="Email" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-            <div class="form-group">
-                <label class="form-label" asp-for="PhoneNumber">Phone Number</label>
-                <input asp-for="PhoneNumber" class="form-control" placeholder="+1 (555) 000-0000" />
-                <span asp-validation-for="PhoneNumber" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="FirstName">First Name</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-user"></i>
+                            <input asp-for="FirstName" class="premium-input" placeholder="e.g. Liam" required />
+                        </div>
+                        <span asp-validation-for="FirstName" class="validation-message"></span>
+                    </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="DateOfBirth">Date of Birth <span class="required">*</span></label>
-                <input asp-for="DateOfBirth" type="date" class="form-control" required />
-                <span asp-validation-for="DateOfBirth" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-            <div class="form-group">
-                <label class="form-label" asp-for="Gender">Gender</label>
-                <select asp-for="Gender" class="form-control">
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-                <span asp-validation-for="Gender" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="LastName">Last Name</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-user-tag"></i>
+                            <input asp-for="LastName" class="premium-input" placeholder="e.g. Miller" required />
+                        </div>
+                        <span asp-validation-for="LastName" class="validation-message"></span>
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label class="form-label" asp-for="BloodGroup">Blood Group</label>
-                <select asp-for="BloodGroup" class="form-control">
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                </select>
-                <span asp-validation-for="BloodGroup" class="text-danger" style="font-size: 12px;"></span>
-            </div>
-        </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Email">Email Address</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-envelope"></i>
+                            <input asp-for="Email" type="email" class="premium-input" placeholder="liam@example.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="validation-message"></span>
+                    </div>
 
-        <div class="form-group">
-            <label class="form-label" asp-for="Address">Residential Address</label>
-            <textarea asp-for="Address" class="form-control" rows="3" placeholder="Full address details..."></textarea>
-            <span asp-validation-for="Address" class="text-danger" style="font-size: 12px;"></span>
-        </div>
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="PhoneNumber">Contact Number</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-phone"></i>
+                            <input asp-for="PhoneNumber" class="premium-input" placeholder="+1 (555) 000-0000" />
+                        </div>
+                        <span asp-validation-for="PhoneNumber" class="validation-message"></span>
+                    </div>
+                </div>
 
-        <div class="form-group">
-            <label class="form-label" asp-for="MedicalHistory">Medical History</label>
-            <textarea asp-for="MedicalHistory" class="form-control" rows="4" placeholder="Previous conditions, allergies, etc..."></textarea>
-            <span asp-validation-for="MedicalHistory" class="text-danger" style="font-size: 12px;"></span>
-        </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="DateOfBirth">Date of Birth</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-calendar-birthday"></i>
+                            <input asp-for="DateOfBirth" type="date" class="premium-input" required />
+                        </div>
+                        <span asp-validation-for="DateOfBirth" class="validation-message"></span>
+                    </div>
 
-        <div style="margin-top: 30px; display: flex; gap: 15px;">
-            <button type="submit" class="btn-primary-small fw-semibold" style="padding: 12px 30px; font-size: 16px;">
-                <i class="fas fa-save"></i> Update Patient
-            </button>
-            <a href="@Url.Action("Patients", "Admin")" class="btn-primary-small fw-semibold" style="background: #e2e8f0; color: #475569; padding: 12px 30px; font-size: 16px; text-decoration: none;">
-                Cancel
-            </a>
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Gender">Gender</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-venus-mars"></i>
+                            <select asp-for="Gender" class="premium-input">
+                                <option value="">Select Gender...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Gender" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <!-- Section: Clinical Details -->
+                <h2 class="form-section-title mt-5">
+                    <i class="fas fa-notes-medical text-primary"></i> Clinical & Medical Details
+                </h2>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="premium-label" asp-for="BloodGroup">Blood Compatibility Group</label>
+                        <div class="input-group-premium" style="max-width: 300px;">
+                            <i class="fas fa-tint text-danger"></i>
+                            <select asp-for="BloodGroup" class="premium-input">
+                                <option value="">Select Group...</option>
+                                <option value="A+">A Positive (A+)</option>
+                                <option value="A-">A Negative (A-)</option>
+                                <option value="B+">B Positive (B+)</option>
+                                <option value="B-">B Negative (B-)</option>
+                                <option value="AB+">AB Positive (AB+)</option>
+                                <option value="AB-">AB Negative (AB-)</option>
+                                <option value="O+">O Positive (O+)</option>
+                                <option value="O-">O Negative (O-)</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="BloodGroup" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <label class="premium-label" asp-for="Address">Residential Address</label>
+                        <div class="input-group-premium align-items-start">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <textarea asp-for="Address" class="premium-input" rows="3" placeholder="Enter complete residential address..."></textarea>
+                        </div>
+                        <span asp-validation-for="Address" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <label class="premium-label" asp-for="MedicalHistory">Clinical History & Allergies</label>
+                        <div class="input-group-premium align-items-start">
+                            <i class="fas fa-history"></i>
+                            <textarea asp-for="MedicalHistory" class="premium-input" rows="4" placeholder="Detail any chronic conditions, previous surgeries, or severe allergies..."></textarea>
+                        </div>
+                        <span asp-validation-for="MedicalHistory" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions-premium section-divider">
+                    <button type="submit" class="btn-premium-save">
+                        <i class="fas fa-save"></i> Save Patient Records
+                    </button>
+                    <a href="@Url.Action("Patients", "Admin")" class="btn-premium-cancel">
+                        Discard Changes
+                    </a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
-</div>
+
+<style>
+    /* Specific adjustments for longer form segments */
+    .premium-form-container {
+        max-width: 1000px;
+        margin-top: -15px;
+    }
+
+    .section-divider {
+        margin-top: 40px;
+        padding-top: 25px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+</style>

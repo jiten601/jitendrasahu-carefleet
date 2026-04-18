@@ -2,18 +2,19 @@
 @{
     ViewData["Title"] = "Profile Settings";
     Layout = "~/Views/Shared/_PatientLayout.cshtml";
-    
-    var patient = Model ?? new CareFleet.Models.Patient { 
+
+    var patient = Model ?? new CareFleet.Models.Patient
+    {
         Id = 0,
-        FirstName = ViewBag.FirstName?.ToString() ?? "Patient", 
-        LastName = ViewBag.LastName?.ToString() ?? "User", 
+        FirstName = ViewBag.FirstName?.ToString() ?? "Patient",
+        LastName = ViewBag.LastName?.ToString() ?? "User",
         Email = ViewBag.UserEmail?.ToString() ?? "patient@carefleet.com",
         CreatedAt = DateTime.Now.AddYears(-1)
     };
-    
-    var initials = ((patient.FirstName?.Length > 0 ? patient.FirstName.Substring(0, 1) : "P") + 
+
+    var initials = ((patient.FirstName?.Length > 0 ? patient.FirstName.Substring(0, 1) : "P") +
                    (patient.LastName?.Length > 0 ? patient.LastName.Substring(0, 1) : "A")).ToUpper();
-    
+
     // Calculate profile completion
     int completedFields = 0;
     int totalFields = 6;
@@ -24,6 +25,9 @@
     if (!string.IsNullOrEmpty(patient.Address)) { completedFields++; }
     if (!string.IsNullOrEmpty(patient.BloodGroup)) { completedFields++; }
     int profileCompletion = (int)((completedFields / (double)totalFields) * 100);
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/patient-settings.css" asp-append-version="true" />
 }
 
 
@@ -272,23 +276,9 @@
                                                 <h5 class="mb-1">Account Password</h5>
                                                 <p class="small">Change your password regularly for better security.</p>
                                             </div>
-                                            <button type="button" class="btn btn-outline-primary btn-sm px-4 rounded-pill ms-auto" style="height: fit-content;" disabled>
+                                            <a href="@Url.Action("ChangePassword", "Account")" class="btn btn-primary btn-sm px-4 rounded-pill ms-auto" style="height: fit-content; text-decoration: none;">
                                                 Update
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="security-item">
-                                            <div class="security-item-icon">
-                                                <i class="fas fa-fingerprint" style="color: #547792;"></i>
-                                            </div>
-                                            <div class="security-item-content">
-                                                <h5 class="mb-1">Two-Factor Authentication</h5>
-                                                <p class="small">Add an extra layer of protection to your account.</p>
-                                            </div>
-                                            <button type="button" class="btn btn-primary btn-sm px-4 rounded-pill ms-auto" style="height: fit-content;" disabled>
-                                                Enable
-                                            </button>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -310,13 +300,6 @@
         </div>
     </div>
 </div>
-        </div>
-    </div>
-</div>
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/patient-settings.css" asp-append-version="true" />
-}
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

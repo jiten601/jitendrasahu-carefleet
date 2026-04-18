@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace CareFleet.Models
 {
@@ -28,12 +28,12 @@ namespace CareFleet.Models
 
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
-                entity.ToTable("Users");
+                entity.ToTable("Users", "dbo");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.PasswordHash).IsRequired(false);
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(50);
                 entity.HasIndex(e => e.Email).IsUnique();
             });
@@ -76,6 +76,7 @@ namespace CareFleet.Models
             {
                 entity.ToTable("Appointments");
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.Fee).HasColumnType("decimal(18,2)");
             });
 
             modelBuilder.Entity<Notification>(entity =>

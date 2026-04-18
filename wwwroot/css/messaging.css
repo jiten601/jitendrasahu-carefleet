@@ -32,8 +32,6 @@
     display: flex;
     flex-direction: column;
     background: #EAE0CF;
-    /* Page background matching site.css */
-    padding: 20px;
 }
 
 .messages-main-card {

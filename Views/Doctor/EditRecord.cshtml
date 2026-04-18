@@ -1,88 +1,127 @@
 @model CareFleet.Models.MedicalRecord
 @{
-    ViewData["Title"] = "Edit Record";
+    ViewData["Title"] = "Edit Patient Record";
     Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     ViewBag.ActivePage = "MedicalRecords";
     ViewBag.HideHeader = true;
 }
 
-<div class="doctor-records-page fade-in">
+@section Scripts {
+    <link rel="stylesheet" href="~/css/admin-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-premium-forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/doctor-edit-record.css" asp-append-version="true" />
+}
+
+<div class="premium-admin-container doctor-edit-record-page mt-2">
     <!-- Premium Header Card -->
-    <div class="premium-header-card mb-4">
+    <div class="premium-header-card mb-4" style="background: linear-gradient(135deg, #1B3C53 0%, #3a506b 100%);">
         <div class="header-card-content">
             <div class="header-info">
-                <h1 class="fw-800 text-white mb-0">Edit Medical Record</h1>
-                <p class="text-white opacity-75 mb-0">Update document details for @Model.Patient?.FirstName @Model.Patient?.LastName.</p>
+                <h1 class="header-title-main">Edit Medical Record</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-file-signature me-2"></i>
+                    Update documentation details for <span class="fw-bold text-white">@Model.Patient?.FirstName @Model.Patient?.LastName</span>
+                </p>
+
+                <div class="d-flex gap-3 mt-4">
+                    <div class="glass-stat-badge">
+                        <span class="stat-label">Date Issued</span>
+                        <span class="stat-value" style="font-size: 1.1rem;">@Model.DateIssued.ToString("MMM dd, yyyy")</span>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
-                <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn-premium-light text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Records
                 </a>
             </div>
         </div>
         <div class="header-bg-pattern"></div>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="dashboard-card border-0 shadow-sm overflow-hidden">
-                <div class="card-header-premium px-4 py-3">
-                    <h5 class="fw-bold mb-0">Update Metadata</h5>
-                </div>
-                <div class="card-body-premium p-4">
-                    <form asp-action="EditRecord" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <input type="hidden" asp-for="Id" />
+    <div class="premium-form-container">
+        <div class="premium-glass-card shadow-lg">
+            <h2 class="form-section-title">
+                <i class="fas fa-notes-medical text-primary"></i> Record Information
+            </h2>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Patient</label>
-                                <input type="text" class="form-control bg-light border-0 px-3 py-2 fw-medium" value="@Model.Patient?.FirstName @Model.Patient?.LastName" readonly />
-                            </div>
+            <form asp-action="EditRecord" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="validation-message mb-3"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PatientId" />
+                <input type="hidden" asp-for="FilePath" />
+                <input type="hidden" asp-for="FileType" />
 
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Category</label>
-                                <select asp-for="Category" class="form-select bg-light border-0 px-3 py-2 fw-medium" required>
-                                    <option value="General Health">General Health</option>
-                                    <option value="Laboratory">Laboratory</option>
-                                    <option value="Radiology">Radiology</option>
-                                    <option value="Prescription">Prescription</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                                <span asp-validation-for="Category" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Document Name</label>
-                                <input asp-for="DocumentName" class="form-control bg-light border-0 px-3 py-2 fw-medium" placeholder="e.g., Annual Physical Report" required />
-                                <span asp-validation-for="DocumentName" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Provider</label>
-                                <input asp-for="Provider" class="form-control bg-light border-0 px-3 py-2 fw-medium" placeholder="e.g., CareFleet Clinic" required />
-                                <span asp-validation-for="Provider" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small text-uppercase text-secondary">Date Issued</label>
-                                <input asp-for="DateIssued" type="date" class="form-control bg-light border-0 px-3 py-2 fw-medium" value="@Model.DateIssued.ToString("yyyy-MM-dd")" required />
-                                <span asp-validation-for="DateIssued" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-premium w-100 py-3 fw-bold rounded-3 shadow-sm">
-                                    <i class="fas fa-save me-2"></i>Update Record Info
-                                </button>
-                            </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="DocumentName">Document Name</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-file-alt"></i>
+                            <input asp-for="DocumentName" class="premium-input" placeholder="e.g., Annual Physical Report" required />
                         </div>
-                    </form>
+                        <span asp-validation-for="DocumentName" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Category">Clinical Category</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-tags"></i>
+                            <select asp-for="Category" class="premium-input" required>
+                                <option value="General Health">General Health</option>
+                                <option value="Laboratory">Laboratory Results</option>
+                                <option value="Radiology">Imaging & Radiology</option>
+                                <option value="Prescription">Prescriptions</option>
+                                <option value="Physical">Physical Assessment</option>
+                                <option value="Other">Other Documentation</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="Category" class="validation-message"></span>
+                    </div>
                 </div>
-            </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="Provider">Healthcare Provider</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-hospital-user"></i>
+                            <input asp-for="Provider" class="premium-input" placeholder="e.g., CareFleet General Hospital" required />
+                        </div>
+                        <span asp-validation-for="Provider" class="validation-message"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="premium-label" asp-for="DateIssued">Date Issued</label>
+                        <div class="input-group-premium">
+                            <i class="fas fa-calendar-day"></i>
+                            <input asp-for="DateIssued" type="date" class="premium-input" value="@Model.DateIssued.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <span asp-validation-for="DateIssued" class="validation-message"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions-premium">
+                    <button type="submit" class="btn-premium-save">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="@Url.Action("MedicalRecords", "Doctor")" class="btn-premium-cancel">
+                        Discard Changes
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/doctor-medical-records.css" asp-append-version="true" />
-}
+<style>
+    .doctor-edit-record-page {
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .premium-form-container {
+        max-width: 850px;
+        margin-top: -20px;
+        position: relative;
+        z-index: 10;
+    }
+</style>

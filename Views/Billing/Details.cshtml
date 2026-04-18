@@ -1,7 +1,7 @@
 @model CareFleet.Models.Invoice
 @using CareFleet.Models
 @{
-    ViewData["Title"] = "Invoice Details";
+    ViewData["Title"] = "CareFleet Medical Official Financial Statement";
     var userRole = Context.Session.GetString("UserRole");
     // Layout logic: Patients use PatientLayout, Doctors and Admins use their respective layouts
     if (userRole == "Patient") {
@@ -12,7 +12,7 @@
         Layout = "~/Views/Shared/_DoctorLayout.cshtml";
     }
     ViewBag.HideHeader = true;
-    ViewBag.ActivePage = "Billing";
+    ViewBag.ActivePage = "Billing"; 
 }
 
 @section Styles {
@@ -63,11 +63,11 @@
         <!-- Hero Section -->
         <div class="invoice-hero">
             <div class="row align-items-center position-relative z-1">
-                <div class="col-md-7">
+                <div class="col-7">
                     <h2 class="fw-800 mb-2 text-white ls-n1">CareFleet Medical</h2>
                     <p class="text-white opacity-75 mb-0 small text-uppercase fw-800 ls-2">Official Financial Statement</p>
                 </div>
-                <div class="col-md-5 text-md-end mt-4 mt-md-0">
+                <div class="col-5 text-end mt-4 mt-md-0">
                     @{
                         var statusTagClass = Model.Status == "Paid" ? "status-paid" : "status-unpaid";
                     }
@@ -80,7 +80,7 @@
         <div class="invoice-body">
             <!-- Billing Info -->
             <div class="row mb-5 pb-5 border-bottom g-4">
-                <div class="col-md-6">
+                <div class="col-6">
                     <div class="d-flex align-items-center mb-4">
                         <div class="header-icon-box me-3 bg-light">
                             <i class="fas fa-user-tag"></i>
@@ -93,8 +93,8 @@
                         <p class="text-muted fw-600 mb-0"><i class="fas fa-phone me-2 opacity-50"></i>@Model.Patient?.PhoneNumber</p>
                     </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <div class="d-flex align-items-center justify-content-md-end mb-4">
+                <div class="col-6 text-end">
+                    <div class="d-flex align-items-center justify-content-end mb-4">
                         <h5 class="fw-900 mb-0 text-dark text-uppercase ls-1 me-3">Statement Data</h5>
                         <div class="header-icon-box bg-light">
                             <i class="fas fa-file-invoice-dollar"></i>
@@ -197,7 +197,7 @@
     </div>
 
     <!-- Actions -->
-    <div class="text-center mt-5 d-flex justify-content-center gap-3">
+    <div class="text-center mt-5 d-flex justify-content-center gap-3 d-print-none">
         <button onclick="window.print()" class="btn-premium-secondary">
             <i class="fas fa-print"></i>Download PDF
         </button>

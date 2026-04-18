@@ -7,6 +7,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CareFleet.Controllers
 {
@@ -82,7 +84,7 @@ namespace CareFleet.Controllers
         // POST: Patient/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Patient patient)
+        public IActionResult Create(Patient patient, string password)
         {
             if (!IsAuthenticated())
             {
@@ -91,34 +93,67 @@ namespace CareFleet.Controllers
 
             if (ModelState.IsValid)
             {
-                patient.CreatedAt = DateTime.Now;
-                _context.Patients.Add(patient);
-                _context.SaveChanges();
-
-                // Notify all admins about the new patient
-                var adminEmails = _context.Users
-                    .Where(u => u.Role == "Admin")
-                    .Select(u => u.Email).ToList();
-                foreach (var email in adminEmails)
+                if (string.IsNullOrEmpty(password))
                 {
-                    _context.Notifications.Add(new Notification
-                    {
-                        ReceiverEmail = email,
-                        Message = $"New patient added: {patient.FirstName} {patient.LastName} ({patient.Email}).",
-                        IsRead = false,
-                        CreatedAt = DateTime.Now
-                    });
+                    ModelState.AddModelError("Password", "Password is required for registration.");
                 }
-                if (adminEmails.Any()) _context.SaveChanges();
+                else if (_context.Users.AsNoTracking().Any(u => u.Email == patient.Email))
+                {
+                    ModelState.AddModelError("Email", "A user with this email already exists.");
+                }
+                else
+                {
+                    // 1. Create Profile Record
+                    patient.CreatedAt = DateTime.Now;
+                    _context.Patients.Add(patient);
 
-                TempData["Success"] = "Patient added successfully!";
-                return RedirectToAction(nameof(Index));
+                    // 2. Create Authentication Record
+                    var user = new ApplicationUser
+                    {
+                        FirstName = patient.FirstName,
+                        LastName = patient.LastName,
+                        Email = patient.Email,
+                        PasswordHash = HashPassword(password),
+                        Role = "Patient",
+                        IsEmailConfirmed = true, // Registrations made by staff/authenticated users are pre-verified
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.Users.Add(user);
+
+                    _context.SaveChanges();
+
+                    // Notify all admins about the new patient
+                    var adminEmails = _context.Users
+                        .Where(u => u.Role == "Admin")
+                        .Select(u => u.Email).ToList();
+                    foreach (var email in adminEmails)
+                    {
+                        _context.Notifications.Add(new Notification
+                        {
+                            ReceiverEmail = email,
+                            Message = $"New patient added: {patient.FirstName} {patient.LastName} ({patient.Email}) with login access.",
+                            IsRead = false,
+                            CreatedAt = DateTime.Now
+                        });
+                    }
+                    if (adminEmails.Any()) _context.SaveChanges();
+
+                    TempData["Success"] = "Patient registered successfully with login access!";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             SetUserInfo();
             ViewBag.HeaderTitle = "Add New Patient";
             ViewBag.ActivePage = "Patients";
             return View(patient);
+        }
+
+        private string HashPassword(string password)
+        {
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(bytes);
         }
 
         // GET: Patient/Edit/5
@@ -161,20 +196,35 @@ namespace CareFleet.Controllers
                 return NotFound();
             }
 
+            var oldPatient = _context.Patients.AsNoTracking().FirstOrDefault(p => p.Id == id);
+            if (oldPatient == null) return NotFound();
+            var oldEmail = oldPatient.Email;
+
             var userRole = HttpContext.Session.GetString("UserRole");
 
             if (ModelState.IsValid)
             {
-                try
+                var emailExists = _context.Users.Any(u => u.Email == patient.Email && u.Email != oldEmail) ||
+                                  _context.Doctors.Any(d => d.Email == patient.Email) ||
+                                  _context.Patients.Any(p => p.Email == patient.Email && p.Id != id);
+                
+                if (emailExists)
                 {
-                    _context.Update(patient);
+                    ModelState.AddModelError("Email", "This email is already registered in our system.");
+                }
+                else
+                {
+                    try
+                    {
+                        _context.Update(patient);
 
                     // Synchronize with ApplicationUser table
-                    var user = _context.Users.FirstOrDefault(u => u.Email == patient.Email);
+                    var user = _context.Users.FirstOrDefault(u => u.Email == oldEmail);
                     if (user != null)
                     {
                         user.FirstName = patient.FirstName;
                         user.LastName = patient.LastName;
+                        user.Email = patient.Email;
                         _context.Users.Update(user);
                     }
 
@@ -200,12 +250,9 @@ namespace CareFleet.Controllers
                     }
                 }
 
-                // Redirect based on role
-                if (userRole == "Patient")
-                {
-                    return RedirectToAction(nameof(Settings));
+                    // Redirect back to Edit page to allow further modifications
+                    return RedirectToAction(nameof(Edit), new { id = patient.Id });
                 }
-                return RedirectToAction(nameof(Index));
             }
 
             SetUserInfo();
@@ -232,10 +279,10 @@ namespace CareFleet.Controllers
             // 1. Get upcoming appointment
             var upcomingAppointment = _context.Appointments
                 .AsEnumerable()
-                .Where(a => a.PatientName != null && 
-                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
-                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))) && 
+                .Where(a => a.PatientName != null &&
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
+                             a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))) &&
                             a.AppointmentDate >= DateTime.Now)
                 .OrderBy(a => a.AppointmentDate)
                 .FirstOrDefault();
@@ -248,9 +295,9 @@ namespace CareFleet.Controllers
             // Appointments
             var recentAppointments = _context.Appointments
                 .AsEnumerable()
-                .Where(a => a.PatientName != null && 
-                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                .Where(a => a.PatientName != null &&
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                              a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
                 .OrderByDescending(a => a.CreatedAt)
                 .Take(3)
@@ -321,16 +368,16 @@ namespace CareFleet.Controllers
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             SetUserInfo();
             var patient = GetLoggedInPatient();
-            
+
             var firstName = (string)ViewBag.FirstName;
             var lastName = (string)ViewBag.LastName;
             var fullName = $"{firstName} {lastName}".Trim();
 
             var appointments = _context.Set<Appointment>()
                 .AsEnumerable()
-                .Where(a => a.PatientName != null && 
-                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                .Where(a => a.PatientName != null &&
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                              a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
                 .OrderByDescending(a => a.AppointmentDate)
                 .ToList();
@@ -344,7 +391,7 @@ namespace CareFleet.Controllers
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            
+
             var patient = GetLoggedInPatient();
             if (patient == null) return RedirectToAction("Logout", "Account");
 
@@ -521,7 +568,7 @@ namespace CareFleet.Controllers
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            
+
             var patient = GetLoggedInPatient();
             if (patient == null)
             {
@@ -562,9 +609,9 @@ namespace CareFleet.Controllers
             // Appointments
             var recentAppointments = _context.Appointments
                 .AsEnumerable()
-                .Where(a => a.PatientName != null && 
-                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                .Where(a => a.PatientName != null &&
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                              a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
                 .OrderByDescending(a => a.CreatedAt)
                 .Take(20)
@@ -631,13 +678,13 @@ namespace CareFleet.Controllers
             // Get dynamic stats
             var appointmentCount = _context.Appointments
                 .AsEnumerable()
-                .Count(a => a.PatientName != null && 
-                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                .Count(a => a.PatientName != null &&
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                              a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
-            
+
             var recordCount = _context.MedicalRecords.Count(r => r.PatientId == patient.Id);
-            
+
             ViewBag.AppointmentCount = appointmentCount;
             ViewBag.RecordCount = recordCount;
 
@@ -657,9 +704,9 @@ namespace CareFleet.Controllers
             // 2. Appointments
             var recentAppointments = _context.Appointments
                 .AsEnumerable()
-                .Where(a => a.PatientName != null && 
-                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+                .Where(a => a.PatientName != null &&
+                           (a.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                            (a.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                              a.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))))
                 .OrderByDescending(a => a.CreatedAt)
                 .Take(5)
@@ -744,9 +791,39 @@ namespace CareFleet.Controllers
             var patient = _context.Patients.Find(id);
             if (patient != null)
             {
+                var email = patient.Email;
+
+                // Remove dependent records to avoid DB constraint failures
+                var invoices = _context.Invoices.Where(i => i.PatientId == patient.Id).ToList();
+                _context.Invoices.RemoveRange(invoices);
+                
+                var prescriptions = _context.Prescriptions.Where(p => p.PatientId == patient.Id).ToList();
+                _context.Prescriptions.RemoveRange(prescriptions);
+                
+                var medicalRecords = _context.MedicalRecords.Where(m => m.PatientId == patient.Id).ToList();
+                _context.MedicalRecords.RemoveRange(medicalRecords);
+                
+                var messages = _context.Messages.Where(m => m.SenderEmail == email || m.ReceiverEmail == email).ToList();
+                _context.Messages.RemoveRange(messages);
+                
+                var notifications = _context.Notifications.Where(n => n.ReceiverEmail == email).ToList();
+                _context.Notifications.RemoveRange(notifications);
+
                 _context.Patients.Remove(patient);
+                
+                var appUser = _context.Users.FirstOrDefault(u => u.Email == email);
+                if (appUser != null)
+                {
+                    _context.Users.Remove(appUser);
+                }
+
                 _context.SaveChanges();
-                TempData["Success"] = "Patient deleted successfully!";
+                TempData["Success"] = "Patient completely deleted successfully!";
+            }
+
+            if (userRole == "Admin")
+            {
+                return RedirectToAction("Patients", "Admin");
             }
 
             return RedirectToAction(nameof(Index));
@@ -756,17 +833,17 @@ namespace CareFleet.Controllers
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
             SetUserInfo();
-            
+
             var firstName = (string)ViewBag.FirstName;
             var lastName = (string)ViewBag.LastName;
             var fullName = $"{firstName} {lastName}".Trim();
 
             var appointment = _context.Set<Appointment>().Find(id);
             if (appointment == null) return NotFound();
-            
-            bool isOwnProperty = (appointment.PatientName != null && 
-                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+
+            bool isOwnProperty = (appointment.PatientName != null &&
+                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                                    appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
 
             if (isOwnProperty)
@@ -775,7 +852,7 @@ namespace CareFleet.Controllers
                 _context.SaveChanges();
                 TempData["Success"] = "Appointment cancelled successfully.";
             }
-            
+
             return RedirectToAction(nameof(Appointments));
         }
 
@@ -793,9 +870,9 @@ namespace CareFleet.Controllers
             var appointment = _context.Set<Appointment>().Find(id);
             if (appointment == null) return NotFound();
 
-            bool isOwnProperty = (appointment.PatientName != null && 
-                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+            bool isOwnProperty = (appointment.PatientName != null &&
+                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                                    appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
 
             if (isOwnProperty)
@@ -814,15 +891,15 @@ namespace CareFleet.Controllers
             SetUserInfo();
 
             var appointment = _context.Set<Appointment>().FirstOrDefault(a => a.Id == id);
-            
+
             var firstName = (string)ViewBag.FirstName;
             var lastName = (string)ViewBag.LastName;
             var fullName = $"{firstName} {lastName}".Trim();
 
-            bool isOwnProperty = appointment != null && 
-                                (appointment.PatientName != null && 
-                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) || 
-                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) && 
+            bool isOwnProperty = appointment != null &&
+                                (appointment.PatientName != null &&
+                                 (appointment.PatientName.Trim().Equals(fullName, StringComparison.OrdinalIgnoreCase) ||
+                                  (appointment.PatientName.Contains(firstName, StringComparison.OrdinalIgnoreCase) &&
                                    appointment.PatientName.Contains(lastName, StringComparison.OrdinalIgnoreCase))));
 
             if (!isOwnProperty)
@@ -838,7 +915,7 @@ namespace CareFleet.Controllers
         public IActionResult DownloadRecord(int id)
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
-            
+
             var patient = GetLoggedInPatient();
             if (patient == null) return Unauthorized();
 
@@ -865,7 +942,7 @@ namespace CareFleet.Controllers
         public IActionResult ViewRecord(int id)
         {
             if (!IsPatient()) return RedirectToAction("Login", "Account");
-            
+
             var patient = GetLoggedInPatient();
             if (patient == null) return Unauthorized();
 

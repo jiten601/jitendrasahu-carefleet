@@ -1,6 +1,8 @@
 using CareFleet.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CareFleet.Controllers
 {
@@ -68,25 +70,101 @@ namespace CareFleet.Controllers
             return View();
         }
 
-        public IActionResult Users()
+        public IActionResult Users(string searchTerm, string roleFilter, int page = 1)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             SetUserInfo();
-            var users = _context.Users.OrderByDescending(u => u.Id).ToList();
+            int pageSize = 10;
+            var query = _context.Users.AsQueryable();
+
+            // Search Filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                query = query.Where(u => u.FirstName.ToLower().Contains(term) || 
+                                       u.LastName.ToLower().Contains(term) || 
+                                       u.Email.ToLower().Contains(term));
+            }
+
+            // Role Filter
+            if (!string.IsNullOrEmpty(roleFilter))
+            {
+                query = query.Where(u => u.Role == roleFilter);
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            
+            // Ensure page is within bounds
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var users = query.OrderByDescending(u => u.Id)
+                             .Skip((page - 1) * pageSize)
+                             .Take(pageSize)
+                             .ToList();
+
             ViewBag.HeaderTitle = "User Management";
             ViewBag.ActivePage = "Users";
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalUsers = totalItems;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.RoleFilter = roleFilter;
+
             return View(users);
         }
 
-        public IActionResult Doctors()
+        public IActionResult Doctors(string searchTerm, string statusFilter, int page = 1)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             SetUserInfo();
-            var doctors = _context.Doctors.OrderByDescending(d => d.CreatedAt).ToList();
-            ViewBag.HeaderTitle = "Doctors Management";
+            int pageSize = 10;
+            var query = _context.Doctors.AsQueryable();
+
+            // Search Filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                query = query.Where(d => d.FirstName.ToLower().Contains(term) || 
+                                       d.LastName.ToLower().Contains(term) || 
+                                       d.Email.ToLower().Contains(term) ||
+                                       d.Specialization.ToLower().Contains(term) ||
+                                       d.LicenseNumber.ToLower().Contains(term));
+            }
+
+            // Status Filter
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                bool isActive = statusFilter == "Active";
+                query = query.Where(d => d.IsActive == isActive);
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var doctors = query.OrderByDescending(d => d.CreatedAt)
+                               .Skip((page - 1) * pageSize)
+                               .Take(pageSize)
+                               .ToList();
+
+            ViewBag.HeaderTitle = "System Doctors";
             ViewBag.ActivePage = "Doctors";
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalDoctors = totalItems;
+            ViewBag.TotalItems = totalItems; // Added for pagination
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.StatusFilter = statusFilter;
+
             return View(doctors);
         }
 
@@ -102,26 +180,51 @@ namespace CareFleet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddDoctor(Doctor doctor)
+        public IActionResult AddDoctor(Doctor doctor, string password)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             if (ModelState.IsValid)
             {
-                if (_context.Doctors.Any(d => d.Email == doctor.Email))
+                if (string.IsNullOrEmpty(password))
                 {
-                    ModelState.AddModelError("Email", "Email already exists.");
+                    ModelState.AddModelError("Password", "Password is required for registration.");
+                }
+                else if (_context.Users.Any(u => u.Email == doctor.Email) || 
+                         _context.Doctors.Any(d => d.Email == doctor.Email) || 
+                         _context.Patients.Any(p => p.Email == doctor.Email))
+                {
+                    ModelState.AddModelError("Email", "A user with this email already exists in our system.");
+                }
+                else if (_context.Doctors.Any(d => d.LicenseNumber == doctor.LicenseNumber))
+                {
+                    ModelState.AddModelError("LicenseNumber", "License number already exists.");
                 }
                 else
                 {
+                    // 1. Create Profile Record
                     doctor.CreatedAt = DateTime.Now;
                     _context.Doctors.Add(doctor);
+
+                    // 2. Create Authentication Record
+                    var user = new ApplicationUser
+                    {
+                        FirstName = doctor.FirstName,
+                        LastName = doctor.LastName,
+                        Email = doctor.Email,
+                        PasswordHash = HashPassword(password),
+                        Role = "Doctor",
+                        IsEmailConfirmed = true, // Admin registrations are pre-verified
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.Users.Add(user);
+
                     _context.SaveChanges();
 
                     // Notify all admins about the new doctor
                     NotifyAllAdmins($"New doctor added: Dr. {doctor.FirstName} {doctor.LastName} ({doctor.Email}).");
 
-                    TempData["Success"] = "Doctor added successfully!";
+                    TempData["Success"] = "Doctor registered successfully with login access!";
                     return RedirectToAction(nameof(Doctors));
                 }
             }
@@ -132,29 +235,106 @@ namespace CareFleet.Controllers
             return View(doctor);
         }
 
-        public IActionResult Patients()
+        private string HashPassword(string password)
+        {
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(bytes);
+        }
+
+        public IActionResult Patients(string searchTerm, int page = 1)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             SetUserInfo();
-            var patients = _context.Patients.OrderByDescending(p => p.CreatedAt).ToList();
+            int pageSize = 10;
+            var query = _context.Patients.AsQueryable();
+
+            // Search Filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                query = query.Where(p => p.FirstName.ToLower().Contains(term) || 
+                                       p.LastName.ToLower().Contains(term) || 
+                                       p.Email.ToLower().Contains(term) ||
+                                       p.Id.ToString().Contains(term));
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var patients = query.OrderByDescending(p => p.CreatedAt)
+                                .Skip((page - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToList();
+
             ViewBag.HeaderTitle = "Patients Management";
             ViewBag.ActivePage = "Patients";
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPatients = totalItems;
+            ViewBag.TotalItems = totalItems; // Added for pagination
+            ViewBag.SearchTerm = searchTerm;
+
             return View(patients);
         }
 
-        public IActionResult Appointments()
+        public IActionResult Appointments(string searchTerm, string statusFilter, string dateFilter, int page = 1)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             SetUserInfo();
-            var appointments = _context.Set<Appointment>()
-                .OrderByDescending(a => a.AppointmentDate)
-                .ToList();
+            int pageSize = 10;
+            var query = _context.Appointments.AsQueryable();
 
-            ViewBag.HeaderTitle = "Appointments Management";
+            // Search Filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                var term = searchTerm.ToLower();
+                query = query.Where(a => a.PatientName.ToLower().Contains(term) || 
+                                       a.DoctorName.ToLower().Contains(term) || 
+                                       a.Reason.ToLower().Contains(term));
+            }
+
+            // Status Filter
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                query = query.Where(a => a.Status == statusFilter);
+            }
+
+            // Date Filter
+            if (dateFilter == "Today")
+            {
+                var today = DateTime.Today;
+                query = query.Where(a => a.AppointmentDate.Date == today);
+            }
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (totalPages > 0 && page > totalPages) page = totalPages;
+
+            var appointments = query.OrderByDescending(a => a.AppointmentDate)
+                                    .Skip((page - 1) * pageSize)
+                                    .Take(pageSize)
+                                    .ToList();
+
+            ViewBag.HeaderTitle = "System Appointments";
             ViewBag.ActivePage = "Appointments";
-            ViewBag.TotalAppointments = appointments.Count;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.DateFilter = dateFilter ?? "All";
+            ViewBag.TotalAppointments = totalItems;
+
             return View(appointments);
         }
 
@@ -290,9 +470,14 @@ namespace CareFleet.Controllers
             if (ModelState.IsValid)
             {
                 // Check if email changed and if new email already exists
-                if (user.Email != model.Email && _context.Users.Any(u => u.Email == model.Email))
+                bool emailExists = user.Email != model.Email && 
+                                   (_context.Users.Any(u => u.Email == model.Email) || 
+                                    _context.Doctors.Any(d => d.Email == model.Email) || 
+                                    _context.Patients.Any(p => p.Email == model.Email));
+
+                if (emailExists)
                 {
-                    ModelState.AddModelError("Email", "Email already exists.");
+                    ModelState.AddModelError("Email", "Email already exists in our system.");
                 }
                 else
                 {
@@ -355,16 +540,43 @@ namespace CareFleet.Controllers
                     return RedirectToAction(nameof(Users));
                 }
 
-                // Delete associated records
+                var email = user.Email;
+
+                // Remove general dependent records
+                var messages = _context.Messages.Where(m => m.SenderEmail == email || m.ReceiverEmail == email).ToList();
+                _context.Messages.RemoveRange(messages);
+
+                var notifications = _context.Notifications.Where(n => n.ReceiverEmail == email).ToList();
+                _context.Notifications.RemoveRange(notifications);
+
+                // Delete Role-associated records
                 if (user.Role == "Doctor")
                 {
-                    var doctor = _context.Doctors.FirstOrDefault(d => d.Email == user.Email);
-                    if (doctor != null) _context.Doctors.Remove(doctor);
+                    var doctor = _context.Doctors.FirstOrDefault(d => d.Email == email);
+                    if (doctor != null) 
+                    {
+                        var prescriptions = _context.Prescriptions.Where(p => p.DoctorId == doctor.Id).ToList();
+                        _context.Prescriptions.RemoveRange(prescriptions);
+                        
+                        _context.Doctors.Remove(doctor);
+                    }
                 }
                 else if (user.Role == "Patient")
                 {
-                    var patient = _context.Patients.FirstOrDefault(p => p.Email == user.Email);
-                    if (patient != null) _context.Patients.Remove(patient);
+                    var patient = _context.Patients.FirstOrDefault(p => p.Email == email);
+                    if (patient != null)
+                    {
+                        var invoices = _context.Invoices.Where(i => i.PatientId == patient.Id).ToList();
+                        _context.Invoices.RemoveRange(invoices);
+                        
+                        var prescriptions = _context.Prescriptions.Where(p => p.PatientId == patient.Id).ToList();
+                        _context.Prescriptions.RemoveRange(prescriptions);
+                        
+                        var medicalRecords = _context.MedicalRecords.Where(m => m.PatientId == patient.Id).ToList();
+                        _context.MedicalRecords.RemoveRange(medicalRecords);
+                        
+                        _context.Patients.Remove(patient);
+                    }
                 }
 
                 _context.Users.Remove(user);
@@ -381,22 +593,58 @@ namespace CareFleet.Controllers
 
             SetUserInfo();
             
+            // Core Counts
+            var totalUsers    = _context.Users.Count();
+            var totalDoctors  = _context.Doctors.Count();
+            var totalPatients = _context.Patients.Count();
+            var totalAppointments = _context.Set<Appointment>().Count();
+
             // Appointment status breakdown
-            ViewBag.AppointmentsConfirmed = _context.Set<Appointment>().Count(a => a.Status == "Confirmed");
-            ViewBag.AppointmentsPending = _context.Set<Appointment>().Count(a => a.Status == "Pending");
-            ViewBag.AppointmentsCancelled = _context.Set<Appointment>().Count(a => a.Status == "Cancelled");
-            
+            var confirmed  = _context.Set<Appointment>().Count(a => a.Status == "Confirmed");
+            var pending    = _context.Set<Appointment>().Count(a => a.Status == "Pending");
+            var cancelled  = _context.Set<Appointment>().Count(a => a.Status == "Cancelled");
+            var completed  = _context.Set<Appointment>().Count(a => a.Status == "Completed");
+
+            // Revenue
+            var totalRevenue = _context.Set<Appointment>()
+                .Where(a => a.Status == "Confirmed" || a.Status == "Completed")
+                .Sum(a => (decimal?)a.Fee) ?? 0;
+
             // Monthly growth (Last 6 months)
-            var last6Months = Enumerable.Range(0, 6).Select(i => DateTime.Now.AddMonths(-i)).Reverse().ToList();
+            var last6Months  = Enumerable.Range(0, 6).Select(i => DateTime.Now.AddMonths(-i)).Reverse().ToList();
             var patientGrowth = last6Months.Select(m => _context.Patients.Count(p => p.CreatedAt.Month == m.Month && p.CreatedAt.Year == m.Year)).ToList();
-            var doctorGrowth = last6Months.Select(m => _context.Doctors.Count(d => d.CreatedAt.Month == m.Month && d.CreatedAt.Year == m.Year)).ToList();
-            
-            ViewBag.Months = last6Months.Select(m => m.ToString("MMM")).ToList();
-            ViewBag.PatientGrowth = patientGrowth;
-            ViewBag.DoctorGrowth = doctorGrowth;
+            var doctorGrowth  = last6Months.Select(m => _context.Doctors.Count(d => d.CreatedAt.Month == m.Month && d.CreatedAt.Year == m.Year)).ToList();
+
+            // Monthly appointment counts (last 6 months)
+            var appointmentMonthly = last6Months.Select(m => _context.Set<Appointment>().Count(a => a.AppointmentDate.Month == m.Month && a.AppointmentDate.Year == m.Year)).ToList();
+
+            // Recent appointments (last 5)
+            var recentAppointments = _context.Set<Appointment>()
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(5)
+                .ToList();
+
+            // Active doctors
+            var activeDoctors = _context.Doctors.Count(d => d.IsActive);
+
+            ViewBag.TotalUsers         = totalUsers;
+            ViewBag.TotalDoctors       = totalDoctors;
+            ViewBag.TotalPatients      = totalPatients;
+            ViewBag.TotalAppointments  = totalAppointments;
+            ViewBag.AppointmentsConfirmed  = confirmed;
+            ViewBag.AppointmentsPending    = pending;
+            ViewBag.AppointmentsCancelled  = cancelled;
+            ViewBag.AppointmentsCompleted  = completed;
+            ViewBag.TotalRevenue           = totalRevenue;
+            ViewBag.ActiveDoctors          = activeDoctors;
+            ViewBag.Months                 = last6Months.Select(m => m.ToString("MMM")).ToList();
+            ViewBag.PatientGrowth          = patientGrowth;
+            ViewBag.DoctorGrowth           = doctorGrowth;
+            ViewBag.AppointmentMonthly     = appointmentMonthly;
+            ViewBag.RecentAppointments     = recentAppointments;
 
             ViewBag.HeaderTitle = "Reports & Analytics";
-            ViewBag.ActivePage = "Reports";
+            ViewBag.ActivePage  = "Reports";
             return View();
         }
 

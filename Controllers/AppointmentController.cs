@@ -9,10 +9,12 @@ namespace CareFleet.Controllers
     public class AppointmentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly CareFleet.Services.EmailService _emailService;
 
-        public AppointmentController(ApplicationDbContext context)
+        public AppointmentController(ApplicationDbContext context, CareFleet.Services.EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         private void SetUserInfo()
@@ -73,10 +75,35 @@ namespace CareFleet.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Check for existing appointment for the same doctor, date, and time slot
+                bool isSlotTaken = _context.Set<Appointment>().Any(a =>
+                    a.DoctorName == appointment.DoctorName &&
+                    a.AppointmentDate.Date == appointment.AppointmentDate.Date &&
+                    a.TimeSlot == appointment.TimeSlot &&
+                    a.Status != "Cancelled" && a.Status != "Rejected");
+
+                if (isSlotTaken)
+                {
+                    ModelState.AddModelError("TimeSlot", "This time slot is already booked for the selected doctor. Please choose another time.");
+
+                    SetUserInfo();
+                    var activeDoctors = _context.Doctors.Where(d => d.IsActive).ToList();
+                    var activeSpecialties = activeDoctors.Select(d => d.Specialization).Distinct().ToList();
+
+                    ViewBag.Doctors = activeDoctors;
+                    ViewBag.Specialties = activeSpecialties;
+                    ViewBag.ActivePage = "Appointments";
+                    ViewBag.HeaderTitle = "Book New Appointment";
+
+                    return View(appointment);
+                }
+
+                var bookerEmail = HttpContext.Session.GetString("UserEmail");
+                appointment.PatientEmail = bookerEmail;
+
                 if (string.IsNullOrEmpty(appointment.PatientName))
                 {
-                    var userEmail = HttpContext.Session.GetString("UserEmail");
-                    var user = _context.Users.FirstOrDefault(u => u.Email == userEmail);
+                    var user = _context.Users.FirstOrDefault(u => u.Email == bookerEmail);
                     if (user != null)
                     {
                         appointment.PatientName = $"{user.FirstName} {user.LastName}".Trim();
@@ -85,23 +112,19 @@ namespace CareFleet.Controllers
 
                 appointment.CreatedAt = DateTime.Now;
                 appointment.Status = "Pending";
-                
+                appointment.Fee = 200;
+
                 _context.Set<Appointment>().Add(appointment);
                 _context.SaveChanges();
 
                 // --- Notifications ---
-                var bookerEmail = HttpContext.Session.GetString("UserEmail") ?? "";
+                bookerEmail = bookerEmail ?? "";
                 var patientName = appointment.PatientName ?? "A patient";
-                var appointmentDateStr = appointment.AppointmentDate.ToString("MMMM dd, yyyy 'at' hh:mm tt");
+                var appointmentDateStr = $"{appointment.AppointmentDate:MMMM dd, yyyy} at {appointment.TimeSlot}";
 
                 // 1. Notify the doctor about the new appointment
-                // DoctorName is stored as "Dr. FirstName LastName" — find the doctor record
-                var doctorNameParts = appointment.DoctorName
-                    .Replace("Dr.", "", StringComparison.OrdinalIgnoreCase).Trim().Split(' ');
-                var doctor = doctorNameParts.Length >= 2
-                    ? _context.Doctors.FirstOrDefault(d =>
-                        d.FirstName == doctorNameParts[0] && d.LastName == doctorNameParts[1])
-                    : null;
+                var doctor = _context.Doctors.ToList()
+                    .FirstOrDefault(d => $"Dr. {d.FirstName} {d.LastName}" == appointment.DoctorName);
 
                 if (doctor != null)
                 {
@@ -112,6 +135,28 @@ namespace CareFleet.Controllers
                         IsRead = false,
                         CreatedAt = DateTime.Now
                     });
+                    
+                    try
+                    {
+                        var subject = "New Appointment Request - CareFleet";
+                        var body = $@"
+                            <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                                <h2 style='color: #2B6CB0;'>New Appointment Request</h2>
+                                <p>Hello Dr. {doctor.FirstName} {doctor.LastName},</p>
+                                <p>You have received a new appointment request from <strong>{patientName}</strong> for <strong>{appointmentDateStr}</strong>.</p>
+                                <p>Please log in to your dashboard to review and confirm this request.</p>
+                                <div style='margin: 25px 0;'>
+                                    <a href='https://carefleet-fyp-2026-fccudzeehhc0dsg2.centralindia-01.azurewebsites.net/Doctor/Appointments' 
+                                       style='background-color: #4299E1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: bold;'>
+                                        Manage Appointments
+                                    </a>
+                                </div>
+                                <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                                <p style='font-size: 0.8em; color: #777;'>CareFleet automated scheduling.</p>
+                            </div>";
+                        _emailService.Send(doctor.Email, subject, body);
+                    }
+                    catch { /* Silent fail for email */ }
                 }
 
                 // 2. Notify the patient/booker with a confirmation
@@ -129,7 +174,7 @@ namespace CareFleet.Controllers
                 _context.SaveChanges();
 
                 TempData["Success"] = "Appointment booked successfully!";
-                
+
                 var userRole = HttpContext.Session.GetString("UserRole");
                 if (userRole == "Patient")
                 {
